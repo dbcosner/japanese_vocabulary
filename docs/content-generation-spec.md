@@ -142,6 +142,22 @@ the intended sense.
 Examples SHOULD use varied, idiomatic constructions rather than repeatedly using
 the same copular frame.
 
+When a noun commonly participates in either of these productive constructions,
+the example set SHOULD demonstrate the applicable construction:
+
+- `Nの…`, where the noun naturally modifies or relates to a following noun; and
+- `Nする`, including naturally conjugated forms such as `Nした`, `Nしている`, or
+  `Nしない`, where the noun functions as a suru-verb.
+
+If both constructions are common and useful for the target sense, the examples
+SHOULD normally include at least one natural instance of each. If only one is
+established, the generator MUST NOT invent the other. Naturalness and the intended
+sense take precedence over satisfying a fixed pattern.
+
+The target noun itself MUST remain replaced by bold hiragana in these
+constructions. Following particles, including `の`, and conjugated forms of
+`する` MUST remain visible in normal Japanese orthography.
+
 ### 5.4 Na-adjectives
 
 For entries marked `(な)`:

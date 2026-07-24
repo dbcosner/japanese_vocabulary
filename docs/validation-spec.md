@@ -69,6 +69,8 @@ For each note, validation MUST verify:
 - the definition is Japanese and addresses the intended sense;
 - exactly three to five distinct examples are present;
 - examples use the intended word or affix naturally;
+- examples for nouns demonstrate commonly productive `Nの…` and `Nする`
+  constructions where applicable, without inventing an unsupported construction;
 - GCL annotations do not occur in any field; and
 - no placeholder, generation instruction, mojibake, or uncertainty text remains.
 
@@ -198,6 +200,8 @@ A release test suite MUST include:
 - a normal kanji-plus-okurigana word such as `遭う`;
 - a supplied reading such as `一入[ひとしお]`;
 - a na-adjective such as `静か(な)`;
+- a noun that commonly precedes `の`, a suru-noun, and a noun that naturally
+  demonstrates both constructions;
 - a prefix and a suffix;
 - two entries sharing a written form but having different supplied readings;
 - malformed brackets;

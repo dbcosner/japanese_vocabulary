@@ -24,6 +24,9 @@ Each generated card is intended to:
 - conceal the target vocabulary's original written form throughout the front; and
 - reveal only the original vocabulary expression on the back.
 
+Examples should also expose productive grammar: nouns that commonly occur before
+`の` or combine with `する` should demonstrate those constructions naturally.
+
 Correct interpretation, natural Japanese, pedagogical value, consistency, and
 maintainability guide content generation. When a reading or interpretation
 remains ambiguous, the system is expected to request clarification rather than

@@ -1,0 +1,327 @@
+﻿[
+    {
+        "source_index":  126,
+        "source_entry":  "冷やかす",
+        "gcl_entry":  "冷やかす[ひやかす]",
+        "is_primary":  true,
+        "reading":  "ひやかす",
+        "fields":  [
+                       "\u003cb\u003eひ\u003c/b\u003eやかす",
+                       "からかったり、買う気がないのに商品を見て回ったりする。",
+                       "\u003cdiv\u003e友人は二人の仲を\u003cb\u003eひやかした\u003c/b\u003e。\u003c/div\u003e\u003cdiv\u003e祭りの帰りに夜店を\u003cb\u003eひやかして\u003c/b\u003e歩いた。\u003c/div\u003e\u003cdiv\u003e買うつもりもないのに店員を\u003cb\u003eひやかす\u003c/b\u003eのは失礼だ。\u003c/div\u003e",
+                       "冷やかす"
+                   ]
+    },
+    {
+        "source_index":  127,
+        "source_entry":  "産む",
+        "gcl_entry":  "産む[うむ]",
+        "is_primary":  true,
+        "reading":  "うむ",
+        "fields":  [
+                       "\u003cb\u003eう\u003c/b\u003eむ",
+                       "母親が子を出産する。また、物事が新しい成果や状況を生じさせる。",
+                       "\u003cdiv\u003e彼女は春に元気な男の子を\u003cb\u003eうんだ\u003c/b\u003e。\u003c/div\u003e\u003cdiv\u003e地道な研究が大きな成果を\u003cb\u003eうんだ\u003c/b\u003e。\u003c/div\u003e\u003cdiv\u003e小さな誤解が新たな対立を\u003cb\u003eうむ\u003c/b\u003eこともある。\u003c/div\u003e",
+                       "産む"
+                   ]
+    },
+    {
+        "source_index":  128,
+        "source_entry":  "富む",
+        "gcl_entry":  "富む[とむ]",
+        "is_primary":  true,
+        "reading":  "とむ",
+        "fields":  [
+                       "\u003cb\u003eと\u003c/b\u003eむ",
+                       "財産や資源、性質などを豊かに備えている。",
+                       "\u003cdiv\u003eこの地域は天然資源に\u003cb\u003eとんでいる\u003c/b\u003e。\u003c/div\u003e\u003cdiv\u003e彼女は変化に\u003cb\u003eとんだ\u003c/b\u003e人生を送った。\u003c/div\u003e\u003cdiv\u003e機知に\u003cb\u003eとむ\u003c/b\u003e彼の話に皆が笑った。\u003c/div\u003e",
+                       "富む"
+                   ]
+    },
+    {
+        "source_index":  129,
+        "source_entry":  "病む",
+        "gcl_entry":  "病む[やむ]",
+        "is_primary":  true,
+        "reading":  "やむ",
+        "fields":  [
+                       "\u003cb\u003eや\u003c/b\u003eむ",
+                       "病気になる。また、精神的な苦痛や悩みを抱える。",
+                       "\u003cdiv\u003e長く肺を\u003cb\u003eやんでいた\u003c/b\u003e祖父が退院した。\u003c/div\u003e\u003cdiv\u003e彼は罪悪感に心を\u003cb\u003eやんでいる\u003c/b\u003e。\u003c/div\u003e\u003cdiv\u003e社会全体が深い問題に\u003cb\u003eやんでいる\u003c/b\u003eように見える。\u003c/div\u003e",
+                       "病む"
+                   ]
+    },
+    {
+        "source_index":  130,
+        "source_entry":  "歩む",
+        "gcl_entry":  "歩む[あゆむ]",
+        "is_primary":  true,
+        "reading":  "あゆむ",
+        "fields":  [
+                       "\u003cb\u003eあゆ\u003c/b\u003eむ",
+                       "歩いて進む。また、人生や物事の過程を一歩ずつ進む。",
+                       "\u003cdiv\u003e二人は手を取り合って人生を\u003cb\u003eあゆんできた\u003c/b\u003e。\u003c/div\u003e\u003cdiv\u003e会社は創業以来、着実な発展の道を\u003cb\u003eあゆんでいる\u003c/b\u003e。\u003c/div\u003e\u003cdiv\u003e選手たちは優勝への道をともに\u003cb\u003eあゆむ\u003c/b\u003e。\u003c/div\u003e",
+                       "歩む"
+                   ]
+    },
+    {
+        "source_index":  131,
+        "source_entry":  "絡む",
+        "gcl_entry":  "絡む[からむ]",
+        "is_primary":  true,
+        "reading":  "からむ",
+        "fields":  [
+                       "\u003cb\u003eから\u003c/b\u003eむ",
+                       "物が巻き付いて離れにくくなる。また、複数の事情が関係し合う。",
+                       "\u003cdiv\u003e風で糸が枝に\u003cb\u003eからんでしまった\u003c/b\u003e。\u003c/div\u003e\u003cdiv\u003eこの事件には複雑な利害が\u003cb\u003eからんでいる\u003c/b\u003e。\u003c/div\u003e\u003cdiv\u003e酒に酔った客が店員に\u003cb\u003eからみ\u003c/b\u003e始めた。\u003c/div\u003e",
+                       "絡む"
+                   ]
+    },
+    {
+        "source_index":  132,
+        "source_entry":  "涼む",
+        "gcl_entry":  "涼む[すずむ]",
+        "is_primary":  true,
+        "reading":  "すずむ",
+        "fields":  [
+                       "\u003cb\u003eすず\u003c/b\u003eむ",
+                       "暑さを避け、涼しい場所で体を休める。",
+                       "\u003cdiv\u003e木陰のベンチでしばらく\u003cb\u003eすずんだ\u003c/b\u003e。\u003c/div\u003e\u003cdiv\u003e夕方になると縁側で\u003cb\u003eすずむ\u003c/b\u003e人が増える。\u003c/div\u003e\u003cdiv\u003e川辺で\u003cb\u003eすずみながら\u003c/b\u003e花火を眺めた。\u003c/div\u003e",
+                       "涼む"
+                   ]
+    },
+    {
+        "source_index":  133,
+        "source_entry":  "恵む",
+        "gcl_entry":  "恵む[めぐむ]",
+        "is_primary":  true,
+        "reading":  "めぐむ",
+        "fields":  [
+                       "\u003cb\u003eめぐ\u003c/b\u003eむ",
+                       "困っている人に金品などを与えて助ける。",
+                       "\u003cdiv\u003e彼は道端の物乞いに小銭を\u003cb\u003eめぐんだ\u003c/b\u003e。\u003c/div\u003e\u003cdiv\u003e食べ物を\u003cb\u003eめぐんでもらい\u003c/b\u003e、何とか冬を越した。\u003c/div\u003e\u003cdiv\u003e哀れむように金を\u003cb\u003eめぐまれる\u003c/b\u003eのは望んでいない。\u003c/div\u003e",
+                       "恵む"
+                   ]
+    },
+    {
+        "source_index":  134,
+        "source_entry":  "営む",
+        "gcl_entry":  "営む[いとなむ]",
+        "is_primary":  true,
+        "reading":  "いとなむ",
+        "fields":  [
+                       "\u003cb\u003eいとな\u003c/b\u003eむ",
+                       "仕事や商売、生活などを継続して行う。",
+                       "\u003cdiv\u003e両親は駅前で小さな食堂を\u003cb\u003eいとなんでいる\u003c/b\u003e。\u003c/div\u003e\u003cdiv\u003e森の近くで静かな暮らしを\u003cb\u003eいとなむ\u003c/b\u003e。\u003c/div\u003e\u003cdiv\u003eこの鳥は毎年同じ場所で巣作りを\u003cb\u003eいとなむ\u003c/b\u003e。\u003c/div\u003e",
+                       "営む"
+                   ]
+    },
+    {
+        "source_index":  135,
+        "source_entry":  "危ぶむ",
+        "gcl_entry":  "危ぶむ[あやぶむ]",
+        "is_primary":  true,
+        "reading":  "あやぶむ",
+        "fields":  [
+                       "\u003cb\u003eあや\u003c/b\u003eぶむ",
+                       "物事が悪い結果になるのではないかと心配する。",
+                       "\u003cdiv\u003e専門家は計画の実現性を\u003cb\u003eあやぶんでいる\u003c/b\u003e。\u003c/div\u003e\u003cdiv\u003eけがのため、彼の出場が\u003cb\u003eあやぶまれた\u003c/b\u003e。\u003c/div\u003e\u003cdiv\u003e資金不足で事業の継続を\u003cb\u003eあやぶむ\u003c/b\u003e声が出た。\u003c/div\u003e",
+                       "危ぶむ"
+                   ]
+    },
+    {
+        "source_index":  136,
+        "source_entry":  "連なる",
+        "gcl_entry":  "連なる[つらなる]",
+        "is_primary":  true,
+        "reading":  "つらなる",
+        "fields":  [
+                       "\u003cb\u003eつら\u003c/b\u003eなる",
+                       "多くのものが一列に続く。また、会合などに参加する。",
+                       "\u003cdiv\u003e遠くには雪を頂いた山々が\u003cb\u003eつらなっている\u003c/b\u003e。\u003c/div\u003e\u003cdiv\u003e沿道には大勢の観客が\u003cb\u003eつらなった\u003c/b\u003e。\u003c/div\u003e\u003cdiv\u003e各界の代表者が式典に\u003cb\u003eつらなった\u003c/b\u003e。\u003c/div\u003e",
+                       "連なる"
+                   ]
+    },
+    {
+        "source_index":  137,
+        "source_entry":  "連ねる",
+        "gcl_entry":  "連ねる[つらねる]",
+        "is_primary":  true,
+        "reading":  "つらねる",
+        "fields":  [
+                       "\u003cb\u003eつら\u003c/b\u003eねる",
+                       "多くのものを一列に並べる。また、名前などを並べて記す。",
+                       "\u003cdiv\u003e候補者名簿に著名人が名を\u003cb\u003eつらねている\u003c/b\u003e。\u003c/div\u003e\u003cdiv\u003e車が長い列を\u003cb\u003eつらねて\u003c/b\u003e料金所を待っていた。\u003c/div\u003e\u003cdiv\u003e彼は感謝の言葉を\u003cb\u003eつらねた\u003c/b\u003e手紙を送った。\u003c/div\u003e",
+                       "連ねる"
+                   ]
+    },
+    {
+        "source_index":  138,
+        "source_entry":  "煙る",
+        "gcl_entry":  "煙る[けむる]",
+        "is_primary":  true,
+        "reading":  "けむる",
+        "fields":  [
+                       "\u003cb\u003eけむ\u003c/b\u003eる",
+                       "煙や霧などが立ち込め、辺りがかすんで見える。",
+                       "\u003cdiv\u003eたき火の煙で部屋全体が\u003cb\u003eけむっている\u003c/b\u003e。\u003c/div\u003e\u003cdiv\u003e春雨に\u003cb\u003eけむる\u003c/b\u003e山並みを眺めた。\u003c/div\u003e\u003cdiv\u003e工場の煙突で空が\u003cb\u003eけむって\u003c/b\u003e見えた。\u003c/div\u003e",
+                       "煙る"
+                   ]
+    },
+    {
+        "source_index":  139,
+        "source_entry":  "募る",
+        "gcl_entry":  "募る[つのる]",
+        "is_primary":  true,
+        "reading":  "つのる",
+        "fields":  [
+                       "\u003cb\u003eつの\u003c/b\u003eる",
+                       "感情や状態が次第に強くなる。また、広く呼びかけて人や物を集める。",
+                       "\u003cdiv\u003e返事を待つうちに不安が\u003cb\u003eつのった\u003c/b\u003e。\u003c/div\u003e\u003cdiv\u003e大会の運営を手伝うボランティアを\u003cb\u003eつのる\u003c/b\u003e。\u003c/div\u003e\u003cdiv\u003e日が暮れるにつれて寒さが\u003cb\u003eつのってきた\u003c/b\u003e。\u003c/div\u003e",
+                       "募る"
+                   ]
+    },
+    {
+        "source_index":  140,
+        "source_entry":  "図る",
+        "gcl_entry":  "図る[はかる]",
+        "is_primary":  true,
+        "reading":  "はかる",
+        "fields":  [
+                       "\u003cb\u003eはか\u003c/b\u003eる",
+                       "目的を達成するために工夫し、実現しようとする。",
+                       "\u003cdiv\u003e政府は制度の抜本的な見直しを\u003cb\u003eはかった\u003c/b\u003e。\u003c/div\u003e\u003cdiv\u003e業務の効率化を\u003cb\u003eはかる\u003c/b\u003eため、手順を改めた。\u003c/div\u003e\u003cdiv\u003e対話を重ねて両国の関係改善を\u003cb\u003eはかる\u003c/b\u003e。\u003c/div\u003e",
+                       "図る"
+                   ]
+    },
+    {
+        "source_index":  141,
+        "source_entry":  "勝る",
+        "gcl_entry":  "勝る[まさる]",
+        "is_primary":  true,
+        "reading":  "まさる",
+        "fields":  [
+                       "\u003cb\u003eまさ\u003c/b\u003eる",
+                       "ほかのものと比べて、能力や価値などが上である。",
+                       "\u003cdiv\u003eこの素材は従来品より耐久性で\u003cb\u003eまさる\u003c/b\u003e。\u003c/div\u003e\u003cdiv\u003e経験に\u003cb\u003eまさる\u003c/b\u003e教師はない。\u003c/div\u003e\u003cdiv\u003e姉は弟に体力では\u003cb\u003eまさっている\u003c/b\u003e。\u003c/div\u003e",
+                       "勝る"
+                   ]
+    },
+    {
+        "source_index":  142,
+        "source_entry":  "操る",
+        "gcl_entry":  "操る[あやつる]",
+        "is_primary":  true,
+        "reading":  "あやつる",
+        "fields":  [
+                       "\u003cb\u003eあやつ\u003c/b\u003eる",
+                       "道具や機械を思いどおりに動かす。また、人を裏から支配する。",
+                       "\u003cdiv\u003e彼は小型船を巧みに\u003cb\u003eあやつった\u003c/b\u003e。\u003c/div\u003e\u003cdiv\u003e三か国語を自在に\u003cb\u003eあやつる\u003c/b\u003e通訳者だ。\u003c/div\u003e\u003cdiv\u003e事件の背後で組織を\u003cb\u003eあやつっていた\u003c/b\u003e人物が逮捕された。\u003c/div\u003e",
+                       "操る"
+                   ]
+    },
+    {
+        "source_index":  143,
+        "source_entry":  "誤る",
+        "gcl_entry":  "誤る[あやまる]",
+        "is_primary":  true,
+        "reading":  "あやまる",
+        "fields":  [
+                       "\u003cb\u003eあやま\u003c/b\u003eる",
+                       "判断や方法などを間違える。",
+                       "\u003cdiv\u003e進む方向を\u003cb\u003eあやまり\u003c/b\u003e、山中で道に迷った。\u003c/div\u003e\u003cdiv\u003e一つ判断を\u003cb\u003eあやまれば\u003c/b\u003e重大な事故につながる。\u003c/div\u003e\u003cdiv\u003e薬の使用量を\u003cb\u003eあやまらない\u003c/b\u003eよう注意してください。\u003c/div\u003e",
+                       "誤る"
+                   ]
+    },
+    {
+        "source_index":  144,
+        "source_entry":  "受かる",
+        "gcl_entry":  "受かる[うかる]",
+        "is_primary":  true,
+        "reading":  "うかる",
+        "fields":  [
+                       "\u003cb\u003eう\u003c/b\u003eかる",
+                       "試験や審査などに合格する。",
+                       "\u003cdiv\u003e第一志望の大学に\u003cb\u003eうかった\u003c/b\u003e。\u003c/div\u003e\u003cdiv\u003e面接に\u003cb\u003eうかる\u003c/b\u003eため、何度も練習した。\u003c/div\u003e\u003cdiv\u003e難しい試験だったが、無事に\u003cb\u003eうかって\u003c/b\u003e安心した。\u003c/div\u003e",
+                       "受かる"
+                   ]
+    },
+    {
+        "source_index":  145,
+        "source_entry":  "群がる",
+        "gcl_entry":  "群がる[むらがる]",
+        "is_primary":  true,
+        "reading":  "むらがる",
+        "fields":  [
+                       "\u003cb\u003eむら\u003c/b\u003eがる",
+                       "多くの人や動物が一か所に集まり、密集する。",
+                       "\u003cdiv\u003e甘い果物に虫が\u003cb\u003eむらがっている\u003c/b\u003e。\u003c/div\u003e\u003cdiv\u003e人気俳優の周りに記者が\u003cb\u003eむらがった\u003c/b\u003e。\u003c/div\u003e\u003cdiv\u003e餌をまくと池の鯉が一斉に\u003cb\u003eむらがる\u003c/b\u003e。\u003c/div\u003e",
+                       "群がる"
+                   ]
+    },
+    {
+        "source_index":  146,
+        "source_entry":  "群れる",
+        "gcl_entry":  "群れる[むれる]",
+        "is_primary":  true,
+        "reading":  "むれる",
+        "fields":  [
+                       "\u003cb\u003eむ\u003c/b\u003eれる",
+                       "人や動物が集まって一つの群れになる。",
+                       "\u003cdiv\u003e草原では羊が\u003cb\u003eむれて\u003c/b\u003e草を食べている。\u003c/div\u003e\u003cdiv\u003e彼は人と\u003cb\u003eむれる\u003c/b\u003eより、一人で行動するのが好きだ。\u003c/div\u003e\u003cdiv\u003e小魚が岸の近くに\u003cb\u003eむれて\u003c/b\u003e泳いでいた。\u003c/div\u003e",
+                       "群れる"
+                   ]
+    },
+    {
+        "source_index":  147,
+        "source_entry":  "交わる",
+        "gcl_entry":  "交わる[まじわる]",
+        "is_primary":  true,
+        "reading":  "まじわる",
+        "fields":  [
+                       "\u003cb\u003eまじ\u003c/b\u003eわる",
+                       "線などが交差する。また、人どうしが付き合いを持つ。",
+                       "\u003cdiv\u003e二本の道が\u003cb\u003eまじわる\u003c/b\u003e地点に店がある。\u003c/div\u003e\u003cdiv\u003e異なる文化を持つ人々と\u003cb\u003eまじわる\u003c/b\u003e機会を得た。\u003c/div\u003e\u003cdiv\u003e平行な二直線は決して\u003cb\u003eまじわらない\u003c/b\u003e。\u003c/div\u003e",
+                       "交わる"
+                   ]
+    },
+    {
+        "source_index":  148,
+        "source_entry":  "交える",
+        "gcl_entry":  "交える[まじえる]",
+        "is_primary":  true,
+        "reading":  "まじえる",
+        "fields":  [
+                       "\u003cb\u003eまじ\u003c/b\u003eえる",
+                       "あるものの中に別のものを加える。また、互いにやり取りする。",
+                       "\u003cdiv\u003e冗談を\u003cb\u003eまじえながら\u003c/b\u003e体験談を語った。\u003c/div\u003e\u003cdiv\u003e専門家を\u003cb\u003eまじえて\u003c/b\u003e今後の方針を話し合う。\u003c/div\u003e\u003cdiv\u003e両軍は激しく砲火を\u003cb\u003eまじえた\u003c/b\u003e。\u003c/div\u003e",
+                       "交える"
+                   ]
+    },
+    {
+        "source_index":  149,
+        "source_entry":  "老いる",
+        "gcl_entry":  "老いる[おいる]",
+        "is_primary":  true,
+        "reading":  "おいる",
+        "fields":  [
+                       "\u003cb\u003eお\u003c/b\u003eいる",
+                       "年を取り、心身の働きが衰える。",
+                       "\u003cdiv\u003e誰もがいつかは\u003cb\u003eおいる\u003c/b\u003e。\u003c/div\u003e\u003cdiv\u003e父は\u003cb\u003eおいても\u003c/b\u003e好奇心を失わなかった。\u003c/div\u003e\u003cdiv\u003e愛犬が急に\u003cb\u003eおいた\u003c/b\u003eように感じられた。\u003c/div\u003e",
+                       "老いる"
+                   ]
+    },
+    {
+        "source_index":  150,
+        "source_entry":  "強いる",
+        "gcl_entry":  "強いる[しいる]",
+        "is_primary":  true,
+        "reading":  "しいる",
+        "fields":  [
+                       "\u003cb\u003eし\u003c/b\u003eいる",
+                       "本人が望まないことを無理にさせる。",
+                       "\u003cdiv\u003e会社は従業員に長時間労働を\u003cb\u003eしいては\u003c/b\u003eならない。\u003c/div\u003e\u003cdiv\u003e避難生活は住民に大きな負担を\u003cb\u003eしいた\u003c/b\u003e。\u003c/div\u003e\u003cdiv\u003e相手に一方的な選択を\u003cb\u003eしいる\u003c/b\u003eのは不公平だ。\u003c/div\u003e",
+                       "強いる"
+                   ]
+    }
+]

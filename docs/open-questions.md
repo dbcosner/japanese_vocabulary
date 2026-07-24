@@ -387,3 +387,18 @@ operation.
   `validation-spec.md`
 - Supersedes: D09 only insofar as it makes that cleanup mandatory preflight for
   Generate and Update
+
+### Decision D14: Demonstrate productive noun constructions
+
+- Date: 2026-07-24
+- Status: accepted
+- Decision: When a noun commonly participates in `Nの…` or `Nする`, its examples
+  should demonstrate the applicable construction. When both are common and
+  pedagogically useful, the example set should normally include both. Unsupported
+  constructions must not be invented, and naturalness takes precedence.
+- Rationale: These constructions communicate how Japanese nouns function in
+  sentences, not merely what they mean in isolation.
+- Affected specifications: `content-generation-spec.md`,
+  `validation-spec.md`
+- Supersedes: the less specific noun-example guidance in
+  `content-generation-spec.md`
