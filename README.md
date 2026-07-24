@@ -49,8 +49,9 @@ authoritative only for this initial derivation.
 ### Generate
 
 Create a complete new CrowdAnki JSON deck from a GCL and a compatible deck
-template. Generate may overwrite its requested output file; it does not preserve
-content from that file.
+template. Generate writes a CrowdAnki package directory whose JSON file has the
+same base name as its containing directory. It may overwrite the package's JSON
+file; it does not preserve content from that file.
 
 ### Update
 
@@ -58,6 +59,8 @@ Update an existing generated CrowdAnki JSON deck from changes to its associated
 GCL. Update is intended to:
 
 - generate cards for new entries;
+- match existing entries before generation so an already generated entry is not
+  duplicated;
 - preserve unchanged cards and note identities;
 - regenerate changed entries only when explicitly requested;
 - remove notes for entries removed from the GCL; and
@@ -92,10 +95,17 @@ GCL entries may include generation-only annotations:
 These annotations guide content generation and must not appear on generated
 cards.
 
+When a term has more than one plausible reading, the intended reading is recorded
+with `[reading]`. Different requested readings of the same written expression are
+separate GCL entries and produce separate cards. Newly requested entries are
+appended to the end of an existing GCL.
+
 ## Technical overview
 
 - Inputs and outputs use UTF-8.
 - CrowdAnki JSON supplies the interchange format for source and generated decks.
+- CrowdAnki import expects each generated JSON file to be inside a directory with
+  the same base name.
 - A generated note currently has four fields: `Reading`, `Definition`,
   `Examples`, and `Vocabulary`.
 - Deck templates provide the CrowdAnki note model, card templates, CSS, and deck
@@ -113,8 +123,18 @@ cards.
 .
 ├── docs/        Project specifications and decision log
 ├── gcl/         Generation Control Files
-├── generated/   Generated CrowdAnki deck artifacts
-└── templates/   CrowdAnki deck templates
+├── templates/   CrowdAnki deck templates
+└── <deck>_crowdanki_deck/
+    └── <deck>_crowdanki_deck.json
+```
+
+Generated deck packages currently live at the project root. For example:
+
+```text
+gcl/n1_vocabulary_generation_control_file.txt
+    ↓
+n1_vocabulary_crowdanki_deck/
+└── n1_vocabulary_crowdanki_deck.json
 ```
 
 Start with the [documentation index](docs/README.md). Important specifications
@@ -134,3 +154,9 @@ The specifications are under active review. Several implementation decisions,
 including stable identity, generation-state storage, command interfaces, and
 quantitative large-file targets, remain open. This README is therefore tentative
 and should evolve with the specifications and implementation.
+
+The current proof-of-concept deck package contains 100 cards derived from the
+first 100 entries of the N1 GCL as it stood at the time of that Update. The first
+10 cards were preserved and 90 new cards were added without duplication:
+
+[`n1_vocabulary_crowdanki_deck/n1_vocabulary_crowdanki_deck.json`](n1_vocabulary_crowdanki_deck/n1_vocabulary_crowdanki_deck.json)

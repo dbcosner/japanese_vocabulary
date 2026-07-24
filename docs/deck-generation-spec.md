@@ -5,9 +5,9 @@
 This specification defines three operations:
 
 - **Derive**: source CrowdAnki JSON to GCL;
-- **Generate**: GCL to a new generated CrowdAnki JSON file; and
-- **Update**: GCL plus its associated generated JSON to an updated generated JSON
-  file.
+- **Generate**: GCL to a new generated CrowdAnki deck package; and
+- **Update**: GCL plus its associated generated deck package to an updated
+  package.
 
 An interface MAY compose operations, but each operation MUST retain its own
 validation boundary, report, and success or failure status.
@@ -49,6 +49,10 @@ Derive MUST NOT:
 
 Its report MUST reconcile source-note count with created entries, entries skipped
 under an approved rule, and errors.
+
+After initial derivation, any later requested vocabulary additions MUST be
+appended to the end of the authoritative GCL as required by
+`generation-control-file-spec.md`.
 
 ### 2.3 Atomicity
 
@@ -108,6 +112,41 @@ Overwrite publication MUST occur only after the replacement deck has been
 completely written and validated. A write failure MUST NOT leave a truncated file
 at the requested path.
 
+### 3.4 Package naming and layout
+
+CrowdAnki import requires a deck JSON file to reside in a directory whose name
+matches the JSON filename without `.json`.
+
+Version 1 GCL filenames MUST follow:
+
+```text
+<deck-name>_generation_control_file.txt
+```
+
+Generate MUST derive:
+
+```text
+<deck-name>_crowdanki_deck/
+└── <deck-name>_crowdanki_deck.json
+```
+
+The package directory MUST be created at the project root. The shared
+`generated/` container proposed earlier is not part of the current layout.
+
+For example:
+
+```text
+gcl/n1_vocabulary_generation_control_file.txt
+    ↓
+n1_vocabulary_crowdanki_deck/
+└── n1_vocabulary_crowdanki_deck.json
+```
+
+Generate MUST reject a GCL filename that does not match the version 1 naming
+pattern unless an explicit future specification defines another mapping. Generate
+MUST create the package directory when it does not exist and overwrite the JSON
+file when it does.
+
 ## 4. Update operation
 
 ### 4.1 Inputs and association
@@ -115,7 +154,7 @@ at the requested path.
 Update accepts:
 
 - one valid authoritative GCL;
-- one existing generated CrowdAnki JSON file associated with that GCL;
+- one existing generated deck package associated with that GCL;
 - required generation state;
 - a compatible template and configuration; and
 - the approved content-generation mechanism.
@@ -138,11 +177,20 @@ Update MUST classify entries as at least:
 - removed from the GCL; or
 - ambiguous or unmatchable.
 
+Classification MUST occur before content generation. An entry that matches an
+existing generated-note identity MUST NOT also be classified as new. Matching by
+written vocabulary alone is insufficient because separately annotated readings
+of the same written expression are distinct entries.
+
 ### 4.3 Application
 
 Update MUST generate content only for new or explicitly regenerated entries.
 Previously generated unchanged entries MUST retain their existing field contents
 and stable card identity.
+
+Update MUST emit at most one note for each distinct GCL entry identity. When the
+associated deck already contains that identity, Update MUST preserve or explicitly
+regenerate the existing note rather than append a duplicate.
 
 A changed annotation can change interpretation and MUST NOT be treated as harmless
 formatting. A changed previously generated entry MUST NOT be regenerated unless
@@ -158,6 +206,10 @@ their notes.
 
 Update MUST emit a complete CrowdAnki JSON file, not a patch fragment. It MUST
 validate the complete proposed deck before publication.
+
+Update MUST preserve the package naming and layout contract. It MUST read and
+replace the JSON file inside the associated package directory rather than create a
+bare JSON file elsewhere.
 
 ### 4.4 External drift
 
@@ -182,6 +234,10 @@ An entry identity mechanism MUST:
 - prevent accidental duplication; and
 - serve both Generate and Update.
 
+Identity MUST distinguish entries such as `脅かす[おどかす]` and
+`脅かす[おびやかす]`, even though both produce `脅かす` in the `Vocabulary`
+field.
+
 Generate MUST establish the identity information required by later Update.
 Physical line number alone MUST NOT be used as stable identity. The identity key,
 GUID algorithm, and state store remain open questions.
@@ -201,10 +257,12 @@ For every operation:
 A streaming parser MAY be used. Quantitative size and memory requirements remain
 to be decided.
 
-## 7. Generated JSON requirements
+## 7. Generated package requirements
 
 Generate and Update outputs MUST:
 
+- use a package directory and JSON file with identical base names;
+- reside at the project root;
 - be valid UTF-8 JSON representing a CrowdAnki `Deck`;
 - contain exactly the intended generated notes after required GCL removals;
 - use the four specified fields in the correct order;

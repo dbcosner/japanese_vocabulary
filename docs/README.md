@@ -54,6 +54,9 @@ as normative requirement terms.
   reflect its authoritative GCL.
 - **Associated generated deck**: a generated CrowdAnki JSON file that can be
   reliably identified as belonging to a particular GCL.
+- **Generated deck package**: a directory containing one primary CrowdAnki JSON
+  file and any future package assets. The directory and JSON file have the same
+  base name.
 - **Previously generated entry**: an entry that the generator can reliably match
   to an existing generated card using the project’s eventual identity mechanism.
 - **Editorial annotation**: GCL metadata such as `[reading]` or `(な)` that guides
@@ -65,6 +68,9 @@ as normative requirement terms.
 - `templates/N1_vocabulary_-_CrowdAnki/deck.json` is the current generated-deck
   template and defines the fields `Reading`, `Definition`, `Examples`, and
   `Vocabulary`.
+- `n1_vocabulary_crowdanki_deck/n1_vocabulary_crowdanki_deck.json` is the package
+  path derived from that GCL name. The current proof-of-concept package contains
+  100 notes.
 
 Repository artifacts do not override these specifications merely because they
 exist. Differences MUST be reported and deliberately reconciled.

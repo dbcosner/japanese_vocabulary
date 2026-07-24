@@ -48,7 +48,7 @@ Derive MUST NOT modify its source JSON.
 | --- | --- |
 | Primary input | One authoritative GCL |
 | Supporting input | One deck template and generation configuration |
-| Primary output | One new generated CrowdAnki JSON file |
+| Primary output | One new generated CrowdAnki deck package |
 | Authority after success | The GCL remains authoritative |
 
 Generate MUST produce a complete deck; it is not an update of the original source
@@ -63,7 +63,7 @@ its associated GCL.
 | --- | --- |
 | Primary inputs | One authoritative GCL and its associated generated JSON |
 | Supporting input | Generation state, template, and configuration as required |
-| Primary output | One updated generated CrowdAnki JSON file |
+| Primary output | One updated generated CrowdAnki deck package |
 | Authority after success | The GCL remains authoritative |
 
 Update MUST preserve previously generated content and stable note identity where
@@ -72,6 +72,9 @@ deck as the continuing source of truth.
 
 Update MUST:
 
+- match proposed entries against existing generated-note identities before
+  generating content and MUST NOT create a second note for an entry that has
+  already been generated;
 - remove generated notes whose entries were removed from the GCL;
 - require an explicit regeneration request before rewriting a previously generated
   entry whose reading, annotations, or other editorial metadata changed; and
@@ -155,12 +158,14 @@ The system MUST support this conceptual workflow:
 1. Read the authoritative GCL.
 2. Read and verify the associated generated CrowdAnki JSON.
 3. Classify new, unchanged, changed, removed, and explicitly regenerated entries.
-4. Generate and validate content only where required by the update policy.
-5. Preserve previously generated cards byte-for-byte at the field-content level
+4. Confirm that entries classified as existing will not be emitted as duplicate
+   notes.
+5. Generate and validate content only where required by the update policy.
+6. Preserve previously generated cards byte-for-byte at the field-content level
    unless explicit regeneration was requested.
-6. Report notes that will be removed because their GCL entries were removed.
-7. Remove those notes from the proposed output.
-8. Emit a valid updated deck and an Update report.
+7. Report notes that will be removed because their GCL entries were removed.
+8. Remove those notes from the proposed output.
+9. Emit a valid updated deck and an Update report.
 
 Reordering a GCL entry MUST NOT by itself cause content regeneration. The exact
 identity and explicit-regeneration mechanisms are unresolved.
@@ -168,6 +173,10 @@ identity and explicit-regeneration mechanisms are unresolved.
 Generate MUST replace an existing file at its requested output path. This
 replacement is intentional Generate behavior and MUST NOT be interpreted as
 Update.
+
+Generated deck packages MUST use the directory and filename convention defined in
+`deck-generation-spec.md`. CrowdAnki import compatibility requires the JSON file
+to reside in a directory with the same base name.
 
 ## 7. Large-input behavior
 

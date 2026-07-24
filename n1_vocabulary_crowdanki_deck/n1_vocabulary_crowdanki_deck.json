@@ -1,0 +1,1606 @@
+{
+    "__type__":  "Deck",
+    "children":  [
+
+                 ],
+    "crowdanki_uuid":  "21dfd126-8775-11f1-95cc-e86538524e44",
+    "deck_config_uuid":  "21dfd63c-8775-11f1-b1fd-e86538524e44",
+    "deck_configurations":  [
+                                {
+                                    "__type__":  "DeckConfig",
+                                    "answerAction":  0,
+                                    "autoplay":  true,
+                                    "buryInterdayLearning":  false,
+                                    "crowdanki_uuid":  "21dfd63c-8775-11f1-b1fd-e86538524e44",
+                                    "desiredRetention":  0.9,
+                                    "dyn":  false,
+                                    "easyDaysPercentages":  [
+                                                                1.0,
+                                                                1.0,
+                                                                1.0,
+                                                                1.0,
+                                                                1.0,
+                                                                1.0,
+                                                                1.0
+                                                            ],
+                                    "fsrsParams5":  [
+
+                                                    ],
+                                    "fsrsParams6":  [
+
+                                                    ],
+                                    "fsrsWeights":  [
+
+                                                    ],
+                                    "ignoreRevlogsBeforeDate":  "",
+                                    "interdayLearningMix":  0,
+                                    "lapse":  {
+                                                  "delays":  [
+                                                                 10.0
+                                                             ],
+                                                  "leechAction":  1,
+                                                  "leechFails":  8,
+                                                  "minInt":  1,
+                                                  "mult":  0.0
+                                              },
+                                    "maxTaken":  60,
+                                    "name":  "Default",
+                                    "new":  {
+                                                "bury":  false,
+                                                "delays":  [
+                                                               1.0,
+                                                               10.0
+                                                           ],
+                                                "initialFactor":  2500,
+                                                "ints":  [
+                                                             1,
+                                                             4,
+                                                             0
+                                                         ],
+                                                "order":  1,
+                                                "perDay":  5,
+                                                "separate":  true
+                                            },
+                                    "newGatherPriority":  4,
+                                    "newMix":  0,
+                                    "newPerDayMinimum":  0,
+                                    "newSortOrder":  0,
+                                    "questionAction":  0,
+                                    "replayq":  true,
+                                    "rev":  {
+                                                "bury":  false,
+                                                "ease4":  1.3,
+                                                "fuzz":  0.05,
+                                                "hardFactor":  1.2,
+                                                "ivlFct":  1.0,
+                                                "maxIvl":  36500,
+                                                "minSpace":  1,
+                                                "perDay":  200
+                                            },
+                                    "reviewOrder":  0,
+                                    "secondsToShowAnswer":  0.0,
+                                    "secondsToShowQuestion":  0.0,
+                                    "sm2Retention":  0.9,
+                                    "stopTimerOnAnswer":  false,
+                                    "timer":  0,
+                                    "waitForAudio":  false,
+                                    "weightSearch":  ""
+                                }
+                            ],
+    "desc":  "",
+    "desiredRetention":  null,
+    "dyn":  0,
+    "extendNew":  0,
+    "extendRev":  0,
+    "media_files":  [
+
+                    ],
+    "name":  "N1 vocabulary",
+    "newLimit":  null,
+    "newLimitToday":  null,
+    "note_models":  [
+                        {
+                            "__type__":  "NoteModel",
+                            "crowdanki_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                            "css":  ".card {\n  font-family: \"Noto Sans JP\", sans-serif;\n  font-size: 24px;\n  line-height: 1.6;\n  text-align: left;\n  padding: 20px;\n}\n\n.reading {\n  font-size: 1.5em;\n  margin-bottom: 0.75em;\n}\n\n.definition {\n  margin-bottom: 1em;\n}\n\n.examples {\n  font-size: 0.95em;\n}\n\n.vocabulary {\n  text-align: center;\n  font-size: 2em;\n  font-weight: bold;\n}",
+                            "flds":  [
+                                         {
+                                             "collapsed":  false,
+                                             "description":  "Hiragana reading with kanji portions in bold.",
+                                             "excludeFromSearch":  false,
+                                             "font":  "Arial",
+                                             "id":  -4397371654829878026,
+                                             "name":  "Reading",
+                                             "ord":  0,
+                                             "plainText":  false,
+                                             "preventDeletion":  false,
+                                             "rtl":  false,
+                                             "size":  20,
+                                             "sticky":  false,
+                                             "tag":  null
+                                         },
+                                         {
+                                             "collapsed":  false,
+                                             "description":  "Concise Japanese definition.",
+                                             "excludeFromSearch":  false,
+                                             "font":  "Arial",
+                                             "id":  -6342329306014285613,
+                                             "name":  "Definition",
+                                             "ord":  1,
+                                             "plainText":  false,
+                                             "preventDeletion":  false,
+                                             "rtl":  false,
+                                             "size":  20,
+                                             "sticky":  false,
+                                             "tag":  null
+                                         },
+                                         {
+                                             "collapsed":  false,
+                                             "description":  "Three to five natural Japanese example sentences.",
+                                             "excludeFromSearch":  false,
+                                             "font":  "Arial",
+                                             "id":  398900363108548560,
+                                             "name":  "Examples",
+                                             "ord":  2,
+                                             "plainText":  false,
+                                             "preventDeletion":  false,
+                                             "rtl":  false,
+                                             "size":  20,
+                                             "sticky":  false,
+                                             "tag":  null
+                                         },
+                                         {
+                                             "collapsed":  false,
+                                             "description":  "Original vocabulary term (displayed only on the back).",
+                                             "excludeFromSearch":  false,
+                                             "font":  "Arial",
+                                             "id":  7400811796498785658,
+                                             "name":  "Vocabulary",
+                                             "ord":  3,
+                                             "plainText":  false,
+                                             "preventDeletion":  false,
+                                             "rtl":  false,
+                                             "size":  20,
+                                             "sticky":  false,
+                                             "tag":  null
+                                         }
+                                     ],
+                            "latexPost":  "\\end{document}",
+                            "latexPre":  "\\documentclass[12pt]{article}\n\\special{papersize=3in,5in}\n\\usepackage[utf8]{inputenc}\n\\usepackage{amssymb,amsmath}\n\\pagestyle{empty}\n\\setlength{\\parindent}{0in}\n\\begin{document}\n",
+                            "latexsvg":  false,
+                            "name":  "Japanese vocabulary with CrowdAnki - Note",
+                            "originalStockKind":  1,
+                            "req":  [
+                                        [
+                                            0,
+                                            "any",
+                                            [
+                                                0,
+                                                1,
+                                                2
+                                            ]
+                                        ]
+                                    ],
+                            "sortf":  0,
+                            "tmpls":  [
+                                          {
+                                              "afmt":  "{{FrontSide}}\n\n\u003chr id=\"answer\"\u003e\n\n\u003csection class=\"vocabulary\"\u003e\n{{Vocabulary}}\n\u003c/section\u003e",
+                                              "bafmt":  "",
+                                              "bfont":  "",
+                                              "bqfmt":  "{{Reading}}",
+                                              "bsize":  0,
+                                              "did":  null,
+                                              "id":  4105900049365813736,
+                                              "name":  "Japanese vocabulary with CrowdAnki - Default template",
+                                              "ord":  0,
+                                              "qfmt":  "\u003csection class=\"reading\"\u003e\n{{Reading}}\n\u003c/section\u003e\n\n\u003csection class=\"definition\"\u003e\n{{Definition}}\n\u003c/section\u003e\n\n\u003csection class=\"examples\"\u003e\n{{Examples}}\n\u003c/section\u003e"
+                                          }
+                                      ],
+                            "type":  0
+                        }
+                    ],
+    "notes":  [
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eあ\u003c/b\u003eう",
+                                     "好ましくない出来事や災難を、思いがけず経験する。",
+                                     "\u003cdiv\u003e旅行中に盗難に\u003cb\u003eあった\u003c/b\u003eが、幸いけがはなかった。\u003c/div\u003e\n\u003cdiv\u003e同じような目に\u003cb\u003eあわない\u003c/b\u003eよう、十分に注意してください。\u003c/div\u003e\n\u003cdiv\u003e彼は帰宅途中で交通事故に\u003cb\u003eあい\u003c/b\u003e、しばらく入院することになった。\u003c/div\u003e",
+                                     "遭う"
+                                 ],
+                      "guid":  "n1vocab001",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eか\u003c/b\u003eう",
+                                     "動物に餌や生活場所を与え、継続して世話をする。",
+                                     "\u003cdiv\u003e子どもの頃、庭で大きな犬を\u003cb\u003eかって\u003c/b\u003eいた。\u003c/div\u003e\n\u003cdiv\u003eこの建物ではペットを\u003cb\u003eかう\u003c/b\u003eことが禁止されている。\u003c/div\u003e\n\u003cdiv\u003e生き物を\u003cb\u003eかう\u003c/b\u003eなら、最後まで責任を持って世話をしなければならない。\u003c/div\u003e",
+                                     "飼う"
+                                 ],
+                      "guid":  "n1vocab002",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eそ\u003c/b\u003eう",
+                                     "長く続くもののそばを離れずに進む。また、方針・目的・期待などに従う。",
+                                     "\u003cdiv\u003e川に\u003cb\u003eそって\u003c/b\u003e歩くと、やがて小さな滝が見えてくる。\u003c/div\u003e\n\u003cdiv\u003e会社は利用者の要望に\u003cb\u003eそう\u003c/b\u003e形でサービスを改善した。\u003c/div\u003e\n\u003cdiv\u003e当初の計画に\u003cb\u003eそわない\u003c/b\u003e提案だったため、今回は採用されなかった。\u003c/div\u003e",
+                                     "沿う"
+                                 ],
+                      "guid":  "n1vocab003",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eぬ\u003c/b\u003eう",
+                                     "糸を通した針を布などに繰り返し刺して、つなぎ合わせたり形を作ったりする。また、物の間を通り抜ける。",
+                                     "\u003cdiv\u003e祖母は破れた袖を丁寧に\u003cb\u003eぬって\u003c/b\u003eくれた。\u003c/div\u003e\n\u003cdiv\u003e舞台衣装は、職人が一着ずつ手で\u003cb\u003eぬって\u003c/b\u003eいる。\u003c/div\u003e\n\u003cdiv\u003e救急車は渋滞する車の間を\u003cb\u003eぬう\u003c/b\u003eようにして現場へ向かった。\u003c/div\u003e",
+                                     "縫う"
+                                 ],
+                      "guid":  "n1vocab004",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eよ\u003c/b\u003eう",
+                                     "酒の作用で意識や判断力が普段と異なる状態になる。また、乗り物の揺れなどで気分が悪くなる。",
+                                     "\u003cdiv\u003e彼は少し酒を飲んだだけで顔が赤くなり、すぐに\u003cb\u003eよって\u003c/b\u003eしまう。\u003c/div\u003e\n\u003cdiv\u003e昨夜はひどく\u003cb\u003eよって\u003c/b\u003eいたので、会話の内容をほとんど覚えていない。\u003c/div\u003e\n\u003cdiv\u003e船に\u003cb\u003eよわない\u003c/b\u003eよう、出発前に薬を飲んでおいた。\u003c/div\u003e",
+                                     "酔う"
+                                 ],
+                      "guid":  "n1vocab005",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eうば\u003c/b\u003eう",
+                                     "他人が持つ物・権利・機会などを、強制的に取り上げて失わせる。",
+                                     "\u003cdiv\u003eその災害は、多くの人から住まいと仕事を\u003cb\u003eうばった\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e一瞬の油断が、逆転の機会を\u003cb\u003eうばう\u003c/b\u003e結果になった。\u003c/div\u003e\n\u003cdiv\u003e表現の自由を\u003cb\u003eうばわれて\u003c/b\u003eは、健全な議論は成り立たない。\u003c/div\u003e",
+                                     "奪う"
+                                 ],
+                      "guid":  "n1vocab006",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eおお\u003c/b\u003eう",
+                                     "物の上や周囲に広がって、外から見えない状態にする。また、広い範囲を一面に満たす。",
+                                     "\u003cdiv\u003e山頂は厚い雲に\u003cb\u003eおおわれて\u003c/b\u003e、まったく見えなかった。\u003c/div\u003e\n\u003cdiv\u003e作業中は機械全体を防水シートで\u003cb\u003eおおって\u003c/b\u003eください。\u003c/div\u003e\n\u003cdiv\u003e知らせを聞いた瞬間、会場は重苦しい沈黙に\u003cb\u003eおおわれた\u003c/b\u003e。\u003c/div\u003e",
+                                     "覆う"
+                                 ],
+                      "guid":  "n1vocab007",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eくる\u003c/b\u003eう",
+                                     "正常な状態や一定の基準から外れる。特に、判断・感覚・機械・予定などが本来どおりでなくなる。",
+                                     "\u003cdiv\u003e急な仕様変更で、開発の予定が大きく\u003cb\u003eくるって\u003c/b\u003eしまった。\u003c/div\u003e\n\u003cdiv\u003eこの時計は古いが、一日に数秒しか\u003cb\u003eくるわない\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e距離感が\u003cb\u003eくるう\u003c/b\u003eと危険なので、霧の中では慎重に運転してほしい。\u003c/div\u003e",
+                                     "狂う"
+                                 ],
+                      "guid":  "n1vocab008",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eさそ\u003c/b\u003eう",
+                                     "相手に声をかけて、一緒に何かをするよう勧める。また、ある感情や反応を引き起こす。",
+                                     "\u003cdiv\u003e同僚を食事に\u003cb\u003eさそった\u003c/b\u003eが、今日は都合が悪いそうだ。\u003c/div\u003e\n\u003cdiv\u003e経験の浅い社員も\u003cb\u003eさそって\u003c/b\u003e、勉強会を開くことにした。\u003c/div\u003e\n\u003cdiv\u003e彼の巧みな話し方は、会場から大きな笑いを\u003cb\u003eさそった\u003c/b\u003e。\u003c/div\u003e",
+                                     "誘う"
+                                 ],
+                      "guid":  "n1vocab009",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eちか\u003c/b\u003eう",
+                                     "決意や約束を偽らずに守ると、強い意志をもって心に決める。",
+                                     "\u003cdiv\u003e二度と同じ過ちを繰り返さないと心に\u003cb\u003eちかった\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e選手たちは、来年こそ優勝すると\u003cb\u003eちかい\u003c/b\u003e合った。\u003c/div\u003e\n\u003cdiv\u003e法廷で真実だけを述べることを\u003cb\u003eちかって\u003c/b\u003eください。\u003c/div\u003e",
+                                     "誓う"
+                                 ],
+                      "guid":  "n1vocab010",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eなら\u003c/b\u003eう",
+                                     "ある手本や方法をまねて、それと同じように行う。",
+                                     "\u003cdiv\u003e先進国の制度に\u003cb\u003eならって\u003c/b\u003e、新しい基準が導入された。\u003c/div\u003e\n\u003cdiv\u003e前例に\u003cb\u003eならう\u003c/b\u003eだけでは、問題の根本的な解決にはならない。\u003c/div\u003e\n\u003cdiv\u003e職人は師匠の技に\u003cb\u003eならい\u003c/b\u003eながら、独自の作風を築いた。\u003c/div\u003e",
+                                     "倣う"
+                                 ],
+                      "guid":  "n1vocab011",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eあつか\u003c/b\u003eう",
+                                     "物を操作したり、ある問題を取り上げたり、人に一定の態度で接したりする。",
+                                     "\u003cdiv\u003eこの薬品は危険なので、慎重に\u003cb\u003eあつかって\u003c/b\u003eください。\u003c/div\u003e\n\u003cdiv\u003e今回の講義では、現代社会の格差問題を\u003cb\u003eあつかう\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e彼は部下を公平に\u003cb\u003eあつかう\u003c/b\u003eことで信頼されている。\u003c/div\u003e",
+                                     "扱う"
+                                 ],
+                      "guid":  "n1vocab012",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eしたが\u003c/b\u003eう",
+                                     "命令・規則・方針などを守って行動する。また、あるものの後について進む。",
+                                     "\u003cdiv\u003e係員の指示に\u003cb\u003eしたがって\u003c/b\u003e、順番に入場してください。\u003c/div\u003e\n\u003cdiv\u003e規則に\u003cb\u003eしたがわない\u003c/b\u003e場合、利用を断ることがある。\u003c/div\u003e\n\u003cdiv\u003e川の流れに\u003cb\u003eしたがって\u003c/b\u003e下流へ進んだ。\u003c/div\u003e",
+                                     "従う"
+                                 ],
+                      "guid":  "n1vocab013",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eともな\u003c/b\u003eう",
+                                     "ある事柄が起こるのと同時に、別の事柄が付随して起こる。",
+                                     "\u003cdiv\u003e制度の変更には大きな混乱が\u003cb\u003eともなう\u003c/b\u003e可能性がある。\u003c/div\u003e\n\u003cdiv\u003e経済成長に\u003cb\u003eともなって\u003c/b\u003e、都市の人口も増加した。\u003c/div\u003e\n\u003cdiv\u003e責任を\u003cb\u003eともなわない\u003c/b\u003e権限は認められるべきではない。\u003c/div\u003e",
+                                     "伴う"
+                                 ],
+                      "guid":  "n1vocab014",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eき\u003c/b\u003eく",
+                                     "音楽や話に意識を向け、内容や響きを注意深く受け取る。",
+                                     "\u003cdiv\u003e休日には自宅でクラシック音楽を\u003cb\u003eきく\u003c/b\u003eことが多い。\u003c/div\u003e\n\u003cdiv\u003e専門家の講演をじっくり\u003cb\u003eきいて\u003c/b\u003e、理解を深めた。\u003c/div\u003e\n\u003cdiv\u003eこの曲は静かな場所で\u003cb\u003eきく\u003c/b\u003eと、細かな表現まで味わえる。\u003c/div\u003e",
+                                     "聴く"
+                                 ],
+                      "guid":  "n1vocab015",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eさ\u003c/b\u003eく",
+                                     "一続きの物を強く引っ張るなどして、二つ以上に分ける。",
+                                     "\u003cdiv\u003e古い布を細長く\u003cb\u003eさいて\u003c/b\u003e、ひもとして再利用した。\u003c/div\u003e\n\u003cdiv\u003e封筒を乱暴に\u003cb\u003eさく\u003c/b\u003eと、中の書類まで破れるおそれがある。\u003c/div\u003e\n\u003cdiv\u003e二人の仲を\u003cb\u003eさく\u003c/b\u003eような発言は慎むべきだ。\u003c/div\u003e",
+                                     "裂く"
+                                 ],
+                      "guid":  "n1vocab016",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eさ\u003c/b\u003eける",
+                                     "引っ張る力などによって、一続きだった物に切れ目ができる。",
+                                     "\u003cdiv\u003e重い荷物を入れたため、袋の底が\u003cb\u003eさけて\u003c/b\u003eしまった。\u003c/div\u003e\n\u003cdiv\u003e傷んだ生地は、少し引っ張っただけでも\u003cb\u003eさける\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e雷が落ち、古い木の幹が二つに\u003cb\u003eさけた\u003c/b\u003e。\u003c/div\u003e",
+                                     "裂ける"
+                                 ],
+                      "guid":  "n1vocab017",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eし\u003c/b\u003eく",
+                                     "平らな面に物を広げて置く。また、制度や設備を広く行き渡らせる。",
+                                     "\u003cdiv\u003e床に布団を\u003cb\u003eしいて\u003c/b\u003e、客が休めるようにした。\u003c/div\u003e\n\u003cdiv\u003e工事現場の周囲には安全柵が\u003cb\u003eしかれて\u003c/b\u003eいる。\u003c/div\u003e\n\u003cdiv\u003e政府は全国に厳しい規制を\u003cb\u003eしく\u003c/b\u003e方針を示した。\u003c/div\u003e",
+                                     "敷く"
+                                 ],
+                      "guid":  "n1vocab018",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eた\u003c/b\u003eく",
+                                     "米などの穀物に水を加え、加熱して食べられる状態にする。",
+                                     "\u003cdiv\u003e朝食のために、毎朝六時に米を\u003cb\u003eたく\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e水の量を間違えたので、ご飯が硬く\u003cb\u003eたけて\u003c/b\u003eしまった。\u003c/div\u003e\n\u003cdiv\u003eキャンプでは鍋を使ってご飯を\u003cb\u003eたいた\u003c/b\u003e。\u003c/div\u003e",
+                                     "炊く"
+                                 ],
+                      "guid":  "n1vocab019",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eは\u003c/b\u003eく",
+                                     "口や体内にある物を外へ出す。また、心中の言葉を口に出す。",
+                                     "\u003cdiv\u003e気分が悪くなり、食べた物を\u003cb\u003eはいて\u003c/b\u003eしまった。\u003c/div\u003e\n\u003cdiv\u003e彼は最後まで弱音を\u003cb\u003eはかなかった\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e息をゆっくり\u003cb\u003eはいて\u003c/b\u003eから、もう一度深く吸ってください。\u003c/div\u003e",
+                                     "吐く"
+                                 ],
+                      "guid":  "n1vocab020",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eは\u003c/b\u003eく",
+                                     "靴・靴下・ズボンなどを足や下半身につける。",
+                                     "\u003cdiv\u003e雨の日は滑りにくい靴を\u003cb\u003eはいた\u003c/b\u003eほうがよい。\u003c/div\u003e\n\u003cdiv\u003e会場では室内用の上履きを\u003cb\u003eはいて\u003c/b\u003eください。\u003c/div\u003e\n\u003cdiv\u003e彼は式典に黒いズボンを\u003cb\u003eはいて\u003c/b\u003e出席した。\u003c/div\u003e",
+                                     "履く"
+                                 ],
+                      "guid":  "n1vocab021",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eえが\u003c/b\u003eく",
+                                     "形や情景を絵に表す。また、考えや出来事を文章などで具体的に表現する。",
+                                     "\u003cdiv\u003e画家は故郷の海を鮮やかな色彩で\u003cb\u003eえがいた\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003eこの小説は、戦後を生きた家族の姿を丁寧に\u003cb\u003eえがいて\u003c/b\u003eいる。\u003c/div\u003e\n\u003cdiv\u003e将来の理想像を心に\u003cb\u003eえがくだけ\u003c/b\u003eでなく、行動に移す必要がある。\u003c/div\u003e",
+                                     "描く"
+                                 ],
+                      "guid":  "n1vocab022",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eかわ\u003c/b\u003eく",
+                                     "水分が不足して、強く水を欲する状態になる。",
+                                     "\u003cdiv\u003e長時間歩いたので、喉がひどく\u003cb\u003eかわいた\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e運動中は\u003cb\u003eかわきを\u003c/b\u003e感じる前に水分を取ったほうがよい。\u003c/div\u003e\n\u003cdiv\u003e塩辛い物を食べると喉が\u003cb\u003eかわく\u003c/b\u003e。\u003c/div\u003e",
+                                     "渇く"
+                                 ],
+                      "guid":  "n1vocab023",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eくだ\u003c/b\u003eく",
+                                     "硬い物に力を加えて細かくする。また、難しい内容を分かりやすくする。",
+                                     "\u003cdiv\u003e氷を細かく\u003cb\u003eくだいて\u003c/b\u003e、飲み物に入れた。\u003c/div\u003e\n\u003cdiv\u003e専門用語を\u003cb\u003eくだいて\u003c/b\u003e説明すると、初心者にも伝わりやすい。\u003c/div\u003e\n\u003cdiv\u003e相手の自信を\u003cb\u003eくだく\u003c/b\u003eような言い方は避けたい。\u003c/div\u003e",
+                                     "砕く"
+                                 ],
+                      "guid":  "n1vocab024",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eくだ\u003c/b\u003eける",
+                                     "硬い物が細かく壊れる。また、態度や表現が堅苦しくなくなる。",
+                                     "\u003cdiv\u003e落とした皿が床で粉々に\u003cb\u003eくだけた\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e少し\u003cb\u003eくだけた\u003c/b\u003e表現のほうが、親しみやすく感じられる。\u003c/div\u003e\n\u003cdiv\u003e会議の後半になると、場の雰囲気も\u003cb\u003eくだけて\u003c/b\u003eきた。\u003c/div\u003e",
+                                     "砕ける"
+                                 ],
+                      "guid":  "n1vocab025",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eひび\u003c/b\u003eく",
+                                     "音や振動が広がって伝わる。また、影響が後まで及ぶ。",
+                                     "\u003cdiv\u003e鐘の音が静かな谷に\u003cb\u003eひびいた\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e寝不足が翌日の仕事に\u003cb\u003eひびかない\u003c/b\u003eよう、早めに休んだ。\u003c/div\u003e\n\u003cdiv\u003e彼の言葉は聴衆の心に深く\u003cb\u003eひびいた\u003c/b\u003e。\u003c/div\u003e",
+                                     "響く"
+                                 ],
+                      "guid":  "n1vocab026",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eかがや\u003c/b\u003eく",
+                                     "強い光を放つ。また、能力や魅力が際立って見える。",
+                                     "\u003cdiv\u003e朝日を受けて、湖の表面が金色に\u003cb\u003eかがやいて\u003c/b\u003eいた。\u003c/div\u003e\n\u003cdiv\u003e彼女は舞台の上で誰よりも\u003cb\u003eかがやいて\u003c/b\u003e見えた。\u003c/div\u003e\n\u003cdiv\u003e目標を語る子どもたちの目が\u003cb\u003eかがやいて\u003c/b\u003eいる。\u003c/div\u003e",
+                                     "輝く"
+                                 ],
+                      "guid":  "n1vocab027",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eぬ\u003c/b\u003eぐ",
+                                     "身につけている衣服・靴・帽子などを体から外す。",
+                                     "\u003cdiv\u003e玄関で靴を\u003cb\u003eぬいで\u003c/b\u003eから部屋に入ってください。\u003c/div\u003e\n\u003cdiv\u003e暑くなったので、上着を\u003cb\u003eぬいだ\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e彼は長年の経験を生かし、一肌\u003cb\u003eぬぐ\u003c/b\u003eことを約束した。\u003c/div\u003e",
+                                     "脱ぐ"
+                                 ],
+                      "guid":  "n1vocab028",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eかせ\u003c/b\u003eぐ",
+                                     "働いたり事業を行ったりして収入を得る。また、時間や得点などを確保する。",
+                                     "\u003cdiv\u003e学生の頃はアルバイトで生活費を\u003cb\u003eかせいで\u003c/b\u003eいた。\u003c/div\u003e\n\u003cdiv\u003e交渉を長引かせて時間を\u003cb\u003eかせぐ\u003c/b\u003e作戦らしい。\u003c/div\u003e\n\u003cdiv\u003e後半に追加点を\u003cb\u003eかせいで\u003c/b\u003e、チームは勝利した。\u003c/div\u003e",
+                                     "稼ぐ"
+                                 ],
+                      "guid":  "n1vocab029",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eさわ\u003c/b\u003eぐ",
+                                     "大きな声や音を出して、落ち着かない状態になる。",
+                                     "\u003cdiv\u003e夜遅く廊下で\u003cb\u003eさわぐ\u003c/b\u003eと、ほかの客の迷惑になる。\u003c/div\u003e\n\u003cdiv\u003e子どもたちは珍しい動物を見て\u003cb\u003eさわいで\u003c/b\u003eいた。\u003c/div\u003e\n\u003cdiv\u003eまだ事実が分からないうちから\u003cb\u003eさわぐ\u003c/b\u003eべきではない。\u003c/div\u003e",
+                                     "騒ぐ"
+                                 ],
+                      "guid":  "n1vocab030",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eう\u003c/b\u003eつ",
+                                     "敵や反逆者などを攻撃して倒す、または処罰する。",
+                                     "\u003cdiv\u003e武将は大軍を率いて敵を\u003cb\u003eうった\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e主君の敵を\u003cb\u003eうつ\u003c/b\u003eため、長い年月をかけて機会を待った。\u003c/div\u003e\n\u003cdiv\u003e不正を\u003cb\u003eうつ\u003c/b\u003eという名目で、厳しい取り締まりが行われた。\u003c/div\u003e",
+                                     "討つ"
+                                 ],
+                      "guid":  "n1vocab031",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eう\u003c/b\u003eつ",
+                                     "銃や武器で弾を発射する。また、狙った対象を攻撃する。",
+                                     "\u003cdiv\u003e警官は空に向けて警告弾を\u003cb\u003eうった\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e標的を正確に\u003cb\u003eうつ\u003c/b\u003eには、呼吸を整える必要がある。\u003c/div\u003e\n\u003cdiv\u003e無関係な人を\u003cb\u003eうたない\u003c/b\u003eよう、攻撃は中止された。\u003c/div\u003e",
+                                     "撃つ"
+                                 ],
+                      "guid":  "n1vocab032",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eさ\u003c/b\u003eす",
+                                     "細長い物を、物の間や内部へ差し入れる。",
+                                     "\u003cdiv\u003e花瓶に新しい花を\u003cb\u003eさして\u003c/b\u003e、玄関に飾った。\u003c/div\u003e\n\u003cdiv\u003e読みかけのページにしおりを\u003cb\u003eさして\u003c/b\u003eおいた。\u003c/div\u003e\n\u003cdiv\u003eコンセントにプラグを\u003cb\u003eさす\u003c/b\u003e前に、電源を確認してください。\u003c/div\u003e",
+                                     "挿す"
+                                 ],
+                      "guid":  "n1vocab033",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eと\u003c/b\u003eぶ",
+                                     "地面を強く蹴り、空中へ勢いよく上がる。",
+                                     "\u003cdiv\u003e選手は助走をつけて高く\u003cb\u003eとんだ\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e子どもが水たまりを\u003cb\u003eとび\u003c/b\u003e越えて走っていった。\u003c/div\u003e\n\u003cdiv\u003e驚いた猫が棚の上へ\u003cb\u003eとび\u003c/b\u003e上がった。\u003c/div\u003e",
+                                     "跳ぶ"
+                                 ],
+                      "guid":  "n1vocab034",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eいた\u003c/b\u003eす",
+                                     "「する」をへりくだっていう。また、好ましくない結果を引き起こす。",
+                                     "\u003cdiv\u003e詳しい内容は、後ほど私からご説明\u003cb\u003eいたします\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003eご迷惑をおかけ\u003cb\u003eいたしました\u003c/b\u003eことを、深くおわび申し上げます。\u003c/div\u003e\n\u003cdiv\u003e今回の混乱は、私の不徳の\u003cb\u003eいたす\u003c/b\u003eところです。\u003c/div\u003e",
+                                     "致す"
+                                 ],
+                      "guid":  "n1vocab035",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eく\u003c/b\u003eり\u003cb\u003eかえ\u003c/b\u003eす",
+                                     "同じことを何度も行ったり、同じ状態が何度も起こったりする。",
+                                     "\u003cdiv\u003e失敗を\u003cb\u003eくりかえさない\u003c/b\u003eため、原因を詳しく調べた。\u003c/div\u003e\n\u003cdiv\u003eこの地域では小さな地震が\u003cb\u003eくりかえされて\u003c/b\u003eいる。\u003c/div\u003e\n\u003cdiv\u003e何度も練習を\u003cb\u003eくりかえす\u003c/b\u003eうちに、自然にできるようになった。\u003c/div\u003e",
+                                     "繰り返す"
+                                 ],
+                      "guid":  "n1vocab036",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eはげ\u003c/b\u003eます",
+                                     "元気や自信を失いかけた人に言葉をかけ、力づける。",
+                                     "\u003cdiv\u003e落ち込んでいる友人を\u003cb\u003eはげます\u003c/b\u003eため、食事に誘った。\u003c/div\u003e\n\u003cdiv\u003e観客の声援に\u003cb\u003eはげまされて\u003c/b\u003e、最後まで走り切ることができた。\u003c/div\u003e\n\u003cdiv\u003e互いに\u003cb\u003eはげまし\u003c/b\u003e合いながら、厳しい訓練を乗り越えた。\u003c/div\u003e",
+                                     "励ます"
+                                 ],
+                      "guid":  "n1vocab037",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eくず\u003c/b\u003eす",
+                                     "まとまった形や安定した状態を壊す。また、大きな単位を細かくする。",
+                                     "\u003cdiv\u003e積み上げた箱を\u003cb\u003eくずさない\u003c/b\u003eよう、慎重に運んだ。\u003c/div\u003e\n\u003cdiv\u003e体調を\u003cb\u003eくずして\u003c/b\u003e、三日間仕事を休んだ。\u003c/div\u003e\n\u003cdiv\u003e一万円札を\u003cb\u003eくずす\u003c/b\u003eため、売店で飲み物を買った。\u003c/div\u003e",
+                                     "崩す"
+                                 ],
+                      "guid":  "n1vocab038",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eくず\u003c/b\u003eれる",
+                                     "形や均衡が保てなくなって壊れる。また、安定した状態が悪化する。",
+                                     "\u003cdiv\u003e大雨で山の斜面が\u003cb\u003eくずれた\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e終盤に守備の均衡が\u003cb\u003eくずれ\u003c/b\u003e、連続して失点した。\u003c/div\u003e\n\u003cdiv\u003e午後から天気が\u003cb\u003eくずれる\u003c/b\u003e見込みだ。\u003c/div\u003e",
+                                     "崩れる"
+                                 ],
+                      "guid":  "n1vocab039",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eちぢ\u003c/b\u003eむ",
+                                     "物の長さ・面積・規模などが小さくなる。",
+                                     "\u003cdiv\u003eこのセーターは洗濯すると\u003cb\u003eちぢむ\u003c/b\u003eことがある。\u003c/div\u003e\n\u003cdiv\u003e両者の得票差が次第に\u003cb\u003eちぢんで\u003c/b\u003eきた。\u003c/div\u003e\n\u003cdiv\u003e寒さで体が\u003cb\u003eちぢんで\u003c/b\u003e、動きにくかった。\u003c/div\u003e",
+                                     "縮む"
+                                 ],
+                      "guid":  "n1vocab040",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eおど\u003c/b\u003eかす",
+                                     "怖がらせる目的で、驚くようなことを言ったりしたりする。",
+                                     "\u003cdiv\u003e背後から突然声をかけて人を\u003cb\u003eおどかす\u003c/b\u003eのはよくない。\u003c/div\u003e\n\u003cdiv\u003e兄は怖い話をして弟を\u003cb\u003eおどかした\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e冗談で\u003cb\u003eおどかした\u003c/b\u003eだけなのに、彼は本気で怒ってしまった。\u003c/div\u003e",
+                                     "脅かす"
+                                 ],
+                      "guid":  "n1vocab041",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eおびや\u003c/b\u003eかす",
+                                     "安全・地位・生活などを危険な状態にし、存続を不安定にする。",
+                                     "\u003cdiv\u003e新種の病気が地域住民の健康を\u003cb\u003eおびやかして\u003c/b\u003eいる。\u003c/div\u003e\n\u003cdiv\u003e環境破壊は多くの生物の生存を\u003cb\u003eおびやかす\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003eその企業の参入は、既存各社の地位を\u003cb\u003eおびやかした\u003c/b\u003e。\u003c/div\u003e",
+                                     "脅かす"
+                                 ],
+                      "guid":  "n1vocab042",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eく\u003c/b\u003eむ",
+                                     "酒を器に注いで飲む。また、相手の気持ちや事情を推し量る。",
+                                     "\u003cdiv\u003e二人は静かに酒を\u003cb\u003eくみ\u003c/b\u003eながら、昔の話をした。\u003c/div\u003e\n\u003cdiv\u003e事情を\u003cb\u003eくんで\u003c/b\u003e、今回は例外として認めることにした。\u003c/div\u003e\n\u003cdiv\u003e亡き友を思い、一人で杯を\u003cb\u003eくんだ\u003c/b\u003e。\u003c/div\u003e",
+                                     "酌む"
+                                 ],
+                      "guid":  "n1vocab043",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eく\u003c/b\u003eみ\u003cb\u003eか\u003c/b\u003eわす",
+                                     "互いに酒を注ぎ合い、一緒に飲む。",
+                                     "\u003cdiv\u003e久しぶりに会った友人と夜遅くまで酒を\u003cb\u003eくみかわした\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e両国の代表は杯を\u003cb\u003eくみかわし\u003c/b\u003e、友好を誓った。\u003c/div\u003e\n\u003cdiv\u003e世代の違う同僚とも酒を\u003cb\u003eくみかわす\u003c/b\u003eうちに、距離が縮まった。\u003c/div\u003e",
+                                     "酌み交わす"
+                                 ],
+                      "guid":  "n1vocab044",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eす\u003c/b\u003eむ",
+                                     "濁りや曇りがなくなり、清らかで明瞭な状態になる。",
+                                     "\u003cdiv\u003e雨上がりの空気は冷たく\u003cb\u003eすんで\u003c/b\u003eいた。\u003c/div\u003e\n\u003cdiv\u003e彼女の\u003cb\u003eすんだ\u003c/b\u003e歌声が会場に広がった。\u003c/div\u003e\n\u003cdiv\u003e秋が深まるにつれて、夜空がますます\u003cb\u003eすんで\u003c/b\u003e見える。\u003c/div\u003e",
+                                     "澄む"
+                                 ],
+                      "guid":  "n1vocab045",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eす\u003c/b\u003eます",
+                                     "濁りのない状態にする。また、意識を集中して感覚を働かせる。",
+                                     "\u003cdiv\u003e耳を\u003cb\u003eすます\u003c/b\u003eと、遠くから水の音が聞こえた。\u003c/div\u003e\n\u003cdiv\u003e彼は何事もなかったような顔を\u003cb\u003eすまして\u003c/b\u003e座っていた。\u003c/div\u003e\n\u003cdiv\u003e心を\u003cb\u003eすませて\u003c/b\u003e、相手の言葉に集中した。\u003c/div\u003e",
+                                     "澄ます"
+                                 ],
+                      "guid":  "n1vocab046",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eふ\u003c/b\u003eむ",
+                                     "足を物の上に置いて力を加える。また、手順や段階を経る。",
+                                     "\u003cdiv\u003e芝生を\u003cb\u003eふまない\u003c/b\u003eよう、決められた道を歩いてください。\u003c/div\u003e\n\u003cdiv\u003e必要な手続きを\u003cb\u003eふんで\u003c/b\u003eから申請を行う。\u003c/div\u003e\n\u003cdiv\u003eブレーキを強く\u003cb\u003eふんだ\u003c/b\u003eが、車はすぐには止まらなかった。\u003c/div\u003e",
+                                     "踏む"
+                                 ],
+                      "guid":  "n1vocab047",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eうら\u003c/b\u003eむ",
+                                     "ひどい扱いや不利益を受けた相手に、怒りや憎しみを持ち続ける。",
+                                     "\u003cdiv\u003e結果が悪くても、決断した自分以外を\u003cb\u003eうらむ\u003c/b\u003eつもりはない。\u003c/div\u003e\n\u003cdiv\u003e彼は長年、自分を裏切った相手を\u003cb\u003eうらんで\u003c/b\u003eいた。\u003c/div\u003e\n\u003cdiv\u003e運命を\u003cb\u003eうらんでも\u003c/b\u003e、失った時間は戻らない。\u003c/div\u003e",
+                                     "恨む"
+                                 ],
+                      "guid":  "n1vocab048",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eく\u003c/b\u003eやむ",
+                                     "失敗や失われたものを残念に思う。また、亡くなった人を悲しむ。",
+                                     "\u003cdiv\u003eもっと早く相談すればよかったと\u003cb\u003eくやんで\u003c/b\u003eいる。\u003c/div\u003e\n\u003cdiv\u003e過ぎたことをいつまでも\u003cb\u003eくやんでも\u003c/b\u003e仕方がない。\u003c/div\u003e\n\u003cdiv\u003e多くの人が突然の死を\u003cb\u003eくやみ\u003c/b\u003e、別れを惜しんだ。\u003c/div\u003e",
+                                     "悔む"
+                                 ],
+                      "guid":  "n1vocab049",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eふく\u003c/b\u003eらむ",
+                                     "内側から広がって大きくなる。また、量・期待・想像などが増す。",
+                                     "\u003cdiv\u003eパン生地が十分に\u003cb\u003eふくらむ\u003c/b\u003eまで待ってください。\u003c/div\u003e\n\u003cdiv\u003e旅行への期待が日に日に\u003cb\u003eふくらんで\u003c/b\u003eいる。\u003c/div\u003e\n\u003cdiv\u003e当初の予想を超えて、事業費が\u003cb\u003eふくらんだ\u003c/b\u003e。\u003c/div\u003e",
+                                     "膨らむ"
+                                 ],
+                      "guid":  "n1vocab050",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eこ\u003c/b\u003eげる",
+                                     "火や熱が強すぎて、食べ物や物の表面が黒くなる。",
+                                     "\u003cdiv\u003e話に夢中になっている間に、鍋の中身が\u003cb\u003eこげて\u003c/b\u003eしまった。\u003c/div\u003e\n\u003cdiv\u003e肉が\u003cb\u003eこげない\u003c/b\u003eよう、弱火でゆっくり焼く。\u003c/div\u003e\n\u003cdiv\u003e部屋にパンの\u003cb\u003eこげた\u003c/b\u003e匂いが漂っている。\u003c/div\u003e",
+                                     "焦げる"
+                                 ],
+                      "guid":  "n1vocab051",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eに\u003c/b\u003eる",
+                                     "食材を水やだしなどに入れ、火にかけて柔らかくし、味を含ませる。",
+                                     "\u003cdiv\u003e野菜が柔らかくなるまで弱火で\u003cb\u003eにて\u003c/b\u003eください。\u003c/div\u003e\n\u003cdiv\u003eこの料理は長時間\u003cb\u003eにる\u003c/b\u003eほど味がなじむ。\u003c/div\u003e\n\u003cdiv\u003e魚をしょうゆと砂糖で甘辛く\u003cb\u003eにた\u003c/b\u003e。\u003c/div\u003e",
+                                     "煮る"
+                                 ],
+                      "guid":  "n1vocab052",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eみ\u003c/b\u003eる",
+                                     "医師が患者の状態を調べ、病気やけがについて判断する。",
+                                     "\u003cdiv\u003e熱が下がらないので、病院で\u003cb\u003eみて\u003c/b\u003eもらった。\u003c/div\u003e\n\u003cdiv\u003eこの医師は長年、地域の子どもたちを\u003cb\u003eみて\u003c/b\u003eきた。\u003c/div\u003e\n\u003cdiv\u003e症状が軽いうちに専門医に\u003cb\u003eみてもらう\u003c/b\u003eべきだ。\u003c/div\u003e",
+                                     "診る"
+                                 ],
+                      "guid":  "n1vocab053",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eあ\u003c/b\u003eきる",
+                                     "同じことが続いて、興味や満足感を失う。",
+                                     "\u003cdiv\u003e毎日同じ料理では、さすがに\u003cb\u003eあきて\u003c/b\u003eしまう。\u003c/div\u003e\n\u003cdiv\u003e子どもはその遊びに\u003cb\u003eあきる\u003c/b\u003eと、すぐ別の物を探し始めた。\u003c/div\u003e\n\u003cdiv\u003e何度見ても\u003cb\u003eあきない\u003c/b\u003eほど美しい景色だ。\u003c/div\u003e",
+                                     "飽きる"
+                                 ],
+                      "guid":  "n1vocab054",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eう\u003c/b\u003eえる",
+                                     "食べ物が足りず、強い空腹に苦しむ。また、強く何かを求める。",
+                                     "\u003cdiv\u003e干ばつのため、多くの人々が食料に\u003cb\u003eうえて\u003c/b\u003eいた。\u003c/div\u003e\n\u003cdiv\u003e愛情に\u003cb\u003eうえた\u003c/b\u003e子どもたちを支援する活動が必要だ。\u003c/div\u003e\n\u003cdiv\u003e刺激に\u003cb\u003eうえて\u003c/b\u003eいた彼は、未知の土地へ旅立った。\u003c/div\u003e",
+                                     "飢える"
+                                 ],
+                      "guid":  "n1vocab055",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eふ\u003c/b\u003eえる",
+                                     "生物や資産などが成長・繁殖によって多くなる。",
+                                     "\u003cdiv\u003e適切に管理すれば、家畜の数は徐々に\u003cb\u003eふえて\u003c/b\u003eいく。\u003c/div\u003e\n\u003cdiv\u003eこの菌は暖かい環境で急速に\u003cb\u003eふえる\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e品種改良によって収穫量が\u003cb\u003eふえた\u003c/b\u003e。\u003c/div\u003e",
+                                     "殖える"
+                                 ],
+                      "guid":  "n1vocab056",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eうった\u003c/b\u003eえる",
+                                     "不満・被害・要求などを強く申し出る。また、裁判所に判断を求める。",
+                                     "\u003cdiv\u003e住民は騒音による被害を自治体に\u003cb\u003eうったえた\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e会社を相手に裁判所へ\u003cb\u003eうったえる\u003c/b\u003eことも検討している。\u003c/div\u003e\n\u003cdiv\u003e広告では、商品の安全性を強く\u003cb\u003eうったえて\u003c/b\u003eいる。\u003c/div\u003e",
+                                     "訴える"
+                                 ],
+                      "guid":  "n1vocab057",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eたくわ\u003c/b\u003eえる",
+                                     "将来の使用に備えて、物・金・知識・力などをためておく。",
+                                     "\u003cdiv\u003e災害に備えて、十分な飲料水を\u003cb\u003eたくわえて\u003c/b\u003eいる。\u003c/div\u003e\n\u003cdiv\u003e若いうちに幅広い知識を\u003cb\u003eたくわえる\u003c/b\u003eことが大切だ。\u003c/div\u003e\n\u003cdiv\u003e会社は新規投資に必要な資金を\u003cb\u003eたくわえて\u003c/b\u003eきた。\u003c/div\u003e",
+                                     "蓄える"
+                                 ],
+                      "guid":  "n1vocab058",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eか\u003c/b\u003eける",
+                                     "物を支えに置いたり、作用を及ぼしたり、ある行為を始めたりする。文脈により多様な意味を表す。",
+                                     "\u003cdiv\u003e壁に大きな絵を\u003cb\u003eかけて\u003c/b\u003e、部屋の印象を明るくした。\u003c/div\u003e\n\u003cdiv\u003eこの問題には長い時間を\u003cb\u003eかけて\u003c/b\u003e取り組む必要がある。\u003c/div\u003e\n\u003cdiv\u003e出発前に家族へ電話を\u003cb\u003eかけた\u003c/b\u003e。\u003c/div\u003e",
+                                     "掛ける"
+                                 ],
+                      "guid":  "n1vocab059",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eさ\u003c/b\u003eける",
+                                     "好ましくない人・物・状況に近づかないようにする。",
+                                     "\u003cdiv\u003e混雑を\u003cb\u003eさける\u003c/b\u003eため、早朝に出発した。\u003c/div\u003e\n\u003cdiv\u003e誤解を\u003cb\u003eさける\u003c/b\u003eには、条件を明確に説明すべきだ。\u003c/div\u003e\n\u003cdiv\u003e彼はその話題を意識的に\u003cb\u003eさけて\u003c/b\u003eいるようだった。\u003c/div\u003e",
+                                     "避ける"
+                                 ],
+                      "guid":  "n1vocab060",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eよ\u003c/b\u003eける",
+                                     "近づいてくる物や邪魔な物から身を移したり、物を動かしたりする。",
+                                     "\u003cdiv\u003e飛んできたボールを素早く\u003cb\u003eよけた\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e通路の荷物を端へ\u003cb\u003eよけて\u003c/b\u003eください。\u003c/div\u003e\n\u003cdiv\u003e水たまりを\u003cb\u003eよけながら\u003c/b\u003e駅まで歩いた。\u003c/div\u003e",
+                                     "避ける"
+                                 ],
+                      "guid":  "n1vocab061",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eふ\u003c/b\u003eやす",
+                                     "生物や資産などを成長・繁殖させ、数や量を多くする。",
+                                     "\u003cdiv\u003e農家は繁殖によって家畜の数を\u003cb\u003eふやして\u003c/b\u003eきた。\u003c/div\u003e\n\u003cdiv\u003e長期的な運用で資産を\u003cb\u003eふやす\u003c/b\u003e計画だ。\u003c/div\u003e\n\u003cdiv\u003e培養条件を調整し、有用な菌を\u003cb\u003eふやした\u003c/b\u003e。\u003c/div\u003e",
+                                     "殖やす"
+                                 ],
+                      "guid":  "n1vocab062",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eか\u003c/b\u003eかる",
+                                     "物が支えられたり、作用を受けたり、時間や費用が必要になったりする。",
+                                     "\u003cdiv\u003e壁には古い家族写真が\u003cb\u003eかかって\u003c/b\u003eいる。\u003c/div\u003e\n\u003cdiv\u003e修理には少なくとも一週間\u003cb\u003eかかる\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003eこの商品には消費税が\u003cb\u003eかかります\u003c/b\u003e。\u003c/div\u003e",
+                                     "掛かる"
+                                 ],
+                      "guid":  "n1vocab063",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eつ\u003c/b\u003eける",
+                                     "食材などを液体や調味料の中に入れ、味を付けたり保存したりする。",
+                                     "\u003cdiv\u003e野菜を塩に\u003cb\u003eつけて\u003c/b\u003e、一晩置いた。\u003c/div\u003e\n\u003cdiv\u003e肉をたれに\u003cb\u003eつける\u003c/b\u003eと、味がよく染み込む。\u003c/div\u003e\n\u003cdiv\u003e梅を酒に\u003cb\u003eつけて\u003c/b\u003eから半年がたった。\u003c/div\u003e",
+                                     "漬ける"
+                                 ],
+                      "guid":  "n1vocab064",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eなま\u003c/b\u003eける",
+                                     "するべき仕事や努力をせず、楽をして過ごす。",
+                                     "\u003cdiv\u003e練習を\u003cb\u003eなまける\u003c/b\u003eと、すぐに体力が落ちる。\u003c/div\u003e\n\u003cdiv\u003e監督する人がいなくても\u003cb\u003eなまけず\u003c/b\u003eに働いている。\u003c/div\u003e\n\u003cdiv\u003e少しくらい\u003cb\u003eなまけても\u003c/b\u003eよいと考えたのが失敗だった。\u003c/div\u003e",
+                                     "怠ける"
+                                 ],
+                      "guid":  "n1vocab065",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eあ\u003c/b\u003eげる",
+                                     "食材を高温の油に入れて加熱する。また、低い所から高い所へ移す。",
+                                     "\u003cdiv\u003e魚に衣をつけて、油でからりと\u003cb\u003eあげた\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e天ぷらは注文を受けてから\u003cb\u003eあげて\u003c/b\u003eいる。\u003c/div\u003e\n\u003cdiv\u003e沈んだ荷物をクレーンで岸へ\u003cb\u003eあげた\u003c/b\u003e。\u003c/div\u003e",
+                                     "揚げる"
+                                 ],
+                      "guid":  "n1vocab066",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eさまた\u003c/b\u003eげる",
+                                     "物事が順調に進むのを邪魔し、困難にする。",
+                                     "\u003cdiv\u003e激しい雨が救助活動を\u003cb\u003eさまたげた\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e自由な議論を\u003cb\u003eさまたげる\u003c/b\u003e規則は見直すべきだ。\u003c/div\u003e\n\u003cdiv\u003e睡眠を\u003cb\u003eさまたげない\u003c/b\u003eよう、通知音を切った。\u003c/div\u003e",
+                                     "妨げる"
+                                 ],
+                      "guid":  "n1vocab067",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eこ\u003c/b\u003eがす",
+                                     "火や熱を加えすぎて、物の表面を黒くする。また、強い思いを募らせる。",
+                                     "\u003cdiv\u003e火を強くしすぎて、料理を\u003cb\u003eこがして\u003c/b\u003eしまった。\u003c/div\u003e\n\u003cdiv\u003e木材の表面を軽く\u003cb\u003eこがす\u003c/b\u003eと、独特の模様が現れる。\u003c/div\u003e\n\u003cdiv\u003e彼女は再会への思いに胸を\u003cb\u003eこがして\u003c/b\u003eいた。\u003c/div\u003e",
+                                     "焦がす"
+                                 ],
+                      "guid":  "n1vocab068",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eの\u003c/b\u003eせる",
+                                     "物を別の物の上に置く。また、人や物を乗り物に入れて運ぶ。",
+                                     "\u003cdiv\u003e焼いたパンにチーズを\u003cb\u003eのせて\u003c/b\u003e食べた。\u003c/div\u003e\n\u003cdiv\u003eけが人を担架に\u003cb\u003eのせて\u003c/b\u003e運んだ。\u003c/div\u003e\n\u003cdiv\u003e調査結果を次号の雑誌に\u003cb\u003eのせる\u003c/b\u003e予定だ。\u003c/div\u003e",
+                                     "載せる"
+                                 ],
+                      "guid":  "n1vocab069",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eの\u003c/b\u003eる",
+                                     "物や情報が何かの上に置かれる。また、新聞・書籍などに掲載される。",
+                                     "\u003cdiv\u003e机の上には多数の資料が\u003cb\u003eのって\u003c/b\u003eいる。\u003c/div\u003e\n\u003cdiv\u003e私の投稿した写真が地元紙に\u003cb\u003eのった\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e詳しい時刻表は公式サイトに\u003cb\u003eのって\u003c/b\u003eいる。\u003c/div\u003e",
+                                     "載る"
+                                 ],
+                      "guid":  "n1vocab070",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eあわ\u003c/b\u003eてる",
+                                     "予想外の出来事に動揺し、落ち着いた行動ができなくなる。",
+                                     "\u003cdiv\u003e警報が鳴っても\u003cb\u003eあわてず\u003c/b\u003e、係員の指示に従ってください。\u003c/div\u003e\n\u003cdiv\u003e財布がないことに気づき、\u003cb\u003eあわてて\u003c/b\u003e家へ戻った。\u003c/div\u003e\n\u003cdiv\u003eまだ時間はあるので、そんなに\u003cb\u003eあわてる\u003c/b\u003e必要はない。\u003c/div\u003e",
+                                     "慌てる"
+                                 ],
+                      "guid":  "n1vocab071",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eへだ\u003c/b\u003eてる",
+                                     "二つの物の間に距離や境界を置き、分ける。",
+                                     "\u003cdiv\u003e薄い壁が二つの部屋を\u003cb\u003eへだてて\u003c/b\u003eいる。\u003c/div\u003e\n\u003cdiv\u003e川を\u003cb\u003eへだてた\u003c/b\u003e向こう側に古い城が見える。\u003c/div\u003e\n\u003cdiv\u003e年齢や立場で人を\u003cb\u003eへだてず\u003c/b\u003e、率直に意見を聞いた。\u003c/div\u003e",
+                                     "隔てる"
+                                 ],
+                      "guid":  "n1vocab072",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eへだ\u003c/b\u003eたる",
+                                     "二つの物の間に距離・時間・心理的な違いがある。",
+                                     "\u003cdiv\u003e二つの町は山を挟んで大きく\u003cb\u003eへだたって\u003c/b\u003eいる。\u003c/div\u003e\n\u003cdiv\u003e事件から十年を\u003cb\u003eへだてて\u003c/b\u003e、新たな証拠が見つかった。\u003c/div\u003e\n\u003cdiv\u003e両者の認識は依然として\u003cb\u003eへだたった\u003c/b\u003eままだ。\u003c/div\u003e",
+                                     "隔たる"
+                                 ],
+                      "guid":  "n1vocab073",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eくわだ\u003c/b\u003eてる",
+                                     "ある目的を実現するため、計画を立てて実行しようとする。",
+                                     "\u003cdiv\u003e彼らは会社の機密を盗み出そうと\u003cb\u003eくわだてた\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e政府転覆を\u003cb\u003eくわだてた\u003c/b\u003eとして、複数の人物が逮捕された。\u003c/div\u003e\n\u003cdiv\u003e大胆な改革を\u003cb\u003eくわだてる\u003c/b\u003eには、周到な準備が必要だ。\u003c/div\u003e",
+                                     "企てる"
+                                 ],
+                      "guid":  "n1vocab074",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eか\u003c/b\u003eねる",
+                                     "二つ以上の役割を一つで果たす。また、事情により実行できないことを婉曲に表す。",
+                                     "\u003cdiv\u003eこの部屋は会議室と休憩室を\u003cb\u003eかねて\u003c/b\u003eいる。\u003c/div\u003e\n\u003cdiv\u003e運動を\u003cb\u003eかねて\u003c/b\u003e、毎朝駅まで歩いている。\u003c/div\u003e\n\u003cdiv\u003eそのご要望には応じ\u003cb\u003eかねます\u003c/b\u003eので、ご了承ください。\u003c/div\u003e",
+                                     "兼ねる"
+                                 ],
+                      "guid":  "n1vocab075",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eせ\u003c/b\u003eめる",
+                                     "相手の領域へ進んで攻撃する。また、目標の達成へ積極的に挑む。",
+                                     "\u003cdiv\u003e軍は夜明けとともに城を\u003cb\u003eせめた\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e守るだけでなく、好機には大胆に\u003cb\u003eせめる\u003c/b\u003eべきだ。\u003c/div\u003e\n\u003cdiv\u003e相手の弱点を集中的に\u003cb\u003eせめて\u003c/b\u003e得点につなげた。\u003c/div\u003e",
+                                     "攻める"
+                                 ],
+                      "guid":  "n1vocab076",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eほ\u003c/b\u003eめる",
+                                     "人の行動や成果を優れていると評価し、言葉で認める。",
+                                     "\u003cdiv\u003e教師は努力した生徒を皆の前で\u003cb\u003eほめた\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e結果だけでなく過程も\u003cb\u003eほめる\u003c/b\u003eことが大切だ。\u003c/div\u003e\n\u003cdiv\u003e予想以上に\u003cb\u003eほめられて\u003c/b\u003e、かえって恥ずかしくなった。\u003c/div\u003e",
+                                     "褒める"
+                                 ],
+                      "guid":  "n1vocab077",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eおさ\u003c/b\u003eめる",
+                                     "物を決まった場所に入れる。また、金品を渡す、成果を得る、混乱を終わらせるなどの意味を表す。",
+                                     "\u003cdiv\u003e使い終わった道具を箱に\u003cb\u003eおさめた\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e期限までに税金を\u003cb\u003eおさめなければ\u003c/b\u003eならない。\u003c/div\u003e\n\u003cdiv\u003e長年の研究が大きな成果を\u003cb\u003eおさめた\u003c/b\u003e。\u003c/div\u003e",
+                                     "納める"
+                                 ],
+                      "guid":  "n1vocab078",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eすす\u003c/b\u003eめる",
+                                     "相手にとって望ましいと思う物や行動を提案し、採用するよう働きかける。",
+                                     "\u003cdiv\u003e医師は毎日適度に運動することを\u003cb\u003eすすめた\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e店員に\u003cb\u003eすすめられた\u003c/b\u003e料理を注文した。\u003c/div\u003e\n\u003cdiv\u003e初心者には、まずこの入門書を\u003cb\u003eすすめたい\u003c/b\u003e。\u003c/div\u003e",
+                                     "勧める"
+                                 ],
+                      "guid":  "n1vocab079",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eなが\u003c/b\u003eめる",
+                                     "景色や物の全体を、ある程度の時間をかけて見る。",
+                                     "\u003cdiv\u003e窓から海を\u003cb\u003eながめながら\u003c/b\u003e、ゆっくり朝食を取った。\u003c/div\u003e\n\u003cdiv\u003e彼は何も言わず、遠くの山を\u003cb\u003eながめて\u003c/b\u003eいた。\u003c/div\u003e\n\u003cdiv\u003e店頭の商品をしばらく\u003cb\u003eながめた\u003c/b\u003e後、何も買わずに出た。\u003c/div\u003e",
+                                     "眺める"
+                                 ],
+                      "guid":  "n1vocab080",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eなぐさ\u003c/b\u003eめる",
+                                     "悲しみや苦しみを感じている人に働きかけ、心を軽くする。",
+                                     "\u003cdiv\u003e試合に負けて泣く子どもを母親が\u003cb\u003eなぐさめた\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003eどんな言葉をかけても、今の彼女を\u003cb\u003eなぐさめる\u003c/b\u003eのは難しい。\u003c/div\u003e\n\u003cdiv\u003e互いを\u003cb\u003eなぐさめあい\u003c/b\u003eながら、つらい時期を乗り越えた。\u003c/div\u003e",
+                                     "慰める"
+                                 ],
+                      "guid":  "n1vocab081",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eゆ\u003c/b\u003eれる",
+                                     "一定の位置を中心に前後・左右・上下へ動く。また、気持ちや判断が不安定になる。",
+                                     "\u003cdiv\u003e強い風で木の枝が大きく\u003cb\u003eゆれて\u003c/b\u003eいる。\u003c/div\u003e\n\u003cdiv\u003e電車が急に\u003cb\u003eゆれた\u003c/b\u003eため、乗客がよろめいた。\u003c/div\u003e\n\u003cdiv\u003e二つの選択肢の間で心が\u003cb\u003eゆれて\u003c/b\u003eいた。\u003c/div\u003e",
+                                     "揺れる"
+                                 ],
+                      "guid":  "n1vocab082",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eは\u003c/b\u003eねる",
+                                     "勢いよく上へ飛び上がる。また、物が当たって飛び散る。",
+                                     "\u003cdiv\u003e魚が水面から高く\u003cb\u003eはねた\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e雨水が\u003cb\u003eはねて\u003c/b\u003e、ズボンの裾が汚れた。\u003c/div\u003e\n\u003cdiv\u003e車に石を\u003cb\u003eはねられ\u003c/b\u003e、窓に小さな傷がついた。\u003c/div\u003e",
+                                     "跳ねる"
+                                 ],
+                      "guid":  "n1vocab083",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eもぐ\u003c/b\u003eる",
+                                     "水中や物の下へ、全身を入れて深く進む。",
+                                     "\u003cdiv\u003e海に\u003cb\u003eもぐって\u003c/b\u003e、色鮮やかな魚を観察した。\u003c/div\u003e\n\u003cdiv\u003e寒さをしのぐため、子どもは布団に\u003cb\u003eもぐりこんだ\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e潜水士は何度も深い場所まで\u003cb\u003eもぐった\u003c/b\u003e。\u003c/div\u003e",
+                                     "潜る"
+                                 ],
+                      "guid":  "n1vocab084",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eくぐ\u003c/b\u003eる",
+                                     "門・穴・物の下などを、身をかがめたりして通り抜ける。",
+                                     "\u003cdiv\u003e低い門を\u003cb\u003eくぐる\u003c/b\u003eと、静かな庭が広がっていた。\u003c/div\u003e\n\u003cdiv\u003e子どもたちは網の下を\u003cb\u003eくぐって\u003c/b\u003e進んだ。\u003c/div\u003e\n\u003cdiv\u003e厳しい審査を\u003cb\u003eくぐりぬけた\u003c/b\u003e作品だけが展示される。\u003c/div\u003e",
+                                     "潜る"
+                                 ],
+                      "guid":  "n1vocab085",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eこころざ\u003c/b\u003eす",
+                                     "目標を定め、その実現を目指して進もうと決意する。",
+                                     "\u003cdiv\u003e彼女は幼い頃から医師を\u003cb\u003eこころざして\u003c/b\u003eいた。\u003c/div\u003e\n\u003cdiv\u003e政治家を\u003cb\u003eこころざす\u003c/b\u003eなら、社会への責任を自覚すべきだ。\u003c/div\u003e\n\u003cdiv\u003e研究者を\u003cb\u003eこころざした\u003c/b\u003eきっかけは、一冊の本だった。\u003c/div\u003e",
+                                     "志す"
+                                 ],
+                      "guid":  "n1vocab086",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eあ\u003c/b\u003eかす",
+                                     "隠されていた事実や秘密を人に知らせる。また、眠らずに夜を過ごす。",
+                                     "\u003cdiv\u003e長年隠してきた真実をついに\u003cb\u003eあかした\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e手品の仕掛けを\u003cb\u003eあかす\u003c/b\u003eのは野暮というものだ。\u003c/div\u003e\n\u003cdiv\u003e友人と語り\u003cb\u003eあかして\u003c/b\u003e、気づけば朝になっていた。\u003c/div\u003e",
+                                     "明かす"
+                                 ],
+                      "guid":  "n1vocab087",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eい\u003c/b\u003eかす",
+                                     "能力・経験・特徴などを有効に使う。また、命を失わせずにおく。",
+                                     "\u003cdiv\u003e海外での経験を仕事に\u003cb\u003eいかしたい\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e素材の味を\u003cb\u003eいかす\u003c/b\u003eため、味付けは控えめにした。\u003c/div\u003e\n\u003cdiv\u003e捕まえた魚を\u003cb\u003eいかした\u003c/b\u003eまま市場まで運ぶ。\u003c/div\u003e",
+                                     "生かす"
+                                 ],
+                      "guid":  "n1vocab088",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eぬ\u003c/b\u003eかす",
+                                     "必要な部分を省く。また、順番で前にいる者を追い越す。",
+                                     "\u003cdiv\u003e朝食を\u003cb\u003eぬかす\u003c/b\u003eと、午前中に集中できない。\u003c/div\u003e\n\u003cdiv\u003e説明の一部を\u003cb\u003eぬかして\u003c/b\u003e話したため、誤解を招いた。\u003c/div\u003e\n\u003cdiv\u003e最後の直線で二人を\u003cb\u003eぬかし\u003c/b\u003e、首位に立った。\u003c/div\u003e",
+                                     "抜かす"
+                                 ],
+                      "guid":  "n1vocab089",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eは\u003c/b\u003eやす",
+                                     "毛・草・植物などが伸びるままにして、生じさせる。",
+                                     "\u003cdiv\u003e彼は休暇中にひげを\u003cb\u003eはやして\u003c/b\u003eいた。\u003c/div\u003e\n\u003cdiv\u003e庭一面に雑草を\u003cb\u003eはやした\u003c/b\u003eままでは、近所にも迷惑だ。\u003c/div\u003e\n\u003cdiv\u003e屋上に植物を\u003cb\u003eはやして\u003c/b\u003e、建物の温度上昇を抑える。\u003c/div\u003e",
+                                     "生やす"
+                                 ],
+                      "guid":  "n1vocab090",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eつい\u003c/b\u003eやす",
+                                     "時間・金銭・労力などを、ある目的のために使う。",
+                                     "\u003cdiv\u003e彼は十年を研究に\u003cb\u003eついやした\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e不要な手続きに多くの時間を\u003cb\u003eついやす\u003c/b\u003eべきではない。\u003c/div\u003e\n\u003cdiv\u003e会社は新技術の開発に莫大な資金を\u003cb\u003eついやした\u003c/b\u003e。\u003c/div\u003e",
+                                     "費やす"
+                                 ],
+                      "guid":  "n1vocab091",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eか\u003c/b\u003eわす",
+                                     "互いに言葉や物をやり取りする。また、向かってくる物を避ける。",
+                                     "\u003cdiv\u003e二人は固い握手を\u003cb\u003eかわした\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e会議の前に、担当者と短い言葉を\u003cb\u003eかわした\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e選手は相手の攻撃を巧みに\u003cb\u003eかわして\u003c/b\u003e前へ出た。\u003c/div\u003e",
+                                     "交わす"
+                                 ],
+                      "guid":  "n1vocab092",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eた\u003c/b\u003eつ",
+                                     "続いている物や関係を切り、再び続かないようにする。",
+                                     "\u003cdiv\u003e悪い習慣を\u003cb\u003eたつ\u003c/b\u003eため、生活環境を変えた。\u003c/div\u003e\n\u003cdiv\u003e事件の資金源を\u003cb\u003eたつ\u003c/b\u003eことが解決への第一歩だ。\u003c/div\u003e\n\u003cdiv\u003e退路を\u003cb\u003eたって\u003c/b\u003e、新しい仕事に専念することにした。\u003c/div\u003e",
+                                     "断つ"
+                                 ],
+                      "guid":  "n1vocab093",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eたも\u003c/b\u003eつ",
+                                     "状態や程度を変化させず、一定のまま続ける。",
+                                     "\u003cdiv\u003e健康を\u003cb\u003eたもつ\u003c/b\u003eには、適度な運動が欠かせない。\u003c/div\u003e\n\u003cdiv\u003e室内の温度を一定に\u003cb\u003eたもって\u003c/b\u003eください。\u003c/div\u003e\n\u003cdiv\u003e緊張した場面でも冷静さを\u003cb\u003eたもてる\u003c/b\u003e人は頼りになる。\u003c/div\u003e",
+                                     "保つ"
+                                 ],
+                      "guid":  "n1vocab094",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eとうと\u003c/b\u003eぶ",
+                                     "価値の高いものとして敬い、大切にする。",
+                                     "\u003cdiv\u003eこの地域では古くから自然との調和を\u003cb\u003eとうとんで\u003c/b\u003eきた。\u003c/div\u003e\n\u003cdiv\u003e人命を何よりも\u003cb\u003eとうとぶ\u003c/b\u003e姿勢が求められる。\u003c/div\u003e\n\u003cdiv\u003e異なる意見を\u003cb\u003eとうとび\u003c/b\u003e、対話を続けることが大切だ。\u003c/div\u003e",
+                                     "尊ぶ"
+                                 ],
+                      "guid":  "n1vocab095",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eう\u003c/b\u003eむ",
+                                     "子や卵を体外に出す。また、新しい物事や結果を生じさせる。",
+                                     "\u003cdiv\u003eこの魚は春になると川上で卵を\u003cb\u003eうむ\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e小さな発見が画期的な技術を\u003cb\u003eうんだ\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e互いの不信感が新たな対立を\u003cb\u003eうむ\u003c/b\u003eおそれがある。\u003c/div\u003e",
+                                     "生む"
+                                 ],
+                      "guid":  "n1vocab096",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eそ\u003c/b\u003eる",
+                                     "まっすぐだった物が弓なりに曲がる。また、体を後方へ曲げる。",
+                                     "\u003cdiv\u003e乾燥によって木の板が\u003cb\u003eそって\u003c/b\u003eしまった。\u003c/div\u003e\n\u003cdiv\u003e重みに耐えられず、棚が少し\u003cb\u003eそって\u003c/b\u003eいる。\u003c/div\u003e\n\u003cdiv\u003e着地の瞬間、選手の体が大きく後ろへ\u003cb\u003eそった\u003c/b\u003e。\u003c/div\u003e",
+                                     "反る"
+                                 ],
+                      "guid":  "n1vocab097",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eね\u003c/b\u003eる",
+                                     "材料に力を加えてよく混ぜる。また、考えや計画を十分に検討して整える。",
+                                     "\u003cdiv\u003e小麦粉に水を加え、粘りが出るまで\u003cb\u003eねる\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e全員で何度も案を\u003cb\u003eねりなおした\u003c/b\u003e。\u003c/div\u003e\n\u003cdiv\u003e時間をかけて戦略を\u003cb\u003eねった\u003c/b\u003eことが成功につながった。\u003c/div\u003e",
+                                     "練る"
+                                 ],
+                      "guid":  "n1vocab098",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eけむ\u003c/b\u003eる",
+                                     "煙や霧などが立ちこめて、周囲がぼんやり見える。",
+                                     "\u003cdiv\u003eたき火の煙で部屋全体が\u003cb\u003eけむって\u003c/b\u003eいる。\u003c/div\u003e\n\u003cdiv\u003e雨に\u003cb\u003eけむる\u003c/b\u003e山並みが遠くに見えた。\u003c/div\u003e\n\u003cdiv\u003e工場地帯の空は排気で薄く\u003cb\u003eけむって\u003c/b\u003eいた。\u003c/div\u003e",
+                                     "煙る"
+                                 ],
+                      "guid":  "n1vocab099",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  },
+                  {
+                      "__type__":  "Note",
+                      "fields":  [
+                                     "\u003cb\u003eけぶ\u003c/b\u003eる",
+                                     "煙・霧・細かな雨などに包まれ、景色がかすんで見える。",
+                                     "\u003cdiv\u003e春雨に\u003cb\u003eけぶる\u003c/b\u003e古い町並みを歩いた。\u003c/div\u003e\n\u003cdiv\u003e谷全体が朝霧に\u003cb\u003eけぶって\u003c/b\u003e幻想的に見える。\u003c/div\u003e\n\u003cdiv\u003e遠くの島影が波しぶきに\u003cb\u003eけぶって\u003c/b\u003eいた。\u003c/div\u003e",
+                                     "煙る"
+                                 ],
+                      "guid":  "n1vocab100",
+                      "note_model_uuid":  "21dff8c5-8775-11f1-bfd7-e86538524e44",
+                      "tags":  [
+
+                               ]
+                  }
+              ],
+    "reviewLimit":  null,
+    "reviewLimitToday":  null
+}

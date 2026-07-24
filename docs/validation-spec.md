@@ -16,7 +16,7 @@ Generate MUST validate:
 1. GCL encoding and syntax;
 2. linguistic interpretation and generated content;
 3. field formatting and target concealment; and
-4. the completed new CrowdAnki deck.
+4. the completed new CrowdAnki deck package.
 
 Update MUST validate:
 
@@ -25,7 +25,7 @@ Update MUST validate:
 3. entry classification and external drift;
 4. added or regenerated content;
 5. identity and preservation; and
-6. the completed updated CrowdAnki deck.
+6. the completed updated CrowdAnki deck package.
 
 Checks that can detect unsafe output MUST run before replacing a last known-good
 deck.
@@ -42,6 +42,10 @@ For each file, validation MUST verify:
 - full-width affix placeholders;
 - absence of unsupported control characters; and
 - any adopted duplicate, whitespace, and normalization policy.
+
+When validating an operation that adds requested entries to an existing GCL,
+validation MUST confirm that the new entries follow the previously final entry and
+that existing entries were not reordered.
 
 ## 3. Content validation
 
@@ -85,6 +89,8 @@ the target’s inflected boundary is ambiguous.
 
 The completed JSON MUST be parsed and checked for:
 
+- a containing directory whose name equals the JSON filename without `.json`;
+- a package name correctly derived from the GCL filename;
 - top-level CrowdAnki deck type and required properties;
 - a resolvable note model;
 - the expected four field definitions in order;
@@ -106,6 +112,7 @@ It MUST verify that:
 
 - unchanged entries retain the same GUID;
 - unchanged entries retain identical four-field content;
+- an already generated entry is represented by exactly one note after Update;
 - new entries do not collide with existing identities;
 - explicitly regenerated entries are clearly reported; and
 - changed entries are preserved unless explicitly selected for regeneration;
@@ -155,9 +162,19 @@ A release test suite MUST include:
 
 - Derive from a valid source export without generating a deck;
 - Generate from a manually authored valid GCL without a source export;
+- generation of
+  `n1_vocabulary_crowdanki_deck/n1_vocabulary_crowdanki_deck.json` from
+  `gcl/n1_vocabulary_generation_control_file.txt`;
+- rejection of a generated JSON file whose containing directory has a different
+  name;
 - replacement of an existing Generate output with a completely new generated
   deck;
 - Update of an associated generated deck without repeating Derive;
+- expansion of a 10-note deck to the first 100 GCL entries by preserving the
+  original 10 identities and adding exactly 90 notes;
+- a repeated Update request that adds no duplicate notes;
+- distinct notes and GUIDs for one written expression with two authoritative
+  readings;
 - rejection of an unrelated or incompatible deck supplied to Update;
 - a normal kanji-plus-okurigana word such as `遭う`;
 - a supplied reading such as `一入[ひとしお]`;

@@ -8,7 +8,25 @@ content.
 
 This document defines GCL version 1.
 
-## 2. Encoding and line handling
+## 2. File naming
+
+A version 1 GCL filename MUST follow:
+
+```text
+<deck-name>_generation_control_file.txt
+```
+
+`<deck-name>` MUST be non-empty and SHOULD use lowercase ASCII letters, digits,
+and underscores for portable paths. The name determines the generated CrowdAnki
+package name as defined in `deck-generation-spec.md`.
+
+Example:
+
+```text
+n1_vocabulary_generation_control_file.txt
+```
+
+## 3. Encoding and line handling
 
 - A GCL MUST be encoded as UTF-8.
 - A generator MUST accept UTF-8 with or without a byte-order mark.
@@ -20,7 +38,7 @@ This document defines GCL version 1.
 - Leading or trailing whitespace on an entry is not currently defined and MUST be
   reported rather than silently removed.
 
-## 3. Version header
+## 4. Version header
 
 The current repository GCL begins with:
 
@@ -41,7 +59,7 @@ Whether arbitrary comments and blank lines within the entry list are allowed is
 an open question. Until resolved, an implementation MUST report them rather than
 assign them vocabulary semantics.
 
-## 4. Entry structure
+## 5. Entry structure
 
 After the header, each content-bearing line represents one entry:
 
@@ -70,7 +88,17 @@ Examples:
 The annotations MUST be removed to derive the target vocabulary displayed on the
 back. Annotation text MUST NOT appear in generated fields.
 
-## 5. Authoritative reading
+### 5.1 Adding entries
+
+When an editor requests a new GCL entry, the entry MUST be appended after the
+existing final entry in the file. It MUST NOT be inserted beside a related
+spelling, reading, part of speech, or semantic group.
+
+Changing annotations on an existing entry is an edit to that entry, not an
+addition, and does not move it. This rule applies prospectively; it does not
+require earlier additions to be reordered.
+
+## 6. Authoritative reading
 
 Syntax:
 
@@ -100,7 +128,12 @@ distinct editorial entries, for example:
 The generator MUST generate each according to its supplied reading. How these
 entries receive stable distinct identities remains unresolved.
 
-## 6. Na-adjective marker
+When clarification produces an additional desired reading rather than replacing
+the intended reading of an existing entry, the additional reading MUST be
+represented as a separate annotated entry and appended according to section 5.1.
+It MUST NOT overwrite the existing reading.
+
+## 7. Na-adjective marker
 
 Syntax:
 
@@ -118,7 +151,7 @@ Rules:
   annotation.
 - Parentheses used for other purposes are not supported in version 1.
 
-## 7. Affix placeholder
+## 8. Affix placeholder
 
 Syntax:
 
@@ -141,7 +174,7 @@ The repository currently contains both full-width `～` and ASCII `~`. Version 1
 defines only full-width `～`. ASCII `~` MUST be reported as a validation error and
 MUST NOT be silently normalized until the normalization question is resolved.
 
-## 8. Parsing result
+## 9. Parsing result
 
 For each valid line, the parser MUST expose at least:
 
@@ -156,7 +189,7 @@ For each valid line, the parser MUST expose at least:
 
 `vocabulary` MUST be non-empty after annotation removal.
 
-## 9. Invalid entries
+## 10. Invalid entries
 
 The parser MUST reject or stop on:
 
@@ -173,4 +206,3 @@ Errors MUST include the file, physical line number, original line, and reason.
 
 Duplicate behavior, whitespace rules, normalization, and whether all parse errors
 are collected in one run are specified as open questions.
-

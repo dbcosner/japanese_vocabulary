@@ -39,6 +39,10 @@ warn, or intentionally produce multiple cards?
 
 Distinct supplied readings for the same written form MUST remain distinguishable.
 
+**Status:** Partially resolved by D07. Update may not duplicate an already
+generated GCL entry, and distinct authoritative readings are distinct entries.
+The treatment of exact duplicate GCL lines remains open.
+
 ## Q5. Stable entry and note identity
 
 **Question:** What stable key links a GCL entry to a generated note?
@@ -81,12 +85,20 @@ be generated while no final deck is emitted?
 The original instruction says to stop processing and request clarification; the
 desired scope of “stop” needs definition.
 
+**Current experiment:** The 100-note Update was paused before publication while
+ambiguous readings were clarified, and no partial deck was written. This is
+consistent with the safety requirements but does not yet decide whether unrelated
+content generation may continue internally.
+
 ## Q10. Example field serialization
 
 **Question:** How are examples separated inside `Examples`?
 
 Candidates include `<div>` elements, paragraphs, or `<br>` separators. The choice
 must support reliable counting and clean Anki rendering.
+
+**Current experiment:** The proof-of-concept cards use one `<div>` per example.
+This is provisional evidence, not yet an accepted serialization decision.
 
 ## Q11. CrowdAnki UUID policy
 
@@ -102,10 +114,17 @@ match the source deck?
 
 Reordering alone must not regenerate content.
 
+**Current experiment:** The proof-of-concept deck follows the selected GCL prefix
+in order. D06 separately requires future GCL additions to be appended, but the
+general generated-note ordering policy remains open.
+
 ## Q13. Output and backup policy
 
 **Question:** What paths and naming rules apply to generated decks, reports,
 manifests, temporary files, and backups?
+
+**Status:** Partially resolved by D05. Generated deck package paths are defined;
+report, manifest, temporary-file, and backup paths remain open.
 
 ## Q14. Source deck versus deck template selection
 
@@ -235,3 +254,47 @@ operation.
 - Affected specifications: `product-spec.md`, `deck-generation-spec.md`,
   `validation-spec.md`
 - Supersedes: Q19
+
+### Decision D05: Generated deck package naming and location
+
+- Date: 2026-07-24
+- Status: accepted
+- Decision: A GCL named
+  `<deck-name>_generation_control_file.txt` maps to a project-root package
+  directory named `<deck-name>_crowdanki_deck`, containing
+  `<deck-name>_crowdanki_deck.json`.
+- Rationale: CrowdAnki import requires the JSON file to be contained in a directory
+  with the same base name. The proof-of-concept established
+  `n1_vocabulary_crowdanki_deck/n1_vocabulary_crowdanki_deck.json`.
+- Affected specifications: `README.md`, `product-spec.md`,
+  `deck-generation-spec.md`, `validation-spec.md`
+- Supersedes: the earlier proposed `generated/` container and the generated-deck
+  portion of Q13
+
+### Decision D06: New GCL entries are appended
+
+- Date: 2026-07-24
+- Status: accepted
+- Decision: After a GCL exists, newly requested entries are appended to the end
+  of the file rather than inserted near related entries. Existing entries retain
+  their order.
+- Rationale: Appending keeps maintenance behavior predictable and avoids shifting
+  the established list when adding alternate readings or related vocabulary.
+- Affected specifications: `generation-control-file-spec.md`,
+  `deck-generation-spec.md`, `validation-spec.md`
+- Supersedes: any inferred practice of inserting a new entry beside a related
+  existing entry
+
+### Decision D07: Update does not duplicate generated entries
+
+- Date: 2026-07-24
+- Status: accepted
+- Decision: Update matches GCL entries to existing generated-note identities
+  before generation. An entry already represented in the deck is preserved or
+  explicitly regenerated, never appended as another note. Entries with the same
+  written form but different authoritative readings remain distinct.
+- Rationale: Updating a deck must add only genuinely new entries while preserving
+  existing cards and supporting separately requested readings.
+- Affected specifications: `product-spec.md`, `generation-control-file-spec.md`,
+  `deck-generation-spec.md`, `validation-spec.md`
+- Supersedes: the unresolved Update portion of Q4
