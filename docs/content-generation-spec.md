@@ -1,0 +1,160 @@
+# Content Generation Specification
+
+## 1. Inputs and outputs
+
+For each valid GCL entry, content generation MUST produce:
+
+- a hiragana reading with formatting that identifies portions corresponding to
+  kanji;
+- one concise Japanese definition;
+- three to five natural Japanese example sentences; and
+- the annotation-free original vocabulary expression.
+
+All generated content MUST correspond to one resolved reading and interpretation.
+
+## 2. Reading resolution
+
+### 2.1 Supplied reading
+
+When `[reading]` is supplied:
+
+- it MUST be treated as authoritative;
+- the definition and examples MUST be generated for that reading and its intended
+  interpretation; and
+- the generator MUST NOT substitute a more common reading.
+
+If the supplied reading is incompatible with the expression or still permits
+materially different interpretations, processing requires clarification.
+
+### 2.2 Inferred reading
+
+When no reading is supplied, the generator MUST determine the reading from the
+expression and relevant linguistic evidence.
+
+If multiple readings or interpretations remain plausible and would yield
+different learner-facing content, the generator MUST NOT guess. It MUST emit a
+clarification request identifying:
+
+- the entry and line number;
+- the plausible readings or interpretations, when known; and
+- the information needed to resolve the ambiguity.
+
+The same rule applies to ambiguous prefixes and suffixes.
+
+### 2.3 Reading presentation
+
+- The displayed reading MUST contain hiragana only, apart from required HTML
+  formatting.
+- Katakana readings MUST be converted to their natural hiragana equivalents for
+  display.
+- Reading segments corresponding to kanji in the target expression MUST be bold.
+- Reading segments corresponding to original hiragana, including okurigana, MUST
+  remain normal weight.
+- Kanji and katakana MUST NOT appear in the displayed reading.
+
+Examples:
+
+```text
+遭う     → <b>あ</b>う
+食べる   → <b>た</b>べる
+美味しい → <b>おい</b>しい
+```
+
+When the mapping between surface characters and reading segments is not
+linguistically defensible, the entry MUST be flagged for review rather than
+formatted through a guess.
+
+## 3. Definition
+
+The definition MUST:
+
+- be entirely in Japanese;
+- be suitable for a JLPT N1 learner;
+- explain the relevant meaning rather than merely list synonyms;
+- be concise while remaining sufficient to distinguish the intended sense;
+- mention important usage restrictions, register, or construction constraints
+  when they materially affect correct use; and
+- correspond specifically to the resolved reading and interpretation.
+
+If a target occurrence would otherwise appear in the definition, its written form
+MUST be replaced with the appropriate hiragana reading in bold. The original
+written target form MUST never be revealed on the front.
+
+## 4. Example sentences
+
+Each entry MUST have three to five examples. Each example MUST:
+
+- be a complete, natural Japanese sentence or naturally complete utterance;
+- use standard Japanese orthography except for the concealed target occurrence;
+- demonstrate the resolved meaning and grammatical behavior;
+- use a realistic context; and
+- replace every target occurrence with its correctly inflected hiragana form,
+  bolding only the portion that represents the target.
+
+Across the examples, the generator SHOULD vary context and sentence structure
+where natural. It SHOULD avoid repetitive frames, dictionary-example clichés, and
+sentences designed only to exhibit grammar.
+
+Naturalness takes precedence over mechanical variation.
+
+## 5. Part-of-speech guidance
+
+### 5.1 Verbs
+
+Examples SHOULD use natural conjugational variety. Inflected target occurrences
+MUST remain concealed and MUST retain grammatically required endings.
+
+### 5.2 I-adjectives
+
+Examples SHOULD demonstrate natural adjectival or predicate use as appropriate to
+the intended sense.
+
+### 5.3 Nouns
+
+Examples SHOULD use varied, idiomatic constructions rather than repeatedly using
+the same copular frame.
+
+### 5.4 Na-adjectives
+
+For entries marked `(な)`:
+
+- examples SHOULD include attributive `～な` use and predicate or noun-like use
+  when both are natural for the entry;
+- the literal GCL annotation MUST NOT be copied into a field; and
+- the grammatical `な` MAY and normally will appear when required by a sentence.
+
+Natural Japanese takes precedence over satisfying both usage patterns.
+
+### 5.5 Prefixes and suffixes
+
+For affix entries:
+
+- the definition MUST explain the affix’s function rather than describe it as a
+  standalone word;
+- examples MUST embed it within authentic words;
+- the entire occurrence of the target affix within those words MUST be replaced
+  by its hiragana reading in bold; and
+- the placeholder `～` MUST NOT appear on the card.
+
+## 6. Target concealment
+
+The front MUST not reveal the target expression in its original written form.
+Concealment applies to:
+
+- the reading field;
+- the definition;
+- every example;
+- visible HTML attributes or labels rendered on the front; and
+- inflected or embedded occurrences, including occurrences inside words for
+  affixes.
+
+Replacement MUST be contextual. A generator MUST NOT blindly replace unrelated
+homographs or substrings.
+
+## 7. Language quality
+
+Definitions and examples MUST read as though written or carefully edited by a
+native speaker. They SHOULD favor pedagogically useful distinctions and authentic
+contexts. They MUST NOT contain mojibake, unsupported placeholders, editorial
+instructions, uncertainty markers, or generation commentary.
+

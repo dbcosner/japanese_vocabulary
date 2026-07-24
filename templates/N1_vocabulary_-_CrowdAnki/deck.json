@@ -1,0 +1,208 @@
+{
+    "__type__": "Deck",
+    "children": [],
+    "crowdanki_uuid": "21dfd126-8775-11f1-95cc-e86538524e44",
+    "deck_config_uuid": "21dfd63c-8775-11f1-b1fd-e86538524e44",
+    "deck_configurations": [
+        {
+            "__type__": "DeckConfig",
+            "answerAction": 0,
+            "autoplay": true,
+            "buryInterdayLearning": false,
+            "crowdanki_uuid": "21dfd63c-8775-11f1-b1fd-e86538524e44",
+            "desiredRetention": 0.9,
+            "dyn": false,
+            "easyDaysPercentages": [
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "fsrsParams5": [],
+            "fsrsParams6": [],
+            "fsrsWeights": [],
+            "ignoreRevlogsBeforeDate": "",
+            "interdayLearningMix": 0,
+            "lapse": {
+                "delays": [
+                    10.0
+                ],
+                "leechAction": 1,
+                "leechFails": 8,
+                "minInt": 1,
+                "mult": 0.0
+            },
+            "maxTaken": 60,
+            "name": "Default",
+            "new": {
+                "bury": false,
+                "delays": [
+                    1.0,
+                    10.0
+                ],
+                "initialFactor": 2500,
+                "ints": [
+                    1,
+                    4,
+                    0
+                ],
+                "order": 1,
+                "perDay": 5,
+                "separate": true
+            },
+            "newGatherPriority": 4,
+            "newMix": 0,
+            "newPerDayMinimum": 0,
+            "newSortOrder": 0,
+            "questionAction": 0,
+            "replayq": true,
+            "rev": {
+                "bury": false,
+                "ease4": 1.3,
+                "fuzz": 0.05,
+                "hardFactor": 1.2,
+                "ivlFct": 1.0,
+                "maxIvl": 36500,
+                "minSpace": 1,
+                "perDay": 200
+            },
+            "reviewOrder": 0,
+            "secondsToShowAnswer": 0.0,
+            "secondsToShowQuestion": 0.0,
+            "sm2Retention": 0.9,
+            "stopTimerOnAnswer": false,
+            "timer": 0,
+            "waitForAudio": false,
+            "weightSearch": ""
+        }
+    ],
+    "desc": "",
+    "desiredRetention": null,
+    "dyn": 0,
+    "extendNew": 0,
+    "extendRev": 0,
+    "media_files": [],
+    "name": "N1 vocabulary - CrowdAnki",
+    "newLimit": null,
+    "newLimitToday": null,
+    "note_models": [
+        {
+            "__type__": "NoteModel",
+            "crowdanki_uuid": "21dff8c5-8775-11f1-bfd7-e86538524e44",
+            "css": ".card {\n  font-family: \"Noto Sans JP\", sans-serif;\n  font-size: 24px;\n  line-height: 1.6;\n  text-align: left;\n  padding: 20px;\n}\n\n.reading {\n  font-size: 1.5em;\n  margin-bottom: 0.75em;\n}\n\n.definition {\n  margin-bottom: 1em;\n}\n\n.examples {\n  font-size: 0.95em;\n}\n\n.vocabulary {\n  text-align: center;\n  font-size: 2em;\n  font-weight: bold;\n}",
+            "flds": [
+                {
+                    "collapsed": false,
+                    "description": "Hiragana reading with kanji portions in bold.",
+                    "excludeFromSearch": false,
+                    "font": "Arial",
+                    "id": -4397371654829878026,
+                    "name": "Reading",
+                    "ord": 0,
+                    "plainText": false,
+                    "preventDeletion": false,
+                    "rtl": false,
+                    "size": 20,
+                    "sticky": false,
+                    "tag": null
+                },
+                {
+                    "collapsed": false,
+                    "description": "Concise Japanese definition.",
+                    "excludeFromSearch": false,
+                    "font": "Arial",
+                    "id": -6342329306014285613,
+                    "name": "Definition",
+                    "ord": 1,
+                    "plainText": false,
+                    "preventDeletion": false,
+                    "rtl": false,
+                    "size": 20,
+                    "sticky": false,
+                    "tag": null
+                },
+                {
+                    "collapsed": false,
+                    "description": "Three to five natural Japanese example sentences.",
+                    "excludeFromSearch": false,
+                    "font": "Arial",
+                    "id": 398900363108548560,
+                    "name": "Examples",
+                    "ord": 2,
+                    "plainText": false,
+                    "preventDeletion": false,
+                    "rtl": false,
+                    "size": 20,
+                    "sticky": false,
+                    "tag": null
+                },
+                {
+                    "collapsed": false,
+                    "description": "Original vocabulary term (displayed only on the back).",
+                    "excludeFromSearch": false,
+                    "font": "Arial",
+                    "id": 7400811796498785658,
+                    "name": "Vocabulary",
+                    "ord": 3,
+                    "plainText": false,
+                    "preventDeletion": false,
+                    "rtl": false,
+                    "size": 20,
+                    "sticky": false,
+                    "tag": null
+                }
+            ],
+            "latexPost": "\\end{document}",
+            "latexPre": "\\documentclass[12pt]{article}\n\\special{papersize=3in,5in}\n\\usepackage[utf8]{inputenc}\n\\usepackage{amssymb,amsmath}\n\\pagestyle{empty}\n\\setlength{\\parindent}{0in}\n\\begin{document}\n",
+            "latexsvg": false,
+            "name": "Japanese vocabulary with CrowdAnki - Note",
+            "originalStockKind": 1,
+            "req": [
+                [
+                    0,
+                    "any",
+                    [
+                        0,
+                        1,
+                        2
+                    ]
+                ]
+            ],
+            "sortf": 0,
+            "tmpls": [
+                {
+                    "afmt": "{{FrontSide}}\n\n<hr id=\"answer\">\n\n<section class=\"vocabulary\">\n{{Vocabulary}}\n</section>",
+                    "bafmt": "",
+                    "bfont": "",
+                    "bqfmt": "{{Reading}}",
+                    "bsize": 0,
+                    "did": null,
+                    "id": 4105900049365813736,
+                    "name": "Japanese vocabulary with CrowdAnki - Default template",
+                    "ord": 0,
+                    "qfmt": "<section class=\"reading\">\n{{Reading}}\n</section>\n\n<section class=\"definition\">\n{{Definition}}\n</section>\n\n<section class=\"examples\">\n{{Examples}}\n</section>"
+                }
+            ],
+            "type": 0
+        }
+    ],
+    "notes": [
+        {
+            "__type__": "Note",
+            "fields": [
+                "Test reading",
+                "Test definition",
+                "Test examples",
+                "Test vocabulary"
+            ],
+            "guid": "sQC&/(f.Ut",
+            "note_model_uuid": "21dff8c5-8775-11f1-bfd7-e86538524e44",
+            "tags": []
+        }
+    ],
+    "reviewLimit": null,
+    "reviewLimitToday": null
+}
