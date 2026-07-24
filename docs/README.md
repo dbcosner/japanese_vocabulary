@@ -64,7 +64,8 @@ as normative requirement terms.
 
 ## Current repository artifacts
 
-- `gcl/n1_vocabulary_generation_control_file.txt` is a version 1 GCL.
+- `gcl/n1_vocabulary_generation_control_file.txt` is a deduplicated version 1 GCL
+  that is being expanded with explicitly resolved readings.
 - `templates/N1_vocabulary_-_CrowdAnki/deck.json` is the current generated-deck
   template and defines the fields `Reading`, `Definition`, `Examples`, and
   `Vocabulary`.

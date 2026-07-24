@@ -100,6 +100,18 @@ with `[reading]`. Different requested readings of the same written expression ar
 separate GCL entries and produce separate cards. Newly requested entries are
 appended to the end of an existing GCL.
 
+When an unannotated expression has multiple natural contemporary readings, the
+project creates a card for each automatically. Archaic, uncommon, or contextually
+marginal readings are omitted when they would require contrived examples.
+
+Exact duplicate GCL lines are not separate vocabulary entries. Deduplication keeps
+the first occurrence, removes later occurrences, and preserves the order of all
+remaining entries.
+
+Generate and Update always perform this deduplication as a GCL preflight step.
+Because `[reading]` is part of the entry, separately annotated readings are not
+duplicates.
+
 ## Technical overview
 
 - Inputs and outputs use UTF-8.
@@ -155,8 +167,9 @@ including stable identity, generation-state storage, command interfaces, and
 quantitative large-file targets, remain open. This README is therefore tentative
 and should evolve with the specifications and implementation.
 
-The current proof-of-concept deck package contains 100 cards derived from the
-first 100 entries of the N1 GCL as it stood at the time of that Update. The first
-10 cards were preserved and 90 new cards were added without duplication:
+The N1 GCL has been deduplicated and is being expanded with explicitly resolved
+readings. The current proof-of-concept deck package contains 100 cards derived
+from its first 100 entries. The first 10 cards were preserved and 90 new cards
+were added without duplication:
 
 [`n1_vocabulary_crowdanki_deck/n1_vocabulary_crowdanki_deck.json`](n1_vocabulary_crowdanki_deck/n1_vocabulary_crowdanki_deck.json)

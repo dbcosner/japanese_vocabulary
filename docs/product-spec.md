@@ -19,6 +19,7 @@ The system MUST:
 - reveal only the original vocabulary expression on the back;
 - preserve previously generated cards during incremental maintenance unless
   regeneration is explicitly requested;
+- maintain at most one GCL entry for each exact annotated-entry line;
 - stop and request clarification when the intended reading or interpretation
   cannot be determined reliably; and
 - produce CrowdAnki-compatible JSON based on a defined deck template.
@@ -54,6 +55,9 @@ Derive MUST NOT modify its source JSON.
 Generate MUST produce a complete deck; it is not an update of the original source
 export.
 
+Before parsing entries for content generation, Generate MUST purge exact duplicate
+GCL lines according to `generation-control-file-spec.md`.
+
 ### 3.3 Update
 
 **Update** revises an existing generated CrowdAnki JSON file to reflect changes in
@@ -72,6 +76,7 @@ deck as the continuing source of truth.
 
 Update MUST:
 
+- purge exact duplicate GCL lines before classifying entries;
 - match proposed entries against existing generated-note identities before
   generating content and MUST NOT create a second note for an entry that has
   already been generated;
@@ -116,6 +121,10 @@ For a source deck that conforms to the initial-import contract:
   information.
 - The source deck is authoritative only while constructing the initial GCL.
 
+If multiple source notes yield the same exact annotated GCL entry, Derive MUST
+retain the first occurrence and report later occurrences as duplicates rather
+than write repeated GCL lines.
+
 The generator MUST NOT assume that the initial-import field layout is also the
 layout of the generated-deck template.
 
@@ -156,16 +165,18 @@ explicitly requests both operations.
 The system MUST support this conceptual workflow:
 
 1. Read the authoritative GCL.
-2. Read and verify the associated generated CrowdAnki JSON.
-3. Classify new, unchanged, changed, removed, and explicitly regenerated entries.
-4. Confirm that entries classified as existing will not be emitted as duplicate
+2. Purge exact duplicate GCL entries while retaining separately annotated
+   readings.
+3. Read and verify the associated generated CrowdAnki JSON.
+4. Classify new, unchanged, changed, removed, and explicitly regenerated entries.
+5. Confirm that entries classified as existing will not be emitted as duplicate
    notes.
-5. Generate and validate content only where required by the update policy.
-6. Preserve previously generated cards byte-for-byte at the field-content level
+6. Generate and validate content only where required by the update policy.
+7. Preserve previously generated cards byte-for-byte at the field-content level
    unless explicit regeneration was requested.
-7. Report notes that will be removed because their GCL entries were removed.
-8. Remove those notes from the proposed output.
-9. Emit a valid updated deck and an Update report.
+8. Report notes that will be removed because their GCL entries were removed.
+9. Remove those notes from the proposed output.
+10. Emit a valid updated deck and an Update report.
 
 Reordering a GCL entry MUST NOT by itself cause content regeneration. The exact
 identity and explicit-regeneration mechanisms are unresolved.

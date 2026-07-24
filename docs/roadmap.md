@@ -5,8 +5,8 @@ after it is specified in the normative documents.
 
 ## Phase 1: Specification decisions
 
-- Resolve the GCL syntax questions, especially comments, normalization, duplicate
-  handling, and ASCII `~`.
+- Resolve the remaining GCL syntax questions, especially comments, normalization,
+  and ASCII `~`.
 - Select a stable entry identity and CrowdAnki GUID strategy.
 - Define state storage, removal behavior, explicit regeneration, and atomic
   output.

@@ -13,19 +13,21 @@ Derive MUST validate:
 
 Generate MUST validate:
 
-1. GCL encoding and syntax;
-2. linguistic interpretation and generated content;
-3. field formatting and target concealment; and
-4. the completed new CrowdAnki deck package.
+1. GCL preflight deduplication;
+2. GCL encoding and syntax after cleanup;
+3. linguistic interpretation and generated content;
+4. field formatting and target concealment; and
+5. the completed new CrowdAnki deck package.
 
 Update MUST validate:
 
-1. the GCL and existing generated deck;
-2. GCL-to-deck association;
-3. entry classification and external drift;
-4. added or regenerated content;
-5. identity and preservation; and
-6. the completed updated CrowdAnki deck package.
+1. GCL preflight deduplication;
+2. the cleaned GCL and existing generated deck;
+3. GCL-to-deck association;
+4. entry classification and external drift;
+5. added or regenerated content;
+6. identity and preservation; and
+7. the completed updated CrowdAnki deck package.
 
 Checks that can detect unsafe output MUST run before replacing a last known-good
 deck.
@@ -40,8 +42,11 @@ For each file, validation MUST verify:
 - non-empty vocabulary after annotation removal;
 - supported annotation order and multiplicity;
 - full-width affix placeholders;
+- canonical ASCII `(な)` markers rather than full-width parentheses;
+- bracket-form readings rather than whitespace-separated inline readings;
 - absence of unsupported control characters; and
-- any adopted duplicate, whitespace, and normalization policy.
+- absence of exact duplicate annotated-entry lines; and
+- any adopted whitespace and normalization policy.
 
 When validating an operation that adds requested entries to an existing GCL,
 validation MUST confirm that the new entries follow the previously final entry and
@@ -53,6 +58,10 @@ For each note, validation MUST verify:
 
 - `Reading`, `Definition`, `Examples`, and `Vocabulary` are present and non-empty;
 - the resolved reading agrees with a supplied authoritative reading;
+- every automatically included alternate reading supports three to five natural,
+  non-contrived contemporary examples;
+- no automatically included reading is merely archaic, obsolete, markedly
+  uncommon, or limited to unrelated compounds;
 - reading text contains only hiragana after HTML is removed;
 - bold markup is balanced;
 - kanji-corresponding reading portions are bold and original kana portions are
@@ -173,8 +182,18 @@ A release test suite MUST include:
 - expansion of a 10-note deck to the first 100 GCL entries by preserving the
   original 10 identities and adding exactly 90 notes;
 - a repeated Update request that adds no duplicate notes;
+- deduplication that retains the first exact GCL entry, removes all later exact
+  occurrences, and preserves remaining order;
+- Generate and Update preflight deduplication that retains separately annotated
+  readings such as `縁[ふち]` and `縁[えん]`;
 - distinct notes and GUIDs for one written expression with two authoritative
   readings;
+- a `全` clarification response that annotates the existing entry with the first
+  offered reading and appends all remaining readings to the end of the GCL;
+- a multiline clarification response whose lines map to prompts in order,
+  including multiple `全` responses and rejection of a mismatched line count;
+- automatic expansion into all common contemporary readings while excluding an
+  uncommon variant that would require contrived examples;
 - rejection of an unrelated or incompatible deck supplied to Update;
 - a normal kanji-plus-okurigana word such as `遭う`;
 - a supplied reading such as `一入[ひとしお]`;

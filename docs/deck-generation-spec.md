@@ -48,7 +48,9 @@ Derive MUST NOT:
 - silently omit a source note.
 
 Its report MUST reconcile source-note count with created entries, entries skipped
-under an approved rule, and errors.
+as exact duplicates, entries skipped under another approved rule, and errors.
+When exact duplicates are encountered, Derive MUST retain the first occurrence
+and omit later occurrences from the proposed GCL.
 
 After initial derivation, any later requested vocabulary additions MUST be
 appended to the end of the authoritative GCL as required by
@@ -72,6 +74,10 @@ Generate accepts:
 
 Generate MUST NOT require the source JSON from which the GCL may have been
 derived.
+
+Before any content generation, Generate MUST purge exact duplicate GCL lines,
+publish the cleaned GCL, and validate it. Entries that differ by `[reading]`,
+`(な)`, or affix annotation are distinct and MUST be retained.
 
 ### 3.2 Template use
 
@@ -162,11 +168,17 @@ Update accepts:
 Before changing anything, Update MUST verify GCL-to-deck association and template,
 note-model, and state compatibility. The association mechanism is unresolved.
 
+Before association-based entry classification, Update MUST purge exact duplicate
+GCL lines, publish the cleaned GCL, and validate it. Separately annotated readings
+MUST remain separate entries.
+
 The original source JSON used by Derive is not an Update input unless it is also,
 independently, the verified associated generated deck. Update MUST NOT confuse the
 source import field contract with the four-field generated-note contract.
 
 ### 4.2 Classification
+
+Classification MUST operate on the deduplicated GCL.
 
 Update MUST classify entries as at least:
 
@@ -191,6 +203,10 @@ and stable card identity.
 Update MUST emit at most one note for each distinct GCL entry identity. When the
 associated deck already contains that identity, Update MUST preserve or explicitly
 regenerate the existing note rather than append a duplicate.
+
+If a legacy GCL or associated deck contains repeated copies of one exact entry,
+Update MUST preserve the note corresponding to the first GCL occurrence and
+remove later redundant notes. It MUST report the cleanup.
 
 A changed annotation can change interpretation and MUST NOT be treated as harmless
 formatting. A changed previously generated entry MUST NOT be regenerated unless
@@ -280,6 +296,7 @@ Every operation MUST emit a report identifying itself as Derive, Generate, or
 Update and containing:
 
 - input and output paths and detected versions;
+- the number and text of exact duplicate GCL entries removed during preflight;
 - relevant processed, created, preserved, regenerated, removed, and failed counts;
 - clarification requests;
 - validation failures with source references; and

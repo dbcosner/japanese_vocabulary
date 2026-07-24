@@ -29,8 +29,7 @@ make diffs surprising.
 
 **Question:** Should ASCII `~` be accepted and canonicalized to `～`, or rejected?
 
-**Current evidence:** The GCL contains both forms, including `~箇月` and `~ヶ月`,
-while the project instructions define `～`.
+**Status:** Resolved by D11.
 
 ## Q4. Duplicate entries
 
@@ -39,9 +38,7 @@ warn, or intentionally produce multiple cards?
 
 Distinct supplied readings for the same written form MUST remain distinguishable.
 
-**Status:** Partially resolved by D07. Update may not duplicate an already
-generated GCL entry, and distinct authoritative readings are distinct entries.
-The treatment of exact duplicate GCL lines remains open.
+**Status:** Resolved by D07 and D09.
 
 ## Q5. Stable entry and note identity
 
@@ -298,3 +295,95 @@ operation.
 - Affected specifications: `product-spec.md`, `generation-control-file-spec.md`,
   `deck-generation-spec.md`, `validation-spec.md`
 - Supersedes: the unresolved Update portion of Q4
+
+### Decision D08: 全 requests every offered reading
+
+- Date: 2026-07-24
+- Status: accepted
+- Decision: In response to a reading clarification, `全` requests separate entries
+  for every offered reading. The first reading annotates the existing entry; all
+  remaining readings are appended to the end of the GCL in offered order.
+- Rationale: This provides a concise editorial command while preserving the rule
+  that future GCL additions are appended.
+- Affected specifications: `generation-control-file-spec.md`,
+  `content-generation-spec.md`, `validation-spec.md`
+- Supersedes: no earlier decision
+
+### Decision D09: Exact GCL duplicates retain the first occurrence
+
+- Date: 2026-07-24
+- Status: accepted
+- Decision: Exact duplicate annotated-entry lines are not valid separate entries.
+  Deduplication retains the first occurrence, removes every later occurrence, and
+  preserves the relative order of retained entries. Separately annotated readings
+  and affix forms remain distinct.
+- Rationale: Exact duplicates would create redundant cards without adding
+  editorial meaning. First-occurrence retention is deterministic and minimally
+  disruptive.
+- Affected specifications: `README.md`, `product-spec.md`,
+  `generation-control-file-spec.md`, `deck-generation-spec.md`,
+  `validation-spec.md`
+- Supersedes: the remaining unresolved portion of Q4
+
+### Decision D10: Reading clarifications use ordered response lines
+
+- Date: 2026-07-24
+- Status: accepted
+- Decision: For a batch of ambiguous readings, the editor supplies one response
+  per non-empty line in prompt order. Each line selects one offered reading or
+  uses `全`. Alternate entries produced by multiple `全` responses are appended in
+  prompt order and then offered-reading order.
+- Rationale: Positional multiline responses keep large clarification batches
+  concise while retaining an unambiguous mapping.
+- Affected specifications: `generation-control-file-spec.md`,
+  `content-generation-spec.md`, `validation-spec.md`
+- Supersedes: no earlier decision
+
+### Decision D11: Normalize legacy GCL syntax to version 1
+
+- Date: 2026-07-24
+- Status: accepted
+- Decision: Normalize `（な）` to `(な)`, ASCII `~` to `～`,
+  whitespace-separated `来る　きたる` to `来る[きたる]`, and `故（に）` to
+  `故[ゆえ]`. Optional particles such as the `に` in `故に` belong in generated
+  examples, not editorial annotation syntax.
+- Rationale: These transformations preserve the apparent editorial intent while
+  making the GCL conform to one unambiguous version 1 grammar.
+- Affected specifications: `generation-control-file-spec.md`,
+  `validation-spec.md`
+- Supersedes: Q3 and the listed legacy syntax exceptions
+
+### Decision D12: Include natural contemporary readings automatically
+
+- Date: 2026-07-24
+- Status: accepted
+- Decision: For an unannotated ambiguous expression, automatically create
+  separate entries and cards for every common contemporary reading that supports
+  a clear definition and three to five natural examples. The most common reading
+  annotates the existing entry; other qualifying readings are appended. Archaic,
+  obsolete, markedly uncommon, compound-only, or contrived-example readings are
+  excluded.
+- Rationale: The deck should cover genuinely useful readings without adding cards
+  whose usage is unnatural or repeatedly requiring routine editorial choices.
+- Affected specifications: `README.md`, `generation-control-file-spec.md`,
+  `content-generation-spec.md`, `validation-spec.md`
+- Supersedes: the default requirement to request clarification for every
+  multi-reading expression; D08 and D10 remain available for genuinely uncertain
+  cases
+
+### Decision D13: Generate and Update purge duplicates first
+
+- Date: 2026-07-24
+- Status: accepted
+- Decision: Generate and Update begin with mandatory GCL deduplication. The first
+  exact annotated-entry line is retained, later exact lines are removed, and the
+  cleaned GCL is published and validated before the requested operation continues.
+  Because `[reading]` is part of the comparison key, alternative readings are
+  distinct rather than duplicates.
+- Rationale: Every deck operation should consume a canonical GCL without losing
+  deliberately separated readings.
+- Affected specifications: `README.md`, `product-spec.md`,
+  `generation-control-file-spec.md`, `deck-generation-spec.md`,
+  `validation-spec.md`
+- Supersedes: D09 only insofar as it makes that cleanup mandatory preflight for
+  Generate and Update

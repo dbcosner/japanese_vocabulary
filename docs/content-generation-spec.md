@@ -31,13 +31,41 @@ materially different interpretations, processing requires clarification.
 When no reading is supplied, the generator MUST determine the reading from the
 expression and relevant linguistic evidence.
 
-If multiple readings or interpretations remain plausible and would yield
-different learner-facing content, the generator MUST NOT guess. It MUST emit a
-clarification request identifying:
+If multiple readings are established in contemporary Japanese, the generator MUST
+create a separate entry and card for each reading that:
+
+- occurs often enough to be pedagogically useful;
+- supports a clear, non-contrived Japanese definition;
+- supports three to five natural contemporary examples; and
+- is a reading of the expression as presented, rather than only a bound reading
+  in unrelated compounds.
+
+The most common qualifying reading MUST annotate the existing GCL entry. Other
+qualifying readings MUST be appended to the end of the GCL.
+
+The generator MUST exclude a reading when it is archaic, obsolete, markedly
+uncommon, or so contextually marginal that satisfying the example requirements
+would produce unnatural or contrived sentences. Dictionary recognition alone is
+not sufficient for inclusion.
+
+If it remains genuinely uncertain whether a reading qualifies, or if multiple
+interpretations within one reading would produce materially different
+learner-facing content, the generator MUST NOT guess. It MUST emit a clarification
+request identifying:
 
 - the entry and line number;
 - the plausible readings or interpretations, when known; and
 - the information needed to resolve the ambiguity.
+
+For a reading-only clarification, the generator MUST present the plausible
+qualifying readings in a deliberate order. The editor may select one reading or
+use the `全` response defined in `generation-control-file-spec.md` to request cards
+for every offered reading. Each resulting card MUST be generated for its own
+reading and interpretation.
+
+When multiple entries are presented together, each MUST appear on its own numbered
+prompt line. Responses MUST be interpreted one line at a time in the same order,
+as defined by the GCL specification.
 
 The same rule applies to ambiguous prefixes and suffixes.
 
@@ -157,4 +185,3 @@ Definitions and examples MUST read as though written or carefully edited by a
 native speaker. They SHOULD favor pedagogically useful distinctions and authentic
 contexts. They MUST NOT contain mojibake, unsupported placeholders, editorial
 instructions, uncertainty markers, or generation commentary.
-
