@@ -477,6 +477,42 @@ class BatchGenerationTests(unittest.TestCase):
         self.assertEqual(updated["notes"][0], existing_note)
         self.assertEqual(updated["notes"][1]["fields"][3], "内閣")
 
+    def test_partial_update_reports_missing_result_without_crashing(self):
+        prepared = prepare_batch(
+            gcl_path=self.gcl,
+            work_dir=self.root / "partial-update-work",
+            start=1,
+            end=1,
+            model="gpt-test",
+            reasoning_effort="low",
+        )
+        deck = json.loads(self.template.read_text(encoding="utf-8"))
+        deck["notes"] = []
+        deck_dir = self.root / "partial_update_deck"
+        deck_dir.mkdir()
+        deck_path = deck_dir / "partial_update_deck.json"
+        deck_path.write_text(
+            json.dumps(deck, ensure_ascii=False), encoding="utf-8"
+        )
+        output = self.root / "partial-update-output.jsonl"
+        output.write_text("", encoding="utf-8")
+
+        result = apply_update(
+            manifest_path=Path(prepared["manifest_path"]),
+            output_path=output,
+            deck_path=deck_path,
+            through=1,
+            allow_partial=True,
+        )
+
+        self.assertTrue(result["published"])
+        self.assertEqual(result["final_notes"], 0)
+        self.assertEqual(len(result["findings"]), 1)
+        self.assertEqual(
+            result["findings"][0]["errors"],
+            ["no existing or generated card for requested entry"],
+        )
+
     def test_example_count_policy(self):
         card = {
             "status": "card",

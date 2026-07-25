@@ -1288,7 +1288,11 @@ def apply_update(
                 }
             )
             continue
-        card = results[custom_id]
+        card = results.get(custom_id)
+        if card is None:
+            # Partial updates intentionally omit cards that need manual review.
+            # The missing-card pass below records the actionable finding.
+            continue
         errors = validate_card(card, entry.text)
         if card.get("additional_gcl_entries"):
             errors.append("fully annotated GCL responses cannot add readings")
