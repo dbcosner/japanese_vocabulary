@@ -36,7 +36,7 @@ Start a paid job only with explicit acknowledgement:
 
 ```bash
 batch-generate submit \
-  --manifest .batch/reading-normalization/manifest.json \
+  --manifest .batch/manifest_readings.json \
   --confirm-cost
 ```
 
@@ -44,9 +44,9 @@ Use `status` and `collect`, then validate and publish:
 
 ```bash
 batch-generate apply-readings \
-  --manifest <manifest.json> \
-  --output <output.jsonl> \
-  --report <report.json>
+  --manifest .batch/manifest_readings.json \
+  --output .batch/output_readings.jsonl \
+  --report .batch/reading-report.json
 ```
 
 ## Population
@@ -63,6 +63,20 @@ and prepares only missing requests. Submit prepared manifests separately with
 
 Rejected cards may be isolated with `prepare-retry`; a completed retry may be
 combined with the base output using `merge-retry`.
+
+`prepare` is the lower-level range-oriented request generator:
+
+```bash
+batch-generate prepare \
+  --gcl gcl/n1_vocabulary_generation_control_file.txt \
+  --start 1 \
+  --end 100 \
+  --work-dir .batch/manual
+```
+
+It writes a standalone input and manifest but does not associate collected cards
+with a population workspace. The normal end-to-end workflow should use
+`populate`.
 
 ## APKG generation
 
@@ -88,4 +102,45 @@ batch-generate migrate-gcl-syntax \
 ```
 
 The migration validates every record, updates hashes, preserves deterministic
-GUIDs, and writes a recovery backup before publication.
+GUIDs, and writes a recovery backup before publication. It requires the
+workspace's current `generate-manifest.json`; Generate recreates that manifest
+for a complete workspace.
+
+## Decisions-file format
+
+The optional decisions JSON currently recognizes:
+
+```json
+{
+  "rules": {
+    "split_comparisons": true,
+    "strip_parentheticals_except_na": true,
+    "strip_editorial_labels": true,
+    "split_equivalent_spellings": true
+  },
+  "note_overrides": {
+    "1234567890": ["語彙[ごい]"],
+    "1234567891": null
+  }
+}
+```
+
+Override keys are source Anki note IDs as strings. An array supplies exact GCL
+entries; `null` drops that source note. Unknown rule keys are currently ignored.
+
+## CLI command summary
+
+| Command | Network or cost behavior |
+| --- | --- |
+| `import-apkg` | Local |
+| `prepare-readings` | Local request preparation |
+| `apply-readings` | Local validation and GCL publication |
+| `populate` | Local cache validation and request preparation |
+| `generate` | Local APKG generation |
+| `prepare` | Local standalone range preparation |
+| `prepare-retry` | Local repair-request preparation |
+| `merge-retry` | Local JSONL merge |
+| `migrate-gcl-syntax` | Local guarded migration |
+| `submit` | Networked and potentially paid; requires `--confirm-cost` |
+| `status` | Networked status refresh |
+| `collect` | Networked result download after completion |

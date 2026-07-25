@@ -128,7 +128,6 @@ expression. Definitions and examples are generated in Japanese.
 ├── apkg_exports/       Source APKGs and import review artifacts
 ├── docs/               Specifications and workflow documentation
 ├── gcl/                Generation Control Files
-├── scripts/            Maintained utility scripts
 ├── src/                Python package
 ├── templates/          APKG-neutral card templates
 ├── tests/              Regression tests

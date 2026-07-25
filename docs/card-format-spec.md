@@ -8,7 +8,7 @@ The current deck template defines one note model with four fields in this order:
 | ---: | --- | --- |
 | 0 | `Reading` | Hiragana reading with kanji-corresponding portions bold |
 | 1 | `Definition` | Concise Japanese explanation |
-| 2 | `Examples` | Three to five Japanese example sentences |
+| 2 | `Examples` | One to five Japanese example sentences, normally three |
 | 3 | `Vocabulary` | Original expression with GCL annotations removed |
 
 A generated note MUST populate all four fields. Field names and order MUST match
@@ -72,9 +72,9 @@ It MUST otherwise preserve the intended written expression.
 - Any literal HTML-significant characters originating in content MUST be escaped
   unless they are deliberate supported markup.
 
-The exact separator used between example sentences is unresolved. Whatever format
-is adopted MUST keep examples individually readable and MUST not cause the
-template to reveal `Vocabulary`.
+APKG generation wraps each example in its own `<div>` and joins those elements
+with line breaks. This keeps examples individually readable and does not expose
+`Vocabulary`.
 
 ## 5. Reading field
 

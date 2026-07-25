@@ -2,326 +2,158 @@
 
 ## 1. Purpose
 
-A Generation Control File (GCL) is the authoritative, manually curated inventory
-for one vocabulary deck. GCL annotations guide generation but are not learner-facing
-content.
+A Generation Control File (GCL) is the authoritative vocabulary inventory for
+one logical APKG deck. This document describes version 1 as implemented.
 
-This document defines GCL version 1.
+## 2. Filename and encoding
 
-## 2. File naming
-
-A version 1 GCL filename MUST follow:
+`import-apkg` creates:
 
 ```text
 <deck-name>_generation_control_file.txt
 ```
 
-`<deck-name>` MUST be non-empty and SHOULD use lowercase ASCII letters, digits,
-and underscores for portable paths. The name determines the logical APKG project
-name as defined in `deck-generation-spec.md`.
+The requested name must be a filename component, not a path. Other commands
+accept an explicit GCL path and do not enforce its filename.
 
-Example:
+GCLs are UTF-8 text. Reading accepts UTF-8 with or without a BOM and recognizes
+LF or CRLF line endings. Atomic publication always writes UTF-8 without a BOM and
+uses LF endings.
 
-```text
-n1_vocabulary_generation_control_file.txt
-```
+## 3. Header, comments, blanks, and whitespace
 
-## 3. Encoding and line handling
-
-- A GCL MUST be encoded as UTF-8.
-- A generator MUST accept UTF-8 with or without a byte-order mark.
-- A generator MUST recognize LF and CRLF line endings.
-- A generator MUST treat the file as Unicode text and MUST NOT reinterpret UTF-8
-  bytes using a legacy encoding.
-- A generator MUST preserve Japanese characters exactly except for any Unicode
-  normalization policy adopted through `open-questions.md`.
-- Leading or trailing whitespace on an entry is not currently defined and MUST be
-  reported rather than silently removed.
-
-## 4. Version header
-
-The current repository GCL begins with:
+Files created by this project begin with:
 
 ```text
 # GCL Version: 1
 ```
 
-For version 1:
+The current parser treats every blank line and every line whose trimmed form
+begins with `#` as non-entry text. It does not currently reject an absent or
+different header. Entry parsing trims leading and trailing whitespace in memory.
+When deduplication or syntax normalization rewrites the file, retained entries are
+published in trimmed form.
 
-- the first non-empty line MUST be exactly `# GCL Version: 1`;
-- the header is metadata and MUST NOT create a vocabulary entry;
-- a blank line MAY follow the version header;
-- an absent, malformed, or unsupported version header MUST stop processing before
-  content generation; and
-- no other comment syntax is defined.
+Callers SHOULD use the exact version header and SHOULD NOT use arbitrary comments
+because stricter version validation may be added later.
 
-Whether arbitrary comments and blank lines within the entry list are allowed is
-an open question. Until resolved, an implementation MUST report them rather than
-assign them vocabulary semantics.
+## 4. Entries
 
-## 5. Entry structure
-
-After the header, each content-bearing line represents one entry:
+A complete entry is:
 
 ```text
-<annotated-entry>
+<expression>[<reading>]
+<expression>[<reading>](な)
 ```
 
-An annotated entry contains:
+It contains:
 
-- one target vocabulary expression;
-- exactly one authoritative reading in square brackets;
-- optionally the literal marker `(な)`; and
-- optionally one affix placeholder at the beginning or end.
+- a nonempty written expression;
+- exactly one complete hiragana reading in square brackets;
+- optionally the terminal ASCII marker `(な)`; and
+- optionally one ASCII U+007E `~` at the beginning or end.
 
 Examples:
 
 ```text
 遭う[あう]
-一入[ひとしお]
 静か[しずか](な)
-一入[ひとしお](な)
 ~化[か]
 無~[む]
 ```
 
-The annotations MUST be removed to derive the target vocabulary displayed on the
-back. Annotation text MUST NOT appear in generated fields.
+Square brackets and unsupported parentheses cannot occur in an expression.
 
-### 5.1 Adding entries
+An unresolved proposed GCL may temporarily contain a bare expression, optionally
+ending in `(な)`. `prepare-readings` accepts this state. `populate`, `prepare`,
+and `generate` require every entry to match the complete annotated grammar.
 
-When an editor requests a new GCL entry, the entry MUST be appended after the
-existing final entry in the file. It MUST NOT be inserted beside a related
-spelling, reading, part of speech, or semantic group.
+## 5. Canonical syntax cleanup
 
-Changing annotations on an existing entry is an edit to that entry, not an
-addition, and does not move it. This rule applies prospectively; it does not
-require earlier additions to be reordered.
+Before reading entries, the parser:
 
-An editor MAY append a bare expression without `[reading]` as temporary working
-input for Update. Such a file is unresolved and is not yet a valid published GCL.
-At the beginning of Update, before entry identity or deck changes are classified,
-the reading-resolution stage MUST:
+- normalizes U+FF5E `～` and U+301C `〜` to ASCII U+007E `~`;
+- normalizes full-width `（な）` to `(な)`; and
+- removes later exact duplicate entry lines.
 
-1. resolve every unannotated expression;
-2. annotate the expression in its existing position with the first qualifying
-   reading;
-3. append other qualifying readings to the end;
-4. deduplicate the complete annotated entries again; and
-5. atomically publish the fully resolved GCL.
+If either normalization or deduplication occurs, the cleaned GCL is atomically
+rewritten. Deduplication retains the first occurrence and reports each removed
+entry and former physical line number.
 
-Update MUST stop before modifying the deck when any reading remains unresolved.
+Different readings of the same expression are different identities. A standalone
+expression and an affix form are also different identities.
 
-### 5.2 Exact duplicate entries
+## 6. Reading resolution
 
-Two entries are exact duplicates when their complete annotated-entry lines are
-identical as Unicode strings under the adopted normalization policy.
+`prepare-readings` submits only entries that do not already match the complete
+annotated grammar. Each result must echo the source `gcl_entry` and provide:
 
-- A valid GCL MUST NOT contain exact duplicate entries.
-- The complete annotated-entry line is the comparison key. Different `[reading]`
-  annotations make entries distinct and MUST NOT be removed as duplicates.
-- A standalone expression and its prefix or suffix form are distinct.
-- Deduplication MUST retain the first occurrence, remove every later exact
-  occurrence, and preserve the relative order of all retained entries.
-- A deduplication report MUST identify the removed entry text and its former line
-  number.
+- `status`: `resolved` or `needs_review`;
+- `issue`: an explanation when review is required; and
+- `readings`: a list of complete hiragana readings.
 
-Deduplication is editorial cleanup, not card regeneration. If a removed duplicate
-was already represented by a redundant generated note, Update MUST remove that
-redundant note while preserving the note associated with the retained first
-occurrence.
+`apply-readings` validates exact request/output reconciliation. The first valid
+reading replaces the unresolved expression in its existing position. Additional
+valid readings are appended to the end in returned order. Duplicate or malformed
+readings are reported as normalization warnings. The completed entries are
+deduplicated again before atomic publication.
 
-The same rule applies when an editorial correction causes an entry to become an
-exact duplicate of an earlier entry. The correction workflow MUST rerun
-deduplication before requesting generation, retain the earlier entry and its
-existing note identity, remove the corrected later line, and report that the
-review item was resolved by deduplication rather than by generating another card.
-
-Import MUST run this deduplication process on its proposed GCL before publication.
-Generate and Update MUST run it as a mandatory GCL preflight step before parsing
-entries for generation, matching identities, or classifying changes. The cleaned
-GCL MUST be validated before the requested operation proceeds.
-
-## 6. Authoritative reading
-
-Syntax:
-
-```text
-<expression>[<reading>]
-```
-
-Rules:
-
-- `<reading>` MUST be non-empty.
-- Every entry MUST supply a reading, and it MUST be treated as authoritative.
-- Editors and automated correction workflows MUST verify that the written
-  expression and supplied reading form an established pairing. If a mismatch is
-  actually a spelling error, they MUST correct the expression and then rerun
-  exact deduplication before content generation.
-- The reading annotation MUST occur after the expression and before `(な)`, when
-  both are present.
-- At most one reading annotation is permitted per entry.
-- The reading MUST be written entirely in hiragana and MUST include the complete
-  reading, including okurigana.
-- Square brackets that are part of an expression are not supported in version 1.
-
-Entries with the same written expression and different authoritative readings are
-distinct editorial entries, for example:
-
-```text
-縁[ふち]
-縁[えん]
-```
-
-The generator MUST generate each according to its supplied reading. Entry identity
-MUST derive from the complete canonical annotated entry and MUST NOT include its
-physical line number.
-
-Import MUST resolve every proposed expression before publishing a GCL. The most
-common qualifying reading remains in the expression's original position and each
-remaining qualifying reading is appended as a separate annotated entry. Archaic,
-obsolete, markedly uncommon, compound-only, or contrived-example readings MUST
-NOT be appended. After resolution, Import MUST deduplicate the complete annotated
-entries again because previously unannotated expressions may resolve to an entry
-that already exists.
-
-Generate MUST reject an unannotated entry as unresolved input. Update MUST route
-unannotated entries through its required pre-classification reading-resolution
-stage and MUST NOT infer readings during card generation.
-
-When clarification produces an additional desired reading rather than replacing
-the intended reading of an existing entry, the additional reading MUST be
-represented as a separate annotated entry and appended according to section 5.1.
-It MUST NOT overwrite the existing reading.
-
-### 6.1 All-readings clarification response
-
-When the generator asks an editor to choose among multiple possible readings, the
-editor MAY respond with the single character:
-
-```text
-全
-```
-
-`全` means that the editor wants a separate GCL entry and generated card for every
-reading offered in that clarification request.
-
-The generator MUST:
-
-1. apply the first offered reading to the existing entry using `[reading]`;
-2. preserve that entry at its current position;
-3. create one annotated entry for each remaining offered reading; and
-4. append those additional entries, in offered order, to the end of the GCL.
-
-The generator MUST NOT treat `全` as vocabulary content or as a reading.
-
-### 6.2 Ordered multiline clarification responses
-
-When a clarification request contains multiple ambiguous entries, the editor will
-respond with exactly one non-empty response line per ambiguous entry. Response
-line order MUST correspond to prompt order:
-
-```text
-prompt 1 ↔ response line 1
-prompt 2 ↔ response line 2
-…
-```
-
-Each response line MUST contain either one offered reading or `全`. The generator
-MUST validate the response-line count before changing the GCL. It MUST stop and
-request correction if a line is missing, extra, empty, or cannot be matched
-unambiguously.
-
-When more than one line contains `全`, all alternate entries MUST be collected and
-appended to the end of the GCL in this order:
-
-1. prompt order; then
-2. offered-reading order within each prompt, excluding the first reading applied
-   to the existing entry.
+If any result needs review, is missing, is unexpected, or has no valid reading,
+the command writes its report and leaves the GCL unchanged. An explicit
+`--correction SOURCE=ANNOTATED_ENTRY` may replace one unresolved source with a
+complete annotated entry.
 
 ## 7. Na-adjective marker
 
-Syntax:
+`(な)` is generation metadata:
 
-```text
-<expression>(な)
-<expression>[<reading>](な)
-```
+- it occurs only at the end;
+- it is not part of the reading or displayed vocabulary; and
+- it causes content generation to cover natural adjectival-noun usage.
 
-Rules:
-
-- `(な)` identifies the entry as an adjectival noun (na-adjective).
-- It MUST occur only at the end of the line.
-- It MUST NOT be treated as part of the target vocabulary or reading.
-- It MUST NOT appear verbatim in any generated field merely because it is an
-  annotation.
-- Parentheses used for other purposes are not supported in version 1.
-- Version 1 uses ASCII parentheses exactly as `(な)`. Full-width `（な）` MUST be
-  normalized to `(な)` before processing.
+During APKG import, a source trailing literal `な`, `(な)`, or `（な）` is
+normalized to the canonical marker when the importer identifies that form.
+Other parenthetical source text is reviewable unless an explicit decisions file
+authorizes its removal.
 
 ## 8. Affix placeholder
 
-Syntax:
+A leading `~` marks a suffix and a trailing `~` marks a prefix:
 
 ```text
-~<expression>
-<expression>~
+~化[か]
+無~[む]
 ```
 
-Rules:
+The placeholder is removed from the `Vocabulary` field. Generated definitions
+describe the affix function, and examples embed the affix in complete natural
+words. A placeholder in the reading is removed during APKG import.
 
-- A leading `~` marks a suffix.
-- A trailing `~` marks a prefix.
-- The marker describes an open attachment position; it is not target vocabulary.
-- The marker MUST be removed from the `Vocabulary` field.
-- Generated definitions MUST describe the affix’s function.
-- Examples MUST show the affix in natural, complete words.
-- An entry with both a leading and trailing placeholder is invalid in version 1.
+Identity compatibility internally maps canonical `~` back to the former U+FF5E
+representation before hashing. This preserves existing cache identities and Anki
+GUIDs across the completed syntax migration.
 
-Version 1 defines only ASCII tilde U+007E (`~`). During GCL cleanup, full-width
-tilde U+FF5E (`～`), wave dash U+301C (`〜`), and other recognized tilde variants
-MUST be normalized to `~`. The file remains UTF-8 encoded.
+## 9. Identity
 
-## 9. Legacy inline reading and usage forms
+Entry identity is the SHA-256-derived key of the complete canonical annotated
+entry after the compatibility transform. It does not include line number.
+Deterministic Anki note GUIDs use the same compatibility transform.
 
-Version 1 does not permit a reading separated from an expression by whitespace or
-an optional-particle marker in parentheses.
+Consequently:
 
-- A legacy form such as `来る　きたる` MUST be rewritten as `来る[きたる]`.
-- A legacy form such as `故（に）` MUST be rewritten as `故[ゆえ]`.
-- Natural examples MAY demonstrate grammatical forms such as `故に`; optional
-  particles are content-generation concerns, not GCL annotations.
+- reordering does not change identity;
+- changing an expression, reading, or marker changes identity; and
+- U+FF5E-to-U+007E placeholder migration does not change identity.
 
-## 10. Parsing result
+## 10. Current parser errors
 
-For each valid line, the parser MUST expose at least:
+Processing stops when:
 
-| Property | Meaning |
-| --- | --- |
-| `source_line` | Original line text |
-| `line_number` | One-based physical line number |
-| `vocabulary` | Expression after all annotations are removed |
-| `authoritative_reading` | Supplied reading, or absent |
-| `is_na_adjective` | Whether `(な)` is present |
-| `affix_type` | `prefix`, `suffix`, or absent |
+- there are no vocabulary entries;
+- a command requiring resolved entries encounters a bare or malformed entry;
+- brackets, parentheses, reading characters, or annotation order do not match the
+  implemented grammar; or
+- an operation-specific hash or identity check fails.
 
-`vocabulary` MUST be non-empty after annotation removal.
-
-## 11. Invalid entries
-
-The parser MUST reject or stop on:
-
-- malformed or unmatched brackets or parentheses;
-- empty vocabulary or reading;
-- repeated reading or na-adjective annotations;
-- annotations in an unsupported order;
-- unsupported comment-like lines;
-- unsupported affix syntax;
-- an exact duplicate annotated-entry line;
-- control characters other than permitted line endings and encoding markers; or
-- any line that cannot be parsed unambiguously.
-
-Errors MUST include the file, physical line number, original line, and reason.
-
-Duplicate behavior, whitespace rules, normalization, and whether all parse errors
-are collected in one run are specified as open questions.
+Malformed-entry errors include a preview using entry order. Exact duplicates are
+cleaned and reported rather than treated as fatal.

@@ -41,8 +41,9 @@ normalize, or omit annotations in free-form output.
 
 ### 2.2 Import-time reading resolution
 
-Import MUST determine the reading of each proposed expression before publishing
-the GCL. Generate and Update MUST NOT perform this inference.
+The reading-resolution stage MUST determine the reading of each unresolved
+proposed expression before Populate or Generate. Card generation MUST NOT perform
+this inference.
 
 If multiple readings are established in contemporary Japanese, the generator MUST
 create a separate entry and card for each reading that:
@@ -71,17 +72,11 @@ request identifying:
 - the plausible readings or interpretations, when known; and
 - the information needed to resolve the ambiguity.
 
-For a reading-only clarification, Import MUST present the plausible
-qualifying readings in a deliberate order. The editor may select one reading or
-use the `全` response defined in `generation-control-file-spec.md` to request cards
-for every offered reading. Each resulting card MUST be generated for its own
-reading and interpretation.
-
-When multiple entries are presented together, each MUST appear on its own numbered
-prompt line. Responses MUST be interpreted one line at a time in the same order,
-as defined by the GCL specification.
-
-The same rule applies to ambiguous prefixes and suffixes.
+The Batch reading response returns qualifying readings in deliberate order. The
+first reading remains at the unresolved entry's position; additional readings
+are appended to the GCL. A `needs_review` response stops publication and records
+the issue for editorial correction. The same rule applies to ambiguous prefixes
+and suffixes.
 
 ### 2.3 Reading presentation
 

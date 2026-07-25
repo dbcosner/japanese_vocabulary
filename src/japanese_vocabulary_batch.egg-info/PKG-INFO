@@ -1,7 +1,0 @@
-Metadata-Version: 2.4
-Name: japanese-vocabulary-batch
-Version: 0.1.0
-Summary: Offline-safe tooling for populating and generating Japanese vocabulary decks
-Requires-Python: >=3.11
-Requires-Dist: genanki==0.13.1
-Requires-Dist: openai>=1.0

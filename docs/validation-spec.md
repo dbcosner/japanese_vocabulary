@@ -6,28 +6,32 @@ Import MUST validate:
 
 - the APKG ZIP structure and collection database;
 - note-model field mappings;
-- source note reconciliation;
-- canonical GCL syntax;
+- source note iteration and field extraction;
+- canonicalization of imported GCL entries;
 - exact duplicate handling;
-- explicit decisions-file structure; and
-- atomic publication of the proposed GCL and review JSON.
+- recognized decisions-file rules and note overrides; and
+- separate atomic publication of the proposed GCL and review JSON.
 
-Every skipped or unsafe source note MUST appear in the review report with source
-identity, original material, and a reason.
+Every successfully inspected note that is skipped, deduplicated, unresolved, or
+handled by an explicit override MUST appear in the review report. Fatal archive,
+database, model, or required-field errors stop Import instead.
 
 ## 2. GCL validation
 
-A complete GCL MUST have:
+A complete GCL used by Populate or Generate MUST have:
 
-- the exact version header;
 - UTF-8 encoding;
-- one entry per nonempty content line;
+- at least one entry after blank and `#` lines are ignored;
 - one complete hiragana `[reading]` per entry;
 - canonical ASCII U+007E `~` placeholders;
 - canonical `(な)` markers;
 - no unsupported parentheses, brackets, control characters, or exact duplicates;
   and
-- no learner-facing or editorial prose.
+- no text outside the implemented annotated-entry grammar.
+
+The current parser does not enforce the version header or reject arbitrary
+comment lines. Project-authored files nevertheless use the exact
+`# GCL Version: 1` header.
 
 Syntax cleanup MUST preserve source order and stable entry identity where an
 approved compatibility migration applies.
@@ -51,17 +55,17 @@ accepted card and no findings.
 Generate MUST verify before publication:
 
 - a complete and current population workspace;
-- a valid APKG-neutral template;
-- stable deck and model identifiers;
+- a template containing exactly one nonempty note model and at least one card
+  template;
+- derivable stable deck and model identifiers;
 - one valid cached card per GCL entry; and
 - an `.apkg` output extension.
 
-Regression tests SHOULD open the generated collection database and confirm:
+Regression tests open generated collection databases and confirm:
 
 - note count equals GCL entry count;
 - card count equals expected template output;
 - the GUID set equals deterministic GCL identities;
-- field ordering and card templates are correct; and
 - repeated generation retains stable identifiers.
 
 ## 5. Required regression coverage
@@ -75,7 +79,6 @@ Tests MUST cover:
 - missing and multiple readings;
 - reading-resolution expansion and post-resolution deduplication;
 - cache reuse after insertion or reordering;
-- incomplete workspace rejection;
 - APKG generation with stable IDs;
 - target concealment and HTML validation;
 - retry preparation and merge behavior;

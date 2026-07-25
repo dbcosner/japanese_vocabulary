@@ -2,6 +2,7 @@
 .batch/
 __pycache__/
 *.py[cod]
+*.egg-info/
 *.generation-report.json
 
 # Local test, coverage, and editor state.

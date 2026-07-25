@@ -25,13 +25,15 @@ Import MUST:
 - normalize GCL syntax, including U+007E `~` and `(な)`;
 - retain the first exact duplicate and report later occurrences;
 - write a proposed UTF-8 GCL atomically; and
-- write a structured import-review report for every note that could not be
-  imported safely.
+- write a structured import-review report for every successfully inspected note
+  that required review, was deduplicated, or used an explicit decision.
 
 Ambiguous structures MUST be flagged rather than guessed. These include multiple
 expressions, unsupported parentheticals, editorial instructions, corrupt fields,
 and unusable or multiple offered readings outside established affix logic.
 A separate decisions file MAY authorize source-specific deterministic cleanup.
+Unreadable archives, databases, models, or required fields abort Import before
+proposal publication.
 
 An unresolved proposed GCL is not authoritative until reading resolution succeeds
 and the completed file passes GCL validation.
@@ -47,7 +49,7 @@ The workspace MUST record:
 - a stable project ID used for Anki deck and model identifiers;
 - the current GCL hash;
 - accepted card records keyed by stable GCL identity; and
-- pending and completed Batch jobs.
+- any pending and completed Batch job artifacts that currently exist.
 
 Populate MUST reuse valid cached cards. Reordering an unchanged GCL entry MUST NOT
 cause regeneration. Missing, invalid, or changed entries MAY create new offline
@@ -61,8 +63,9 @@ Generate accepts:
 - one APKG-neutral card template; and
 - one `.apkg` output path.
 
-Generate MUST refuse incomplete, stale, or invalid workspaces. It MUST create one
-note for each current GCL entry, use stable deck/model/note identifiers, and
+Generate validates the project hash, cache identity set, and every cached card
+before writing. It MUST refuse incomplete, stale, or invalid workspaces, create
+one note for each current GCL entry, use stable deck/model/note identifiers, and
 atomically replace the requested APKG.
 
 The generated package MUST:
@@ -81,6 +84,7 @@ update stored hashes, and create a recoverable backup before publication.
 
 ## 6. Atomicity
 
-Import and Generate MUST write temporary files and replace final artifacts only
-after validation. A failure MUST NOT expose a partial GCL, review report, cache,
-or APKG as complete.
+Import writes the proposed GCL and review JSON through separate atomic
+replacements. Generate writes a temporary APKG and replaces the final output only
+after package construction succeeds. Cache and metadata files also use atomic
+replacement, but a multi-file operation is not a transactional filesystem commit.

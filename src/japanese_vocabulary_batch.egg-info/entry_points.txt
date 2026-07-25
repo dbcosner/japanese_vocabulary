@@ -1,2 +1,0 @@
-[console_scripts]
-batch-generate = japanese_vocabulary_batch.cli:main
