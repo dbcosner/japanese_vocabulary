@@ -365,7 +365,9 @@ def apply_reading_normalization(
     manifest_path: Path,
     output_path: Path,
     report_path: Path,
+    corrections: dict[str, str] | None = None,
 ) -> dict[str, Any]:
+    editorial_corrections = corrections or {}
     manifest = load_manifest(manifest_path)
     if manifest.get("operation") != "normalize-readings":
         raise PipelineError("Manifest is not a reading-normalization manifest")
@@ -373,6 +375,13 @@ def apply_reading_normalization(
     if sha256_file(gcl_path) != manifest["gcl_sha256"]:
         raise PipelineError("GCL changed after reading normalization was prepared")
     entries, _ = clean_and_read_gcl(gcl_path, require_readings=False)
+    entry_texts = {entry.text for entry in entries}
+    unknown_corrections = editorial_corrections.keys() - entry_texts
+    if unknown_corrections:
+        raise PipelineError(
+            "Editorial correction source not found in GCL: "
+            + ", ".join(sorted(unknown_corrections))
+        )
     results = parse_output(output_path)
     expected_ids = {request["custom_id"] for request in manifest["requests"]}
     missing = expected_ids - results.keys()
@@ -386,11 +395,36 @@ def apply_reading_normalization(
         request["source_index"]: request for request in manifest["requests"]
     }
     findings: list[dict[str, Any]] = []
+    warnings: list[dict[str, Any]] = []
     primary_by_index: dict[int, str] = {}
     alternates: list[str] = []
     for entry in entries:
         request = request_by_index.get(entry.source_index)
         if request is None:
+            continue
+        corrected = editorial_corrections.get(entry.text)
+        if corrected is not None:
+            if not ANNOTATED_GCL_RE.fullmatch(corrected):
+                findings.append(
+                    {
+                        "custom_id": request["custom_id"],
+                        "source_index": entry.source_index,
+                        "gcl_entry": entry.text,
+                        "errors": [
+                            "editorial correction must be a complete annotated entry"
+                        ],
+                    }
+                )
+                continue
+            primary_by_index[entry.source_index] = corrected
+            warnings.append(
+                {
+                    "custom_id": request["custom_id"],
+                    "source_index": entry.source_index,
+                    "gcl_entry": entry.text,
+                    "actions": [f"editorial correction applied: {corrected}"],
+                }
+            )
             continue
         result = results[request["custom_id"]]
         errors: list[str] = []
@@ -399,18 +433,36 @@ def apply_reading_normalization(
         if result.get("gcl_entry") != entry.text:
             errors.append("response gcl_entry does not match request")
         readings = result.get("readings")
-        if (
-            not isinstance(readings, list)
-            or not readings
-            or any(
-                not isinstance(reading, str)
-                or not HIRAGANA_RE.fullmatch(reading)
-                for reading in readings
-            )
-        ):
+        if not isinstance(readings, list):
             errors.append("readings must contain complete hiragana readings")
-        elif len(readings) != len(set(readings)):
-            errors.append("readings contains duplicates")
+            valid_readings: list[str] = []
+        else:
+            valid_readings = []
+            discarded: list[str] = []
+            for reading in readings:
+                if (
+                    not isinstance(reading, str)
+                    or not HIRAGANA_RE.fullmatch(reading)
+                    or reading in valid_readings
+                ):
+                    discarded.append(str(reading))
+                    continue
+                valid_readings.append(reading)
+            if not valid_readings:
+                errors.append("readings must contain complete hiragana readings")
+            elif discarded:
+                warnings.append(
+                    {
+                        "custom_id": request["custom_id"],
+                        "source_index": entry.source_index,
+                        "gcl_entry": entry.text,
+                        "actions": [
+                            "discarded duplicate or malformed reading: "
+                            + value
+                            for value in discarded
+                        ],
+                    }
+                )
         if errors:
             findings.append(
                 {
@@ -424,7 +476,7 @@ def apply_reading_normalization(
         expression = entry.text[:-3] if entry.text.endswith("(な)") else entry.text
         suffix = "(な)" if entry.text.endswith("(な)") else ""
         resolved_entries = [
-            f"{expression}[{reading}]{suffix}" for reading in readings
+            f"{expression}[{reading}]{suffix}" for reading in valid_readings
         ]
         primary_by_index[entry.source_index] = resolved_entries[0]
         alternates.extend(resolved_entries[1:])
@@ -439,6 +491,7 @@ def apply_reading_normalization(
         "entries_requiring_review": len(findings),
         "published": False,
         "findings": findings,
+        "normalization_warnings": warnings,
     }
     if findings:
         atomic_write_json(report_path, report)

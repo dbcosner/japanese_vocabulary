@@ -191,14 +191,22 @@ class BatchGenerationTests(unittest.TestCase):
         )
         self.assertEqual(len(prepared["requests"]), 2)
         resolved = {
-            "煙る": ["けむる", "けぶる"],
-            "内閣": ["ないかく"],
+            "煙る": ["けむる", "けむる", "けぶる", "け煙"],
+            "内閣": [],
         }
         lines = []
         for request in prepared["requests"]:
             result = {
-                "status": "resolved",
-                "issue": "",
+                "status": (
+                    "needs_review"
+                    if request["gcl_entry"] == "内閣"
+                    else "resolved"
+                ),
+                "issue": (
+                    "editorial correction required"
+                    if request["gcl_entry"] == "内閣"
+                    else ""
+                ),
                 "gcl_entry": request["gcl_entry"],
                 "readings": resolved[request["gcl_entry"]],
             }
@@ -211,6 +219,7 @@ class BatchGenerationTests(unittest.TestCase):
             manifest_path=Path(prepared["manifest_path"]),
             output_path=output,
             report_path=self.root / "reading-report.json",
+            corrections={"内閣": "内閣[ないかく]"},
         )
         self.assertTrue(report["published"])
         self.assertEqual(
@@ -223,6 +232,7 @@ class BatchGenerationTests(unittest.TestCase):
             ),
         )
         self.assertEqual(len(report["duplicates_removed_after_resolution"]), 1)
+        self.assertEqual(len(report["normalization_warnings"]), 2)
 
     def test_schema_requires_examples_only_for_cards(self):
         alternatives = card_schema()["properties"]["result"]["anyOf"]

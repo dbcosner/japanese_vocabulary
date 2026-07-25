@@ -88,6 +88,13 @@ def build_parser() -> argparse.ArgumentParser:
     apply_readings.add_argument("--manifest", type=Path, required=True)
     apply_readings.add_argument("--output", type=Path, required=True)
     apply_readings.add_argument("--report", type=Path, required=True)
+    apply_readings.add_argument(
+        "--correction",
+        action="append",
+        default=[],
+        metavar="SOURCE=ANNOTATED_ENTRY",
+        help="Apply an explicit editorial correction during publication",
+    )
 
     apply = commands.add_parser("apply", help="Validate and build CrowdAnki JSON")
     apply.add_argument("--manifest", type=Path, required=True)
@@ -149,10 +156,23 @@ def main(argv: list[str] | None = None) -> int:
                 merged_output_path=args.merged_output,
             )
         elif args.command == "apply-readings":
+            corrections: dict[str, str] = {}
+            for value in args.correction:
+                if "=" not in value:
+                    raise PipelineError(
+                        "--correction must use SOURCE=ANNOTATED_ENTRY"
+                    )
+                source, corrected = value.split("=", 1)
+                if not source or not corrected or source in corrections:
+                    raise PipelineError(
+                        "--correction sources and values must be non-empty and unique"
+                    )
+                corrections[source] = corrected
             result = apply_reading_normalization(
                 manifest_path=args.manifest,
                 output_path=args.output,
                 report_path=args.report,
+                corrections=corrections,
             )
         else:
             result = apply_results(

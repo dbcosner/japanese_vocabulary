@@ -101,6 +101,22 @@ with the first qualifying reading, appends other qualifying readings, and remove
 exact duplicates exposed after resolution. It publishes nothing if any reading
 requires review.
 
+The applicator safely collapses duplicate returned readings and discards malformed
+alternatives when at least one valid complete hiragana reading remains. It records
+each action in `normalization_warnings`. A confirmed source typo can be corrected
+without rerunning successful requests:
+
+```bash
+batch-generate apply-readings \
+  --manifest .batch/manifest_readings.json \
+  --output .batch/output_readings.jsonl \
+  --report .batch/reading-normalization-report.json \
+  --correction '妄動犬=盲導犬[もうどうけん]'
+```
+
+Corrections must name an existing source entry and provide a complete valid
+annotated replacement. They are recorded in the normalization report.
+
 This is a reusable Import stage, not a migration-only tool. Future Import
 implementations MUST invoke the same preparation, validation, alternate-reading,
 post-resolution deduplication, and atomic-publication behavior before declaring a
