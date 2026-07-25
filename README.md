@@ -1,6 +1,6 @@
 # Japanese Vocabulary Deck Generation
 
-This project creates CrowdAnki-compatible Japanese vocabulary decks designed for
+This project creates Japanese vocabulary decks designed for
 advanced vocabulary acquisition through pronunciation, Japanese definitions, and
 natural example sentences.
 
@@ -14,6 +14,78 @@ The project is intended to maintain three Japanese vocabulary decks through
 simple, manually curated **Generation Control Files** (GCLs). Generated
 CrowdAnki JSON files are derived artifacts rather than editorial sources of
 truth.
+
+## Three-phase workflow
+
+The primary workflow has three phases:
+
+1. **Import** converts a source deck into its Generation Control File (GCL).
+2. **Populate** creates and reuses validated card data for the GCL.
+3. **Generate** reconciles the current GCL into a final deck.
+
+Create and Update are not separate phases. Generate creates a missing deck or
+updates an associated existing deck to the complete desired GCL state. Existing
+notes are preserved, new notes are added, duplicates are removed, and notes
+whose terms were removed from the GCL are removed.
+
+Population artifacts are isolated by logical deck:
+
+```text
+.batch/
+└── <deck-name>/
+    ├── project.json
+    ├── populate-report.json
+    ├── cards/
+    │   └── accepted.jsonl
+    └── batches/
+        └── <source-range>/
+            ├── input_<range>.jsonl
+            ├── manifest_<range>.json
+            ├── state_<range>.json
+            └── output_<range>.jsonl
+```
+
+`project.json` records the durable GCL/deck association. Individual manifests
+record the GCL hash used for that particular request. The accepted-card cache is
+keyed by deterministic GCL-entry identity, so inserting or reordering entries
+does not repopulate unchanged cards.
+
+Prepare population work without making a paid API call:
+
+```bash
+batch-generate populate \
+  --gcl gcl/n1_vocabulary_generation_control_file.txt \
+  --deck n1_vocabulary_crowdanki_deck/n1_vocabulary_crowdanki_deck.json
+```
+
+After the prepared batches have been submitted and collected with the existing
+`submit`, `status`, and `collect` commands, rerun `populate` to validate and
+incorporate completed outputs into `cards/accepted.jsonl`.
+
+Generate the final deck:
+
+```bash
+batch-generate generate \
+  --gcl gcl/n1_vocabulary_generation_control_file.txt \
+  --template templates/N1_vocabulary_-_CrowdAnki/deck.json \
+  --deck n1_vocabulary_crowdanki_deck/n1_vocabulary_crowdanki_deck.json
+```
+
+Generate automatically performs the incremental population check. If cards are
+missing, it prepares only those cards and exits without publishing a partial
+deck or incurring API charges. Once population is complete, the same command
+atomically creates or updates the deck.
+
+For a one-time migration from a previously generated complete CrowdAnki deck,
+`seed-cache` reconstructs the accepted-card cache from the deck's four fields.
+It publishes nothing unless every current GCL entry matches exactly one note and
+all reconstructed cards pass the normal validation rules:
+
+```bash
+batch-generate seed-cache \
+  --gcl gcl/n1_vocabulary_generation_control_file.txt \
+  --deck n1_vocabulary_crowdanki_deck/n1_vocabulary_crowdanki_deck.json
+```
 
 Each generated card is intended to:
 

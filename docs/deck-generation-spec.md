@@ -2,15 +2,20 @@
 
 ## 1. Scope
 
-This specification defines three operations:
+The public workflow defines three phases:
 
 - **Import**: source CrowdAnki JSON to a deduplicated, disambiguated GCL;
-- **Generate**: GCL to a new generated CrowdAnki deck package; and
-- **Update**: GCL plus its associated generated deck package to an updated
-  package.
+- **Populate**: GCL entries to validated, reusable card information; and
+- **Generate**: the current GCL plus populated card information to the complete
+  desired deck.
 
-An interface MAY compose operations, but each operation MUST retain its own
-validation boundary, report, and success or failure status.
+Generate creates the deck when it does not exist and reconciles an associated
+existing deck when it does. The Update behavior described below is therefore an
+internal Generate reconciliation mode retained for compatibility, not a
+separate public phase.
+
+Each phase MUST retain its own validation boundary, report, and success or
+failure status.
 
 ## 2. Import operation
 

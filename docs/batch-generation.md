@@ -3,18 +3,29 @@
 ## 1. Purpose and safety boundary
 
 `batch-generate` prepares and manages asynchronous OpenAI Batch API requests for
-the **Generate** operation.
+the **Populate** phase and reconciles accepted population data during the
+**Generate** phase.
 
 Only `submit` starts model processing that can incur API charges. It requires the
 explicit `--confirm-cost` flag. The following commands are local or read-only with
 respect to model generation:
 
 - `prepare` modifies only local files and may remove exact duplicate GCL entries;
+- `populate` incrementally prepares missing entries inside the associated
+  `.batch/<deck-name>/` workspace and incorporates valid completed outputs;
+- `seed-cache` strictly migrates a complete generated deck into a population
+  cache without making an API call;
+- `generate` performs the same offline population check and publishes only when
+  every current GCL entry has accepted card data;
 - `status` retrieves batch metadata;
 - `collect` downloads already generated output; and
 - `prepare-retry` and `merge-retry` locally prepare and reconcile rejected-only
   retries; and
 - `apply` validates downloaded output and constructs the local CrowdAnki JSON.
+
+The low-level `prepare`, `apply`, `apply-update`, `prepare-remainder`, and
+`run-plan` commands remain available for compatibility and recovery. New
+workflows SHOULD use `populate` and `generate`.
 
 The automated tests use fake clients and temporary files. They never instantiate
 the OpenAI client or make network requests.

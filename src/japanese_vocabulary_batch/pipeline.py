@@ -607,6 +607,519 @@ def prepare_batch(
     return {"manifest_path": str(manifest_path), **manifest}
 
 
+def _project_key(deck_path: Path) -> str:
+    name = deck_path.stem
+    for suffix in ("_crowdanki_deck", "_deck"):
+        if name.endswith(suffix):
+            name = name[: -len(suffix)]
+            break
+    key = re.sub(r"[^a-zA-Z0-9_-]+", "_", name).strip("_").lower()
+    if not key:
+        raise PipelineError(f"Cannot derive a project name from deck path: {deck_path}")
+    return key
+
+
+def _population_workspace(batch_root: Path, deck_path: Path) -> Path:
+    return batch_root / _project_key(deck_path)
+
+
+def _write_population_batch(
+    *,
+    entries: list[GclEntry],
+    all_entries: list[GclEntry],
+    gcl_path: Path,
+    work_dir: Path,
+    model: str,
+    reasoning_effort: str,
+) -> dict[str, Any]:
+    start = entries[0].source_index
+    end = entries[-1].source_index
+    input_path = work_dir / f"input_{start:06d}_{end:06d}.jsonl"
+    manifest_path = work_dir / f"manifest_{start:06d}_{end:06d}.json"
+    atomic_write_text(
+        input_path,
+        "\n".join(
+            json.dumps(make_request(entry, model, reasoning_effort), ensure_ascii=False)
+            for entry in entries
+        )
+        + "\n",
+    )
+    manifest = {
+        "version": 2,
+        "operation": "populate",
+        "gcl_path": str(gcl_path.resolve()),
+        "gcl_sha256": sha256_file(gcl_path),
+        "input_path": str(input_path.resolve()),
+        "input_sha256": sha256_file(input_path),
+        "model": model,
+        "reasoning_effort": reasoning_effort,
+        "range": {"start": start, "end": end},
+        "total_gcl_entries": len(all_entries),
+        "duplicate_entries_removed": [],
+        "requests": [
+            {
+                "custom_id": entry.identity,
+                "source_index": entry.source_index,
+                "gcl_entry": entry.text,
+            }
+            for entry in entries
+        ],
+    }
+    atomic_write_json(manifest_path, manifest)
+    return {"manifest_path": str(manifest_path.resolve()), **manifest}
+
+
+def prepare_population(
+    *,
+    gcl_path: Path,
+    deck_path: Path,
+    batch_root: Path = Path(".batch"),
+    batch_size: int = 100,
+    model: str = "gpt-5.6-terra",
+    reasoning_effort: str = "medium",
+) -> dict[str, Any]:
+    """Create or refresh the durable population workspace for a GCL/deck pair."""
+    if batch_size < 1:
+        raise PipelineError("Batch size must be positive")
+    entries, duplicates = clean_and_read_gcl(gcl_path)
+    workspace = _population_workspace(batch_root, deck_path)
+    cards_dir = workspace / "cards"
+    batches_dir = workspace / "batches"
+    accepted_path = cards_dir / "accepted.jsonl"
+    project_path = workspace / "project.json"
+
+    if project_path.exists():
+        project = json.loads(project_path.read_text(encoding="utf-8"))
+        if Path(project["gcl_path"]).resolve() != gcl_path.resolve():
+            raise PipelineError(
+                f"Population workspace already belongs to another GCL: {workspace}"
+            )
+        project_deck_key = project.get("deck_key") or _project_key(
+            Path(project["deck_path"])
+        )
+        if project_deck_key != _project_key(deck_path):
+            raise PipelineError(
+                f"Population workspace already belongs to another logical deck: "
+                f"{workspace}"
+            )
+    else:
+        project = {
+            "version": 1,
+            "project_id": str(uuid.uuid4()),
+            "project_key": _project_key(deck_path),
+            "deck_key": _project_key(deck_path),
+            "gcl_path": str(gcl_path.resolve()),
+            "outputs": {},
+        }
+    output_format = "apkg" if deck_path.suffix.lower() == ".apkg" else "crowdanki"
+    project.setdefault("outputs", {})[output_format] = str(deck_path.resolve())
+
+    accepted_records: dict[str, dict[str, Any]] = {}
+    if accepted_path.exists():
+        for record in _read_output_records(accepted_path):
+            custom_id = record.get("custom_id")
+            if custom_id:
+                accepted_records[custom_id] = record
+
+    findings: list[dict[str, Any]] = []
+    # Import valid completed outputs into the reusable cache. Retry outputs are
+    # considered after base outputs so a repaired response replaces its predecessor.
+    manifest_paths = sorted(batches_dir.glob("**/manifest_*.json"))
+    for manifest_path in manifest_paths:
+        output_path = manifest_path.with_name(
+            manifest_path.name.replace("manifest_", "output_").replace(
+                ".json", ".jsonl"
+            )
+        )
+        if not output_path.exists():
+            continue
+        manifest = load_manifest(manifest_path)
+        results = parse_output(output_path)
+        raw_by_id = {
+            record["custom_id"]: record for record in _read_output_records(output_path)
+        }
+        for request in manifest["requests"]:
+            card = results.get(request["custom_id"])
+            errors = (
+                ["batch output did not contain this card"]
+                if card is None
+                else validate_card(card, request["gcl_entry"])
+            )
+            if errors:
+                findings.append({**request, "errors": errors})
+            elif request["custom_id"] in raw_by_id:
+                accepted_records[request["custom_id"]] = raw_by_id[
+                    request["custom_id"]
+                ]
+
+    current_by_id = {entry.identity: entry for entry in entries}
+    accepted_records = {
+        custom_id: record
+        for custom_id, record in accepted_records.items()
+        if custom_id in current_by_id
+    }
+    accepted_cards = parse_output_records(accepted_records.values())
+    invalid_cached = []
+    for custom_id, card in accepted_cards.items():
+        errors = validate_card(card, current_by_id[custom_id].text)
+        if errors:
+            invalid_cached.append(custom_id)
+            findings.append(
+                {
+                    "custom_id": custom_id,
+                    "source_index": current_by_id[custom_id].source_index,
+                    "gcl_entry": current_by_id[custom_id].text,
+                    "errors": errors,
+                }
+            )
+    for custom_id in invalid_cached:
+        accepted_records.pop(custom_id, None)
+
+    cards_dir.mkdir(parents=True, exist_ok=True)
+    atomic_write_text(
+        accepted_path,
+        "\n".join(
+            json.dumps(accepted_records[key], ensure_ascii=False)
+            for key in sorted(accepted_records)
+        )
+        + ("\n" if accepted_records else ""),
+    )
+
+    pending_ids: set[str] = set()
+    for manifest_path in manifest_paths:
+        manifest = load_manifest(manifest_path)
+        output_path = manifest_path.with_name(
+            manifest_path.name.replace("manifest_", "output_").replace(
+                ".json", ".jsonl"
+            )
+        )
+        if not output_path.exists():
+            pending_ids.update(
+                item["custom_id"]
+                for item in manifest["requests"]
+                if item["custom_id"] in current_by_id
+            )
+
+    missing = [
+        entry
+        for entry in entries
+        if entry.identity not in accepted_records and entry.identity not in pending_ids
+    ]
+    jobs = []
+    for offset in range(0, len(missing), batch_size):
+        selected = missing[offset : offset + batch_size]
+        selection_digest = hashlib.sha256(
+            "\n".join(entry.identity for entry in selected).encode("utf-8")
+        ).hexdigest()[:10]
+        job_dir = batches_dir / (
+            f"{selected[0].source_index:06d}_{selected[-1].source_index:06d}_"
+            f"{selection_digest}"
+        )
+        prepared = _write_population_batch(
+            entries=selected,
+            all_entries=entries,
+            gcl_path=gcl_path,
+            work_dir=job_dir,
+            model=model,
+            reasoning_effort=reasoning_effort,
+        )
+        jobs.append(
+            {
+                "manifest_path": prepared["manifest_path"],
+                "entries": len(selected),
+                "status": "prepared",
+            }
+        )
+
+    project.update(
+        {
+            "gcl_sha256": sha256_file(gcl_path),
+            "model": model,
+            "reasoning_effort": reasoning_effort,
+            "accepted_path": str(accepted_path.resolve()),
+        }
+    )
+    atomic_write_json(project_path, project)
+    report = {
+        "operation": "populate",
+        "workspace": str(workspace.resolve()),
+        "project_path": str(project_path.resolve()),
+        "accepted_path": str(accepted_path.resolve()),
+        "gcl_entries": len(entries),
+        "accepted_cards": len(accepted_records),
+        "pending_cards": len(pending_ids),
+        "new_cards_prepared": len(missing),
+        "jobs": jobs,
+        "findings": findings,
+        "duplicate_entries_removed": duplicates,
+        "complete": len(accepted_records) == len(entries),
+    }
+    atomic_write_json(workspace / "populate-report.json", report)
+    return report
+
+
+def parse_output_records(
+    records: Any,
+) -> dict[str, dict[str, Any]]:
+    """Parse already-loaded Batch API output records."""
+    results: dict[str, dict[str, Any]] = {}
+    for record in records:
+        custom_id = record.get("custom_id")
+        if not custom_id or custom_id in results:
+            raise PipelineError("Missing or duplicate custom_id in accepted-card cache")
+        if record.get("error"):
+            raise PipelineError(f"Cached batch request {custom_id} failed")
+        response = record.get("response") or {}
+        if response.get("status_code") != 200:
+            raise PipelineError(f"Cached batch request {custom_id} was not successful")
+        parsed = json.loads(extract_response_text(response.get("body") or {}))
+        results[custom_id] = parsed.get("result", parsed)
+    return results
+
+
+def seed_population_cache(
+    *,
+    gcl_path: Path,
+    deck_path: Path,
+    batch_root: Path = Path(".batch"),
+    model: str = "migrated-existing-deck",
+    reasoning_effort: str = "unknown",
+) -> dict[str, Any]:
+    """Seed a population cache from a fully generated CrowdAnki deck.
+
+    This is intentionally strict: every current GCL entry must match exactly one
+    valid note and the deck may not contain foreign or duplicate notes.
+    """
+    entries, _ = clean_and_read_gcl(gcl_path)
+    deck = json.loads(deck_path.read_text(encoding="utf-8-sig"))
+    notes = deck.get("notes")
+    if not isinstance(notes, list):
+        raise PipelineError("Existing deck does not contain a notes array")
+    by_guid = {deterministic_guid(entry.text): entry for entry in entries}
+    by_key: dict[tuple[str, str], list[GclEntry]] = {}
+    for entry in entries:
+        by_key.setdefault(
+            (
+                vocabulary_from_gcl(entry.text),
+                authoritative_reading_from_gcl(entry.text),
+            ),
+            [],
+        ).append(entry)
+
+    records: dict[str, dict[str, Any]] = {}
+    findings = []
+    for position, note in enumerate(notes, start=1):
+        fields = note.get("fields") if isinstance(note, dict) else None
+        if not isinstance(fields, list) or len(fields) != 4:
+            findings.append(
+                {"note_position": position, "errors": ["expected four fields"]}
+            )
+            continue
+        entry = by_guid.get(note.get("guid"))
+        if entry is None:
+            candidates = by_key.get((fields[3], strip_tags(fields[0])), [])
+            if len(candidates) != 1:
+                findings.append(
+                    {
+                        "note_position": position,
+                        "errors": [
+                            f"matched {len(candidates)} current GCL entries"
+                        ],
+                    }
+                )
+                continue
+            entry = candidates[0]
+        if entry.identity in records:
+            findings.append(
+                {
+                    "note_position": position,
+                    "gcl_entry": entry.text,
+                    "errors": ["duplicate note identity"],
+                }
+            )
+            continue
+        examples = re.findall(r"<div>(.*?)</div>", fields[2], flags=re.DOTALL)
+        if not examples and fields[2].strip():
+            examples = [fields[2].strip()]
+        card = {
+            "status": "card",
+            "issue": "",
+            "gcl_entry": entry.text,
+            "resolved_gcl_entry": entry.text,
+            "additional_gcl_entries": [],
+            "reading": fields[0],
+            "definition": fields[1],
+            "examples": examples,
+            "example_count_rationale": (
+                ""
+                if len(examples) == 3
+                else "Preserved from the previously generated and validated deck."
+            ),
+            "vocabulary": fields[3],
+        }
+        errors = validate_card(card, entry.text)
+        if errors:
+            findings.append(
+                {
+                    "note_position": position,
+                    "gcl_entry": entry.text,
+                    "errors": errors,
+                }
+            )
+            continue
+        response_body = {
+            "output": [
+                {
+                    "type": "message",
+                    "content": [
+                        {
+                            "type": "output_text",
+                            "text": json.dumps(
+                                {"result": card}, ensure_ascii=False
+                            ),
+                        }
+                    ],
+                }
+            ]
+        }
+        records[entry.identity] = {
+            "id": f"migrated-{entry.identity}",
+            "custom_id": entry.identity,
+            "response": {"status_code": 200, "body": response_body},
+            "error": None,
+        }
+
+    missing = [entry for entry in entries if entry.identity not in records]
+    if missing or findings or len(notes) != len(entries):
+        report_path = deck_path.with_suffix(".cache-migration-report.json")
+        report = {
+            "operation": "seed-population-cache",
+            "gcl_entries": len(entries),
+            "deck_notes": len(notes),
+            "valid_cards": len(records),
+            "missing_cards": len(missing),
+            "findings": findings,
+            "published": False,
+        }
+        atomic_write_json(report_path, report)
+        raise PipelineError(
+            "Deck cannot safely seed the population cache: "
+            f"{len(records)} valid, {len(missing)} missing, "
+            f"{len(findings)} finding(s); see {report_path}"
+        )
+
+    workspace = _population_workspace(batch_root, deck_path)
+    project_path = workspace / "project.json"
+    accepted_path = workspace / "cards" / "accepted.jsonl"
+    project = {
+        "version": 1,
+        "project_id": str(uuid.uuid4()),
+        "project_key": _project_key(deck_path),
+        "deck_key": _project_key(deck_path),
+        "gcl_path": str(gcl_path.resolve()),
+        "outputs": {"crowdanki": str(deck_path.resolve())},
+        "gcl_sha256": sha256_file(gcl_path),
+        "model": model,
+        "reasoning_effort": reasoning_effort,
+        "accepted_path": str(accepted_path.resolve()),
+    }
+    if project_path.exists():
+        existing = json.loads(project_path.read_text(encoding="utf-8"))
+        if Path(existing["gcl_path"]).resolve() != gcl_path.resolve():
+            raise PipelineError("Existing workspace belongs to another GCL")
+        project["project_id"] = existing["project_id"]
+        project["outputs"] = {
+            **existing.get("outputs", {}),
+            **project["outputs"],
+        }
+    atomic_write_text(
+        accepted_path,
+        "\n".join(
+            json.dumps(records[key], ensure_ascii=False) for key in sorted(records)
+        )
+        + "\n",
+    )
+    atomic_write_json(project_path, project)
+    result = prepare_population(
+        gcl_path=gcl_path,
+        deck_path=deck_path,
+        batch_root=batch_root,
+        model=model,
+        reasoning_effort=reasoning_effort,
+    )
+    if not result["complete"] or result["accepted_cards"] != len(entries):
+        raise PipelineError("Seeded population cache failed final reconciliation")
+    result["operation"] = "seed-population-cache"
+    return result
+
+
+def generate_crowdanki(
+    *,
+    gcl_path: Path,
+    deck_path: Path,
+    template_path: Path,
+    batch_root: Path = Path(".batch"),
+    batch_size: int = 100,
+    model: str = "gpt-5.6-terra",
+    reasoning_effort: str = "medium",
+) -> dict[str, Any]:
+    """Generate the complete desired CrowdAnki deck from the population cache."""
+    population = prepare_population(
+        gcl_path=gcl_path,
+        deck_path=deck_path,
+        batch_root=batch_root,
+        batch_size=batch_size,
+        model=model,
+        reasoning_effort=reasoning_effort,
+    )
+    if not population["complete"]:
+        raise PipelineError(
+            f"Population is incomplete: {population['accepted_cards']} accepted, "
+            f"{population['pending_cards']} pending, and "
+            f"{population['new_cards_prepared']} newly prepared; see "
+            f"{population['workspace']}"
+        )
+    entries, _ = clean_and_read_gcl(gcl_path)
+    accepted_path = Path(population["accepted_path"])
+    workspace = Path(population["workspace"])
+    manifest_path = workspace / "generate-manifest.json"
+    manifest = {
+        "version": 2,
+        "operation": "generate",
+        "gcl_path": str(gcl_path.resolve()),
+        "gcl_sha256": sha256_file(gcl_path),
+        "input_path": str(accepted_path.resolve()),
+        "input_sha256": sha256_file(accepted_path),
+        "model": model,
+        "reasoning_effort": reasoning_effort,
+        "range": {"start": 1, "end": len(entries)},
+        "total_gcl_entries": len(entries),
+        "duplicate_entries_removed": [],
+        "requests": [
+            {
+                "custom_id": entry.identity,
+                "source_index": entry.source_index,
+                "gcl_entry": entry.text,
+            }
+            for entry in entries
+        ],
+    }
+    atomic_write_json(manifest_path, manifest)
+    if deck_path.exists():
+        return apply_update(
+            manifest_path=manifest_path,
+            output_path=accepted_path,
+            deck_path=deck_path,
+            through=len(entries),
+        )
+    return apply_results(
+        manifest_path=manifest_path,
+        output_path=accepted_path,
+        template_path=template_path,
+        deck_output_path=deck_path,
+    )
+
+
 def prepare_retry(
     *,
     manifest_path: Path,
@@ -1004,13 +1517,14 @@ CONJUGATION_INITIALS = {
 
 
 def concealed_target_pattern(vocabulary: str) -> re.Pattern[str] | None:
+    boundary = r"(?<![\u3400-\u4dbf\u4e00-\u9fff々])"
     if vocabulary.endswith("する") and len(vocabulary) > 2:
-        return re.compile(re.escape(vocabulary[:-2]) + r"[しすせさ]")
+        return re.compile(boundary + re.escape(vocabulary[:-2]) + r"[しすせさ]")
     ending = vocabulary[-1:] if vocabulary else ""
     initials = CONJUGATION_INITIALS.get(ending)
     stem = vocabulary[:-1]
     if initials and stem and re.search(r"[\u3400-\u4dbf\u4e00-\u9fff々]", stem):
-        return re.compile(re.escape(stem) + f"[{initials}]")
+        return re.compile(boundary + re.escape(stem) + f"[{initials}]")
     return None
 
 
@@ -1237,6 +1751,16 @@ def apply_update(
         if entry is None:
             key = (fields[3], strip_tags(fields[0]))
             candidates = all_by_key.get(key, [])
+            if not candidates:
+                scheduled_removals.append(
+                    {
+                        "note_position": position,
+                        "vocabulary": fields[3],
+                        "reading": strip_tags(fields[0]),
+                        "reason": "entry no longer exists in the GCL",
+                    }
+                )
+                continue
             if len(candidates) != 1:
                 unmatchable.append(
                     {
@@ -1300,7 +1824,10 @@ def apply_update(
         if card.get("additional_gcl_entries"):
             errors.append("fully annotated GCL responses cannot add readings")
         if custom_id in existing_by_id:
-            errors.append("generated output would duplicate an existing note")
+            # A complete population cache naturally includes records for notes
+            # already present in the deck. Preserve those notes rather than
+            # treating the cached record as an attempted duplicate.
+            continue
         if errors:
             findings.append({**request, "errors": errors})
         else:

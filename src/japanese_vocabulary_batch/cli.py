@@ -11,15 +11,18 @@ from .pipeline import (
     apply_results,
     apply_update,
     collect_batch,
+    generate_crowdanki,
     make_openai_client,
     merge_retry_output,
     prepare_batch,
+    prepare_population,
     prepare_reading_normalization,
     prepare_remainder_plan,
     prepare_retry,
     refresh_status,
     submit_batch,
     run_remainder_plan,
+    seed_population_cache,
 )
 
 
@@ -29,6 +32,45 @@ def build_parser() -> argparse.ArgumentParser:
         description="Prepare and manage OpenAI Batch API vocabulary generation.",
     )
     commands = parser.add_subparsers(dest="command", required=True)
+
+    populate = commands.add_parser(
+        "populate",
+        help="Prepare only missing cards in the workspace for a GCL/deck pair",
+    )
+    populate.add_argument("--gcl", type=Path, required=True)
+    populate.add_argument("--deck", type=Path, required=True)
+    populate.add_argument("--batch-root", type=Path, default=Path(".batch"))
+    populate.add_argument("--batch-size", type=int, default=100)
+    populate.add_argument("--model", default="gpt-5.6-terra")
+    populate.add_argument(
+        "--reasoning-effort",
+        choices=["none", "low", "medium", "high", "xhigh", "max"],
+        default="medium",
+    )
+
+    generate = commands.add_parser(
+        "generate",
+        help="Reconcile the current GCL into a complete generated deck",
+    )
+    generate.add_argument("--gcl", type=Path, required=True)
+    generate.add_argument("--deck", type=Path, required=True)
+    generate.add_argument("--template", type=Path, required=True)
+    generate.add_argument("--batch-root", type=Path, default=Path(".batch"))
+    generate.add_argument("--batch-size", type=int, default=100)
+    generate.add_argument("--model", default="gpt-5.6-terra")
+    generate.add_argument(
+        "--reasoning-effort",
+        choices=["none", "low", "medium", "high", "xhigh", "max"],
+        default="medium",
+    )
+
+    seed_cache = commands.add_parser(
+        "seed-cache",
+        help="Strictly seed a population cache from a complete generated deck",
+    )
+    seed_cache.add_argument("--gcl", type=Path, required=True)
+    seed_cache.add_argument("--deck", type=Path, required=True)
+    seed_cache.add_argument("--batch-root", type=Path, default=Path(".batch"))
 
     prepare = commands.add_parser("prepare", help="Create offline JSONL requests")
     prepare.add_argument("--gcl", type=Path, required=True)
@@ -143,7 +185,32 @@ def main(argv: list[str] | None = None) -> int:
         sys.stderr.reconfigure(encoding="utf-8")
     args = build_parser().parse_args(argv)
     try:
-        if args.command == "prepare":
+        if args.command == "populate":
+            result = prepare_population(
+                gcl_path=args.gcl,
+                deck_path=args.deck,
+                batch_root=args.batch_root,
+                batch_size=args.batch_size,
+                model=args.model,
+                reasoning_effort=args.reasoning_effort,
+            )
+        elif args.command == "generate":
+            result = generate_crowdanki(
+                gcl_path=args.gcl,
+                deck_path=args.deck,
+                template_path=args.template,
+                batch_root=args.batch_root,
+                batch_size=args.batch_size,
+                model=args.model,
+                reasoning_effort=args.reasoning_effort,
+            )
+        elif args.command == "seed-cache":
+            result = seed_population_cache(
+                gcl_path=args.gcl,
+                deck_path=args.deck,
+                batch_root=args.batch_root,
+            )
+        elif args.command == "prepare":
             result = prepare_batch(
                 gcl_path=args.gcl,
                 work_dir=args.work_dir,
