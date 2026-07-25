@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import hashlib
 import json
@@ -16,24 +16,19 @@ from japanese_vocabulary_batch.pipeline import (
     PipelineError,
     GclEntry,
     apply_reading_normalization,
-    apply_results,
-    apply_update,
     card_schema,
     collect_batch,
     deterministic_guid,
     generate_from_workspace,
-    generate_crowdanki,
     import_apkg,
     merge_retry_output,
     migrate_gcl_syntax,
     prepare_batch,
     prepare_population,
     prepare_reading_normalization,
-    prepare_remainder_plan,
     prepare_retry,
     refresh_status,
     read_dotenv_api_key,
-    seed_population_cache,
     submit_batch,
     validate_card,
 )
@@ -121,11 +116,9 @@ class BatchGenerationTests(unittest.TestCase):
                 {
                     "__type__": "Deck",
                     "name": "Test",
-                    "crowdanki_uuid": "deck-test",
                     "note_models": [
                         {
                             "__type__": "NoteModel",
-                            "crowdanki_uuid": "model-test",
                             "name": "Vocabulary",
                             "css": ".card { font-family: sans-serif; }",
                             "flds": [
@@ -423,9 +416,7 @@ class BatchGenerationTests(unittest.TestCase):
         )
 
     def test_population_uses_a_deck_specific_workspace(self):
-        deck_path = self.root / "decks" / "test_crowdanki_deck" / (
-            "test_crowdanki_deck.json"
-        )
+        deck_path = self.root / "decks" / "test.apkg"
         result = prepare_population(
             gcl_path=self.gcl,
             deck_path=deck_path,
@@ -443,14 +434,14 @@ class BatchGenerationTests(unittest.TestCase):
         )
         self.assertEqual(Path(project["gcl_path"]), self.gcl.resolve())
         self.assertEqual(
-            Path(project["outputs"]["crowdanki"]), deck_path.resolve()
+            Path(project["outputs"]["apkg"]), deck_path.resolve()
         )
 
     def test_population_reuses_cached_cards_and_prepares_only_new_entries(self):
         self.gcl.write_text(
             "# GCL Version: 1\n\n遭う[あう]\n", encoding="utf-8"
         )
-        deck_path = self.root / "deck" / "deck.json"
+        deck_path = self.root / "deck" / "deck.apkg"
         first = prepare_population(
             gcl_path=self.gcl,
             deck_path=deck_path,
@@ -499,208 +490,68 @@ class BatchGenerationTests(unittest.TestCase):
             ["内閣[ないかく]"],
         )
 
-    def test_generate_removes_notes_deleted_from_the_gcl(self):
-        deck_dir = self.root / "generated_deck"
-        deck_dir.mkdir()
-        deck_path = deck_dir / "generated_deck.json"
-        deck = json.loads(self.template.read_text(encoding="utf-8"))
-        deck["notes"] = [
-            {
-                "__type__": "Note",
-                "guid": GclEntry(1, entry).identity,
-                "fields": [f"<b>{reading}</b>", "old", "old", vocabulary],
-                "note_model_uuid": "model-test",
-                "tags": [],
-            }
-            for entry, reading, vocabulary in (
-                ("遭う[あう]", "あう", "遭う"),
-                ("内閣[ないかく]", "ないかく", "内閣"),
-            )
-        ]
-        # Use the production GUID scheme so update reconciliation is exact.
-        from japanese_vocabulary_batch.pipeline import deterministic_guid
-
-        for note, entry in zip(
-            deck["notes"], ("遭う[あう]", "内閣[ないかく]")
-        ):
-            note["guid"] = deterministic_guid(entry)
-        deck_path.write_text(json.dumps(deck, ensure_ascii=False), encoding="utf-8")
-        self.gcl.write_text(
-            "# GCL Version: 1\n\n遭う[あう]\n", encoding="utf-8"
-        )
+    def test_workspace_generates_apkg_with_stable_ids(self):
+        deck_path = self.root / "published.apkg"
         populated = prepare_population(
             gcl_path=self.gcl,
             deck_path=deck_path,
             batch_root=self.root / ".batch",
         )
-        manifest_path = Path(populated["jobs"][0]["manifest_path"])
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-        output_path = manifest_path.with_name(
-            manifest_path.name.replace("manifest_", "output_").replace(
-                ".json", ".jsonl"
+        for job in populated["jobs"]:
+            manifest_path = Path(job["manifest_path"])
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            output_path = manifest_path.with_name(
+                manifest_path.name.replace("manifest_", "output_").replace(
+                    ".json", ".jsonl"
+                )
             )
-        )
-        output_path.write_text(
-            response_line(
-                manifest["requests"][0]["custom_id"],
-                self.card("遭う[あう]", "あう", "遭う"),
-            )
-            + "\n",
-            encoding="utf-8",
-        )
-        result = generate_crowdanki(
-            gcl_path=self.gcl,
-            deck_path=deck_path,
-            template_path=self.template,
-            batch_root=self.root / ".batch",
-        )
-        updated = json.loads(deck_path.read_text(encoding="utf-8"))
-        self.assertEqual(result["removed"], 1)
-        self.assertEqual(len(updated["notes"]), 1)
-        self.assertEqual(updated["notes"][0]["fields"][3], "遭う")
-
-    def test_seed_population_cache_requires_and_preserves_every_deck_note(self):
-        deck_dir = self.root / "seed_deck"
-        deck_dir.mkdir()
-        deck_path = deck_dir / "seed_deck.json"
-        deck = json.loads(self.template.read_text(encoding="utf-8"))
-        entries = (
-            ("遭う[あう]", "あう", "遭う"),
-            ("内閣[ないかく]", "ないかく", "内閣"),
-        )
-        from japanese_vocabulary_batch.pipeline import deterministic_guid
-
-        deck["notes"] = []
-        for entry, reading, vocabulary in entries:
-            card = self.card(entry, reading, vocabulary)
-            deck["notes"].append(
-                {
-                    "__type__": "Note",
-                    "guid": deterministic_guid(entry),
-                    "fields": [
-                        card["reading"],
-                        card["definition"],
-                        "\n".join(
-                            f"<div>{example}</div>"
-                            for example in card["examples"]
+            output_path.write_text(
+                "\n".join(
+                    response_line(
+                        request["custom_id"],
+                        self.card(
+                            request["gcl_entry"],
+                            "あう" if "遭う" in request["gcl_entry"] else "ないかく",
+                            "遭う" if "遭う" in request["gcl_entry"] else "内閣",
                         ),
-                        vocabulary,
-                    ],
-                    "note_model_uuid": "model-test",
-                    "tags": [],
-                }
+                    )
+                    for request in manifest["requests"]
+                )
+                + "\n",
+                encoding="utf-8",
             )
-        deck_path.write_text(json.dumps(deck, ensure_ascii=False), encoding="utf-8")
-
-        result = seed_population_cache(
+        complete = prepare_population(
             gcl_path=self.gcl,
             deck_path=deck_path,
             batch_root=self.root / ".batch",
         )
+        workspace = Path(complete["workspace"])
 
-        self.assertTrue(result["complete"])
-        self.assertEqual(result["accepted_cards"], 2)
-        self.assertEqual(result["new_cards_prepared"], 0)
-        accepted = Path(result["accepted_path"]).read_text(encoding="utf-8")
-        self.assertIn("例文一", accepted)
-
-    def test_workspace_generates_crowdanki_and_apkg_with_stable_ids(self):
-        deck_dir = self.root / "source_deck"
-        deck_dir.mkdir()
-        deck_path = deck_dir / "source_deck.json"
-        deck = json.loads(self.template.read_text(encoding="utf-8"))
-        entries = (
-            ("遭う[あう]", "あう", "遭う"),
-            ("内閣[ないかく]", "ないかく", "内閣"),
-        )
-        from japanese_vocabulary_batch.pipeline import deterministic_guid
-
-        deck["notes"] = []
-        for entry, reading, vocabulary in entries:
-            card = self.card(entry, reading, vocabulary)
-            deck["notes"].append(
-                {
-                    "__type__": "Note",
-                    "guid": deterministic_guid(entry),
-                    "fields": [
-                        card["reading"],
-                        card["definition"],
-                        "\n".join(
-                            f"<div>{example}</div>"
-                            for example in card["examples"]
-                        ),
-                        vocabulary,
-                    ],
-                    "note_model_uuid": "model-test",
-                    "tags": [],
-                }
-            )
-        deck_path.write_text(json.dumps(deck, ensure_ascii=False), encoding="utf-8")
-        seeded = seed_population_cache(
-            gcl_path=self.gcl,
-            deck_path=deck_path,
-            batch_root=self.root / ".batch",
-        )
-        workspace = Path(seeded["workspace"])
-
-        crowdanki_dir = self.root / "published"
-        crowdanki_dir.mkdir()
-        crowdanki_path = crowdanki_dir / "published.json"
-        crowdanki = generate_from_workspace(
-            workspace_path=workspace,
-            output_format="crowdanki",
-            output_path=crowdanki_path,
-            template_path=self.template,
-        )
-        self.assertEqual(crowdanki["notes"], 2)
-        published = json.loads(crowdanki_path.read_text(encoding="utf-8"))
-        self.assertEqual(len(published["notes"]), 2)
-        original_guid = published["notes"][0]["guid"]
-        published["notes"][0]["fields"][1] = "stale definition"
-        published["notes"][0]["tags"] = ["preserve-me"]
-        crowdanki_path.write_text(
-            json.dumps(published, ensure_ascii=False), encoding="utf-8"
-        )
-        refreshed = generate_from_workspace(
-            workspace_path=workspace,
-            output_format="crowdanki",
-            output_path=crowdanki_path,
-            template_path=self.template,
-        )
-        published = json.loads(crowdanki_path.read_text(encoding="utf-8"))
-        self.assertEqual(refreshed["updated"], 2)
-        self.assertEqual(published["notes"][0]["fields"][1], "簡潔な定義。")
-        self.assertEqual(published["notes"][0]["guid"], original_guid)
-        self.assertEqual(published["notes"][0]["tags"], ["preserve-me"])
-
-        apkg_path = self.root / "published.apkg"
         first = generate_from_workspace(
             workspace_path=workspace,
-            output_format="apkg",
-            output_path=apkg_path,
+            output_path=deck_path,
             template_path=self.template,
         )
         second = generate_from_workspace(
             workspace_path=workspace,
-            output_format="apkg",
-            output_path=apkg_path,
+            output_path=deck_path,
             template_path=self.template,
         )
         self.assertEqual(first["deck_id"], second["deck_id"])
         self.assertEqual(first["model_id"], second["model_id"])
         self.assertEqual(first["notes"], 2)
-        with zipfile.ZipFile(apkg_path) as package:
+        with zipfile.ZipFile(deck_path) as package:
             self.assertIn("collection.anki2", package.namelist())
             database_path = self.root / "collection.anki2"
             database_path.write_bytes(package.read("collection.anki2"))
         connection = sqlite3.connect(database_path)
         try:
-            self.assertEqual(connection.execute("select count(*) from notes").fetchone()[0], 2)
-            self.assertEqual(connection.execute("select count(*) from cards").fetchone()[0], 2)
-            fields = connection.execute(
-                "select flds from notes order by id"
-            ).fetchall()
-            self.assertTrue(any("例文一" in row[0] for row in fields))
+            self.assertEqual(
+                connection.execute("select count(*) from notes").fetchone()[0], 2
+            )
+            self.assertEqual(
+                connection.execute("select count(*) from cards").fetchone()[0], 2
+            )
         finally:
             connection.close()
 
@@ -856,243 +707,6 @@ class BatchGenerationTests(unittest.TestCase):
         self.assertEqual(
             Path(state["output_path"]).read_text(encoding="utf-8"),
             '{"custom_id":"one"}\n',
-        )
-
-    def test_apply_builds_complete_deck_and_removes_placeholder(self):
-        prepared = self.prepare()
-        records = []
-        cards = [
-            {
-                "status": "card",
-                "issue": "",
-                "gcl_entry": "遭う[あう]",
-                "resolved_gcl_entry": "遭う[あう]",
-                "additional_gcl_entries": [],
-                "reading": "<b>あ</b>う",
-                "definition": "好ましくない出来事を思いがけず経験する。",
-                "examples": [
-                    "旅行中に事故に<b>あった</b>。",
-                    "同じ目に<b>あわない</b>よう注意した。",
-                    "帰宅途中で災難に<b>あった</b>。",
-                ],
-                "example_count_rationale": "",
-                "vocabulary": "遭う",
-            },
-            {
-                "status": "card",
-                "issue": "",
-                "gcl_entry": "内閣[ないかく]",
-                "resolved_gcl_entry": "内閣[ないかく]",
-                "additional_gcl_entries": [],
-                "reading": "<b>ないかく</b>",
-                "definition": "国の行政を担う最高機関。",
-                "examples": [
-                    "新しい<b>ないかく</b>が発足した。",
-                    "法案は<b>ないかく</b>の決定を経た。",
-                    "<b>ないかく</b>は政策を見直した。",
-                ],
-                "example_count_rationale": "",
-                "vocabulary": "内閣",
-            },
-        ]
-        for request, card in zip(prepared["requests"], cards):
-            records.append(response_line(request["custom_id"], card))
-        output = self.root / "output.jsonl"
-        output.write_text("\n".join(records) + "\n", encoding="utf-8")
-        deck_dir = self.root / "test_crowdanki_deck"
-        deck_output = deck_dir / "test_crowdanki_deck.json"
-        report = apply_results(
-            manifest_path=Path(prepared["manifest_path"]),
-            output_path=output,
-            template_path=self.template,
-            deck_output_path=deck_output,
-        )
-        self.assertTrue(report["published"])
-        deck = json.loads(deck_output.read_text(encoding="utf-8"))
-        self.assertEqual(len(deck["notes"]), 2)
-        self.assertNotEqual(deck["notes"][0]["guid"], "placeholder")
-
-    def test_apply_preserves_matching_template_note_identity(self):
-        prepared = self.prepare()
-        template = json.loads(self.template.read_text(encoding="utf-8"))
-        template["notes"] = [
-            {
-                "__type__": "Note",
-                "fields": ["<b>あ</b>う", "old", "old", "遭う"],
-                "guid": "legacy-guid",
-                "note_model_uuid": "model-test",
-                "tags": ["legacy-tag"],
-            }
-        ]
-        self.template.write_text(
-            json.dumps(template, ensure_ascii=False), encoding="utf-8"
-        )
-        output = self.root / "identity-output.jsonl"
-        output.write_text(
-            "\n".join(
-                response_line(
-                    request["custom_id"],
-                    self.card(
-                        request["gcl_entry"],
-                        "あう" if request["gcl_entry"].startswith("遭う") else "ないかく",
-                        "遭う" if request["gcl_entry"].startswith("遭う") else "内閣",
-                    ),
-                )
-                for request in prepared["requests"]
-            )
-            + "\n",
-            encoding="utf-8",
-        )
-        deck_dir = self.root / "identity_deck"
-        deck_dir.mkdir()
-        deck_path = deck_dir / "identity_deck.json"
-        apply_results(
-            manifest_path=Path(prepared["manifest_path"]),
-            output_path=output,
-            template_path=self.template,
-            deck_output_path=deck_path,
-        )
-        deck = json.loads(deck_path.read_text(encoding="utf-8"))
-        self.assertEqual(deck["notes"][0]["guid"], "legacy-guid")
-        self.assertEqual(deck["notes"][0]["tags"], ["legacy-tag"])
-        self.assertEqual(deck["notes"][0]["note_model_uuid"], "model-test")
-        self.assertEqual(deck["notes"][1]["fields"][3], "内閣")
-        self.assertIn("<div>", deck["notes"][0]["fields"][2])
-
-    def test_apply_refuses_review_items_without_publishing(self):
-        prepared = self.prepare()
-        lines = []
-        for request in prepared["requests"]:
-            card = {
-                "status": "needs_review",
-                "issue": "reading is ambiguous",
-                "gcl_entry": request["gcl_entry"],
-                "resolved_gcl_entry": "",
-                "additional_gcl_entries": [],
-                "reading": "",
-                "definition": "",
-                "examples": [],
-                "example_count_rationale": "",
-                "vocabulary": "",
-            }
-            lines.append(response_line(request["custom_id"], card))
-        output = self.root / "output.jsonl"
-        output.write_text("\n".join(lines) + "\n", encoding="utf-8")
-        deck_dir = self.root / "must_not_exist"
-        deck_output = deck_dir / "must_not_exist.json"
-        with self.assertRaisesRegex(PipelineError, "failed validation"):
-            apply_results(
-                manifest_path=Path(prepared["manifest_path"]),
-                output_path=output,
-                template_path=self.template,
-                deck_output_path=deck_output,
-            )
-        self.assertFalse(deck_output.exists())
-        self.assertTrue(
-            deck_output.with_suffix(".generation-report.json").exists()
-        )
-
-    def test_update_preserves_existing_note_and_adds_only_missing_card(self):
-        prepared = prepare_batch(
-            gcl_path=self.gcl,
-            work_dir=self.root / "update-work",
-            start=2,
-            end=2,
-            model="gpt-test",
-            reasoning_effort="low",
-        )
-        existing_note = {
-            "__type__": "Note",
-            "guid": "preserve-this-guid",
-            "fields": [
-                "<b>あ</b>う",
-                "既存の定義。",
-                (
-                    "<div>事故に<b>あった</b>。</div>"
-                    "<div>災難に<b>あわない</b>。</div>"
-                    "<div>盗難に<b>あった</b>。</div>"
-                ),
-                "遭う",
-            ],
-            "note_model_uuid": "model-test",
-            "tags": ["preserved"],
-        }
-        deck = json.loads(self.template.read_text(encoding="utf-8"))
-        deck["notes"] = [existing_note]
-        deck_dir = self.root / "update_deck"
-        deck_dir.mkdir()
-        deck_path = deck_dir / "update_deck.json"
-        deck_path.write_text(
-            json.dumps(deck, ensure_ascii=False), encoding="utf-8"
-        )
-        card = {
-            "status": "card",
-            "issue": "",
-            "gcl_entry": "内閣[ないかく]",
-            "resolved_gcl_entry": "内閣[ないかく]",
-            "additional_gcl_entries": [],
-            "reading": "<b>ないかく</b>",
-            "definition": "国の行政を担う最高機関。",
-            "examples": [
-                "新しい<b>ないかく</b>が発足した。",
-                "<b>ないかく</b>の方針が示された。",
-                "<b>ないかく</b>は政策を改めた。",
-            ],
-            "example_count_rationale": "",
-            "vocabulary": "内閣",
-        }
-        output = self.root / "update-output.jsonl"
-        output.write_text(
-            response_line(prepared["requests"][0]["custom_id"], card) + "\n",
-            encoding="utf-8",
-        )
-        result = apply_update(
-            manifest_path=Path(prepared["manifest_path"]),
-            output_path=output,
-            deck_path=deck_path,
-            through=2,
-        )
-        updated = json.loads(deck_path.read_text(encoding="utf-8"))
-        self.assertTrue(result["published"])
-        self.assertEqual(result["preserved"], 1)
-        self.assertEqual(result["added"], 1)
-        self.assertEqual(updated["notes"][0], existing_note)
-        self.assertEqual(updated["notes"][1]["fields"][3], "内閣")
-
-    def test_partial_update_reports_missing_result_without_crashing(self):
-        prepared = prepare_batch(
-            gcl_path=self.gcl,
-            work_dir=self.root / "partial-update-work",
-            start=1,
-            end=1,
-            model="gpt-test",
-            reasoning_effort="low",
-        )
-        deck = json.loads(self.template.read_text(encoding="utf-8"))
-        deck["notes"] = []
-        deck_dir = self.root / "partial_update_deck"
-        deck_dir.mkdir()
-        deck_path = deck_dir / "partial_update_deck.json"
-        deck_path.write_text(
-            json.dumps(deck, ensure_ascii=False), encoding="utf-8"
-        )
-        output = self.root / "partial-update-output.jsonl"
-        output.write_text("", encoding="utf-8")
-
-        result = apply_update(
-            manifest_path=Path(prepared["manifest_path"]),
-            output_path=output,
-            deck_path=deck_path,
-            through=1,
-            allow_partial=True,
-        )
-
-        self.assertTrue(result["published"])
-        self.assertEqual(result["final_notes"], 0)
-        self.assertEqual(len(result["findings"]), 1)
-        self.assertEqual(
-            result["findings"][0]["errors"],
-            ["no existing or generated card for requested entry"],
         )
 
     def test_example_count_policy(self):
@@ -1296,43 +910,6 @@ class BatchGenerationTests(unittest.TestCase):
         self.assertEqual(result["replaced_records"], 1)
         self.assertEqual(merged[0]["value"], "base")
         self.assertEqual(merged[1]["value"], "retry")
-
-    def test_prepare_remainder_infers_prefix_and_batches_without_ranges(self):
-        deck_dir = self.root / "test_crowdanki_deck"
-        deck_dir.mkdir()
-        deck_path = deck_dir / "test_crowdanki_deck.json"
-        deck = json.loads(self.template.read_text(encoding="utf-8"))
-        deck["notes"] = [
-            {
-                "__type__": "Note",
-                "guid": "existing",
-                "fields": [
-                    "<b>あ</b>う",
-                    "definition",
-                    "<div>example</div>",
-                    "遭う",
-                ],
-                "note_model_uuid": "model-test",
-                "tags": [],
-            }
-        ]
-        deck_path.write_text(
-            json.dumps(deck, ensure_ascii=False), encoding="utf-8"
-        )
-        plan = prepare_remainder_plan(
-            gcl_path=self.gcl,
-            deck_path=deck_path,
-            work_dir=self.root / "remainder",
-            batch_size=1,
-            model="gpt-test",
-            reasoning_effort="low",
-        )
-        self.assertEqual(plan["starting_notes"], 1)
-        self.assertEqual(len(plan["jobs"]), 1)
-        self.assertEqual(
-            (plan["jobs"][0]["start"], plan["jobs"][0]["end"]), (2, 2)
-        )
-        self.assertTrue(Path(plan["plan_path"]).exists())
 
 if __name__ == "__main__":
     unittest.main()

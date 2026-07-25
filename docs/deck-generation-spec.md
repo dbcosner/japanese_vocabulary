@@ -1,365 +1,86 @@
-# CrowdAnki Operations Specification
+# APKG Operations Specification
 
 ## 1. Scope
 
-The public workflow defines three phases:
+The public workflow has three phases:
 
-- **Import**: source CrowdAnki JSON to a deduplicated, disambiguated GCL;
-- **Populate**: GCL entries to validated, reusable card information; and
-- **Generate**: the current GCL plus populated card information to the complete
-  desired deck.
+1. **Import** extracts a proposed Generation Control File (GCL) from an Anki
+   `.apkg`.
+2. **Populate** creates and caches validated card content for every resolved GCL
+   entry.
+3. **Generate** creates a complete native Anki `.apkg` from a populated workspace.
 
-Generate creates the deck when it does not exist and reconciles an associated
-existing deck when it does. The Update behavior described below is therefore an
-internal Generate reconciliation mode retained for compatibility, not a
-separate public phase.
+Native APKG is the only supported deck interchange and publication format.
 
-Each phase MUST retain its own validation boundary, report, and success or
-failure status.
+## 2. Import
 
-## 2. Import operation
+Import accepts one `.apkg` containing a readable Anki collection database and
+note models whose vocabulary and reading fields can be identified.
 
-### 2.1 Inputs and preconditions
+Import MUST:
 
-Import accepts one source CrowdAnki JSON file or native Anki `.apkg` file. The
-source:
+- leave the source package unchanged;
+- preserve source note order where practical;
+- remove presentation HTML and ignore non-GCL metadata;
+- normalize GCL syntax, including U+007E `~` and `(な)`;
+- retain the first exact duplicate and report later occurrences;
+- write a proposed UTF-8 GCL atomically; and
+- write a structured import-review report for every note that could not be
+  imported safely.
 
-- MUST be valid UTF-8 JSON;
-- MUST represent a supported CrowdAnki deck structure; and
-- MUST contain notes whose import field mapping is known.
+Ambiguous structures MUST be flagged rather than guessed. These include multiple
+expressions, unsupported parentheticals, editorial instructions, corrupt fields,
+and unusable or multiple offered readings outside established affix logic.
+A separate decisions file MAY authorize source-specific deterministic cleanup.
 
-For each source note:
+An unresolved proposed GCL is not authoritative until reading resolution succeeds
+and the completed file passes GCL validation.
 
-- `fields` MUST exist and contain at least one element;
-- `fields[0]` MUST supply the candidate vocabulary expression;
-- `fields[1]`, when present, MAY inform an annotation or clarification but MUST
-  NOT be copied mechanically into learner-facing content; and
-- malformed or ambiguous notes MUST be reported with enough context to identify
-  them.
+## 3. Populate
 
-The source MAY be large. Import MUST NOT rely on interactive copying of notes or
-loading the JSON into a text editor.
+Populate accepts one resolved GCL and one logical APKG output path. It creates a
+deck-specific workspace under `.batch/<deck-name>/`.
 
-### 2.2 Output
+The workspace MUST record:
 
-Import MUST create one versioned UTF-8 GCL conforming to
-`generation-control-file-spec.md`. Imported ordering SHOULD follow source note
-ordering until the ordering policy is decided.
+- the absolute GCL and APKG output paths;
+- a stable project ID used for Anki deck and model identifiers;
+- the current GCL hash;
+- accepted card records keyed by stable GCL identity; and
+- pending and completed Batch jobs.
 
-Import MUST NOT:
+Populate MUST reuse valid cached cards. Reordering an unchanged GCL entry MUST NOT
+cause regeneration. Missing, invalid, or changed entries MAY create new offline
+Batch requests.
 
-- modify or replace the source JSON;
-- create learner-facing definitions or examples;
-- retain the source JSON as the authority after editorial adoption of the GCL; or
-- silently omit a source note.
-
-Its structured import-review report MUST reconcile source-note count with created
-entries, entries skipped as exact duplicates, entries skipped under another
-approved rule, and errors. It MUST include source note identity, original
-expression and reading material, and a reason for every note that could not be
-imported safely.
-
-Import MUST flag rather than guess when a note contains contrasted expressions,
-multiple written forms, unsupported parenthetical text, editorial labels,
-multiple offered readings outside established affix logic, reversed or corrupt
-fields, or an unusable reading. A source-specific decisions file MAY explicitly
-authorize deterministic repairs. Such decisions MUST remain separate from the
-canonical importer and MUST be recorded in the review report.
-Before publication, Import MUST deduplicate the proposed GCL. When exact
-duplicates are encountered, Import MUST retain the first occurrence
-and omit later occurrences from the proposed GCL.
-
-Import MUST apply the reading-resolution rules in `content-generation-spec.md`.
-It MUST annotate the existing entry with the first qualifying reading, append
-other qualifying readings to the end of the proposed GCL, and exclude archaic,
-uncommon, or unnatural alternatives under the established policy. When reliable
-resolution is not possible, Import MUST emit the numbered clarification workflow
-defined in `generation-control-file-spec.md` and MUST NOT publish an unresolved
-GCL as complete.
-
-The Batch reading-resolution capability used to normalize an existing unresolved
-GCL is also the required reusable reading-resolution stage for future Import
-operations. It MUST NOT be removed after the current GCL has been normalized.
-
-After resolving all readings, Import MUST perform a second exact deduplication
-pass over the complete annotated entries. Import MUST publish no entry without
-exactly one complete hiragana `[reading]`.
-
-After initial import, any later requested vocabulary additions MUST be
-appended to the end of the authoritative GCL as required by
-`generation-control-file-spec.md`.
-
-### 2.3 Atomicity
-
-APKG extraction MAY write an unresolved proposed GCL for review and subsequent
-reading resolution. It MUST NOT present that proposal as a complete authoritative
-GCL. Import MUST atomically write the proposal and review report. Completing
-Import MUST validate a fully resolved GCL before publication. Failure or
-interruption MUST NOT leave a partial GCL presented as valid.
-
-## 3. Generate operation
-
-### 3.1 Inputs
+## 4. Generate
 
 Generate accepts:
 
-- one populated deck workspace containing its authoritative GCL snapshot and
-  complete accepted-card cache;
-- one compatible CrowdAnki deck template;
-- one requested output format (`crowdanki` or `apkg`); and
-- one output path.
+- one complete populated workspace;
+- one APKG-neutral card template; and
+- one `.apkg` output path.
 
-Generate MUST NOT require the source JSON from which the GCL may have been
-derived.
+Generate MUST refuse incomplete, stale, or invalid workspaces. It MUST create one
+note for each current GCL entry, use stable deck/model/note identifiers, and
+atomically replace the requested APKG.
 
-Before any content generation, Generate MUST purge exact duplicate GCL lines,
-publish the cleaned GCL, and validate it. Entries that differ by `[reading]`,
-`(な)`, or affix annotation are distinct and MUST be retained.
-Generate MUST reject any entry without a complete authoritative `[reading]`.
+The generated package MUST:
 
-### 3.2 Template use
+- contain the expected note and card counts;
+- use the fields and templates defined by `card-format-spec.md`;
+- contain no GCL annotations in learner-facing fields; and
+- remain reproducible from the GCL, accepted cache, template, and project ID.
 
-Generate MUST treat the deck template separately from an Import source. It MUST
-preserve required template structures, including:
+## 5. Association and preservation
 
-- deck and configuration objects;
-- note model and field definitions;
-- card templates;
-- CSS; and
-- other required CrowdAnki properties.
+`project.json` is the durable association between a GCL, its accepted cache, and
+its APKG output. Syntax-only migrations MAY preserve legacy identities through an
+explicit compatibility mapping. Such migrations MUST validate every cached card,
+update stored hashes, and create a recoverable backup before publication.
 
-Generated notes MUST reference the template’s note-model UUID. The sample note in
-the current template contains test placeholders and MUST NOT appear in production
-output.
+## 6. Atomicity
 
-The policy for deck, configuration, note-model, and template UUIDs is unresolved.
-
-### 3.3 Processing and output
-
-Generate MUST:
-
-1. parse and validate the workspace's complete GCL;
-2. reconcile every GCL identity with exactly one accepted cached card;
-3. reject stale, missing, unexpected, or invalid cached cards;
-4. select the requested output renderer;
-5. construct one note per distinct eligible GCL entry;
-6. validate the complete CrowdAnki object or APKG package; and
-7. publish output only when the run satisfies the adopted error policy.
-
-Output MUST contain no test note, partial placeholder content, or editorial
-annotation. CrowdAnki generation MAY reconcile an associated existing JSON deck
-to preserve note metadata. APKG generation MUST rebuild a complete package with
-stable deck, model, and note identifiers.
-
-Overwrite publication MUST occur only after the replacement deck has been
-completely written and validated. A write failure MUST NOT leave a truncated file
-at the requested path.
-
-### 3.4 Package naming and layout
-
-CrowdAnki import requires a deck JSON file to reside in a directory whose name
-matches the JSON filename without `.json`.
-
-Version 1 GCL filenames MUST follow:
-
-```text
-<deck-name>_generation_control_file.txt
-```
-
-Generate MUST derive:
-
-```text
-<deck-name>_crowdanki_deck/
-└── <deck-name>_crowdanki_deck.json
-```
-
-The package directory MUST be created at the project root. The shared
-`generated/` container proposed earlier is not part of the current layout.
-
-For example:
-
-```text
-gcl/n1_vocabulary_generation_control_file.txt
-    ↓
-n1_vocabulary_crowdanki_deck/
-└── n1_vocabulary_crowdanki_deck.json
-```
-
-Generate MUST reject a GCL filename that does not match the version 1 naming
-pattern unless an explicit future specification defines another mapping. Generate
-MUST create the package directory when it does not exist and overwrite the JSON
-file when it does.
-
-## 4. Update operation
-
-### 4.1 Inputs and association
-
-Update accepts:
-
-- one valid authoritative GCL;
-- one existing generated deck package associated with that GCL;
-- required generation state;
-- a compatible template and configuration; and
-- the approved content-generation mechanism.
-
-Before changing anything, Update MUST resolve every unannotated entry through the
-same retained Batch-backed reading-resolution stage used by Import. It MUST
-atomically publish a fully annotated, post-resolution-deduplicated GCL before
-classifying entries or changing the deck. If resolution requires a paid Batch,
-Update MUST pause for explicit cost confirmation and resume only after the
-results have been collected and validated.
-
-After reading resolution, Update MUST verify GCL-to-deck association and template,
-note-model, and state compatibility. The association mechanism is unresolved.
-
-Before association-based entry classification, Update MUST purge exact duplicate
-GCL lines, publish the cleaned GCL, and validate it. Separately annotated readings
-MUST remain separate entries.
-
-The original source JSON used by Import is not an Update input unless it is also,
-independently, the verified associated generated deck. Update MUST NOT confuse the
-source import field contract with the four-field generated-note contract.
-
-### 4.2 Classification
-
-Classification MUST operate on the deduplicated GCL.
-
-Update MUST classify entries as at least:
-
-- new;
-- previously generated and unchanged;
-- changed;
-- explicitly selected for regeneration;
-- absent from the GCL; or
-- ambiguous or unmatchable.
-
-Classification MUST occur before content generation. An entry that matches an
-existing generated-note identity MUST NOT also be classified as new. Matching by
-written vocabulary alone is insufficient because separately annotated readings
-of the same written expression are distinct entries.
-
-Update MUST first match a generated note by the stable identity established by
-Generate. Learner-facing `Vocabulary` and `Reading` fields MAY be used only as a
-legacy fallback when stable identity is absent. A fallback match MUST be unique;
-zero or multiple candidates are unmatchable and MUST stop publication. This
-ordering is required because affix entries can share visible fields with
-standalone entries and legacy field content can contain an earlier generation
-error.
-
-### 4.3 Application
-
-Update MUST generate content only for new or explicitly regenerated entries.
-Previously generated unchanged entries MUST retain their existing field contents
-and stable card identity.
-
-Update MUST emit at most one note for each distinct GCL entry identity. When the
-associated deck already contains that identity, Update MUST preserve or explicitly
-regenerate the existing note rather than append a duplicate.
-
-If a legacy GCL or associated deck contains repeated copies of one exact entry,
-Update MUST preserve the note corresponding to the first GCL occurrence and
-remove later redundant notes. It MUST report the cleanup.
-
-A changed annotation can change interpretation and MUST NOT be treated as harmless
-formatting. A changed previously generated entry MUST NOT be regenerated unless
-the entry is explicitly selected for regeneration. Without that request, Update
-MUST preserve the existing note and report the pending editorial change.
-
-For every existing generated note whose identity is absent from the GCL, Update
-MUST report the note as scheduled for removal and MUST remove it from the proposed
-generated JSON. The removal report MUST be available before the proposed output
-is published.
-
-Update MUST report unmatchable entries and MUST NOT silently rewrite or delete
-their notes.
-
-Update MUST append new note objects to the deck's in-memory `notes` array, then
-emit a complete CrowdAnki JSON file, not a patch fragment or raw textual append.
-It MUST validate the complete proposed deck before publication.
-
-Update MUST preserve the package naming and layout contract. It MUST read and
-replace the JSON file inside the associated package directory rather than create a
-bare JSON file elsewhere.
-
-### 4.4 External drift
-
-Update MUST detect externally modified managed fields or identities when prior
-state makes detection possible. If it detects such drift, Update MUST fail and
-MUST NOT publish an updated deck. The failure report MUST identify each affected
-note and field or identity property.
-
-### 4.5 Atomicity
-
-Update MUST preserve the existing valid generated JSON until the proposed update
-has been completely written and validated. Its replacement strategy MUST support
-recovery from interruption or write failure.
-
-## 5. Identity and preservation
-
-An entry identity mechanism MUST:
-
-- remain stable when unrelated entries are inserted or reordered;
-- distinguish identical written forms with different readings or metadata;
-- match an unchanged entry to its existing generated note;
-- prevent accidental duplication; and
-- serve both Generate and Update.
-
-Identity MUST distinguish entries such as `脅かす[おどかす]` and
-`脅かす[おびやかす]`, even though both produce `脅かす` in the `Vocabulary`
-field.
-
-Generate MUST establish the identity information required by later Update.
-Physical line number MUST NOT participate in stable identity. The canonical
-complete annotated GCL entry is the identity key. Generate MUST derive the note
-GUID deterministically from that key under one fixed, versioned namespace so
-Update can recover identity without relying on mutable learner-facing fields.
-Changing this namespace or derivation is a migration that MUST be versioned and
-must preserve an explicit mapping from old identities.
-
-## 6. Large-file requirements
-
-For every operation:
-
-- note and entry matching MUST use an indexed or equivalently scalable approach
-  and MUST NOT perform an all-pairs scan;
-- implementations SHOULD avoid redundant full representations of large JSON;
-- progress SHOULD identify phase and processed/total count when available;
-- cancellation or failure MUST leave published inputs and last known-good outputs
-  intact; and
-- validation MUST scale consistently with the operation.
-
-A streaming parser MAY be used. Quantitative size and memory requirements remain
-to be decided.
-
-## 7. Generated package requirements
-
-Generate and Update outputs MUST:
-
-- use a package directory and JSON file with identical base names;
-- reside at the project root;
-- be valid UTF-8 JSON representing a CrowdAnki `Deck`;
-- contain exactly the notes represented by the GCL after required removals,
-  additions, duplicate cleanup, and explicit regeneration;
-- use the four specified fields in the correct order;
-- assign each note to the intended note-model UUID;
-- contain unique valid note GUIDs;
-- preserve Japanese and HTML without mojibake or double escaping; and
-- be published without destroying the last known-good output on failure.
-
-Pretty-printing and JSON key order are implementation choices unless required for
-reproducible diffs.
-
-## 8. Operation reports
-
-Every operation MUST emit a report identifying itself as Import, Generate, or
-Update and containing:
-
-- input and output paths and detected versions;
-- the number and text of exact duplicate GCL entries removed during preflight;
-- relevant processed, imported, created, preserved, regenerated, duplicate-cleaned,
-  and failed counts;
-- clarification requests;
-- validation failures with source references; and
-- whether output was published.
-
-A report MUST NOT claim success when required output is incomplete.
+Import and Generate MUST write temporary files and replace final artifacts only
+after validation. A failure MUST NOT expose a partial GCL, review report, cache,
+or APKG as complete.

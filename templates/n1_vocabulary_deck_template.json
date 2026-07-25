@@ -1,0 +1,79 @@
+{
+    "name":  "N1 vocabulary",
+    "note_models":  [
+                        {
+                            "name":  "Japanese Vocabulary Note",
+                            "css":  ".card {\n  font-family: \"Noto Sans JP\", sans-serif;\n  font-size: 24px;\n  line-height: 1.6;\n  text-align: left;\n  padding: 20px;\n}\n\n.reading {\n  font-size: 1.5em;\n  margin-bottom: 0.75em;\n}\n\n.definition {\n  margin-bottom: 1em;\n}\n\n.examples {\n  font-size: 0.95em;\n}\n\n.vocabulary {\n  text-align: center;\n  font-size: 2em;\n  font-weight: bold;\n}",
+                            "flds":  [
+                                         {
+                                             "collapsed":  false,
+                                             "description":  "Hiragana reading with kanji portions in bold.",
+                                             "excludeFromSearch":  false,
+                                             "font":  "Arial",
+                                             "id":  -4397371654829878026,
+                                             "name":  "Reading",
+                                             "ord":  0,
+                                             "plainText":  false,
+                                             "preventDeletion":  false,
+                                             "rtl":  false,
+                                             "size":  20,
+                                             "sticky":  false,
+                                             "tag":  null
+                                         },
+                                         {
+                                             "collapsed":  false,
+                                             "description":  "Concise Japanese definition.",
+                                             "excludeFromSearch":  false,
+                                             "font":  "Arial",
+                                             "id":  -6342329306014285613,
+                                             "name":  "Definition",
+                                             "ord":  1,
+                                             "plainText":  false,
+                                             "preventDeletion":  false,
+                                             "rtl":  false,
+                                             "size":  20,
+                                             "sticky":  false,
+                                             "tag":  null
+                                         },
+                                         {
+                                             "collapsed":  false,
+                                             "description":  "Three to five natural Japanese example sentences.",
+                                             "excludeFromSearch":  false,
+                                             "font":  "Arial",
+                                             "id":  398900363108548560,
+                                             "name":  "Examples",
+                                             "ord":  2,
+                                             "plainText":  false,
+                                             "preventDeletion":  false,
+                                             "rtl":  false,
+                                             "size":  20,
+                                             "sticky":  false,
+                                             "tag":  null
+                                         },
+                                         {
+                                             "collapsed":  false,
+                                             "description":  "Original vocabulary term (displayed only on the back).",
+                                             "excludeFromSearch":  false,
+                                             "font":  "Arial",
+                                             "id":  7400811796498785658,
+                                             "name":  "Vocabulary",
+                                             "ord":  3,
+                                             "plainText":  false,
+                                             "preventDeletion":  false,
+                                             "rtl":  false,
+                                             "size":  20,
+                                             "sticky":  false,
+                                             "tag":  null
+                                         }
+                                     ],
+                            "sortf":  0,
+                            "tmpls":  [
+                                          {
+                                              "name":  "Japanese Vocabulary Card",
+                                              "qfmt":  "\u003csection class=\"reading\"\u003e\n{{Reading}}\n\u003c/section\u003e\n\n\u003csection class=\"definition\"\u003e\n{{Definition}}\n\u003c/section\u003e\n\n\u003csection class=\"examples\"\u003e\n{{Examples}}\n\u003c/section\u003e",
+                                              "afmt":  "{{FrontSide}}\n\n\u003chr id=\"answer\"\u003e\n\n\u003csection class=\"vocabulary\"\u003e\n{{Vocabulary}}\n\u003c/section\u003e"
+                                          }
+                                      ]
+                        }
+                    ]
+}

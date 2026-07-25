@@ -68,7 +68,7 @@ It MUST otherwise preserve the intended written expression.
 - Bold target readings MUST use consistent HTML supported by Anki.
 - The current normative representation is `<b>…</b>`.
 - Generated fields MUST NOT include Markdown bold markers.
-- Markup MUST be balanced and safe to insert into the CrowdAnki JSON.
+- Markup MUST be balanced and safe to insert into Anki note fields.
 - Any literal HTML-significant characters originating in content MUST be escaped
   unless they are deliberate supported markup.
 

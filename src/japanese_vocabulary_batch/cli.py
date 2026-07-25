@@ -8,8 +8,6 @@ from pathlib import Path
 from .pipeline import (
     PipelineError,
     apply_reading_normalization,
-    apply_results,
-    apply_update,
     collect_batch,
     generate_from_workspace,
     import_apkg,
@@ -19,12 +17,9 @@ from .pipeline import (
     prepare_batch,
     prepare_population,
     prepare_reading_normalization,
-    prepare_remainder_plan,
     prepare_retry,
     refresh_status,
     submit_batch,
-    run_remainder_plan,
-    seed_population_cache,
 )
 
 
@@ -80,22 +75,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     generate = commands.add_parser(
         "generate",
-        help="Generate CrowdAnki JSON or APKG from a populated deck workspace",
+        help="Generate APKG from a populated deck workspace",
     )
     generate.add_argument("--workspace", type=Path, required=True)
-    generate.add_argument(
-        "--format", choices=["crowdanki", "apkg"], required=True
-    )
     generate.add_argument("--output", type=Path, required=True)
     generate.add_argument("--template", type=Path, required=True)
-
-    seed_cache = commands.add_parser(
-        "seed-cache",
-        help="Strictly seed a population cache from a complete generated deck",
-    )
-    seed_cache.add_argument("--gcl", type=Path, required=True)
-    seed_cache.add_argument("--deck", type=Path, required=True)
-    seed_cache.add_argument("--batch-root", type=Path, default=Path(".batch"))
 
     prepare = commands.add_parser("prepare", help="Create offline JSONL requests")
     prepare.add_argument("--gcl", type=Path, required=True)
@@ -166,40 +150,6 @@ def build_parser() -> argparse.ArgumentParser:
         help="Apply an explicit editorial correction during publication",
     )
 
-    apply = commands.add_parser("apply", help="Validate and build CrowdAnki JSON")
-    apply.add_argument("--manifest", type=Path, required=True)
-    apply.add_argument("--output", type=Path, required=True)
-    apply.add_argument("--template", type=Path, required=True)
-    apply.add_argument("--deck-output", type=Path, required=True)
-    apply.add_argument("--allow-partial", action="store_true")
-
-    update = commands.add_parser(
-        "apply-update",
-        help="Synchronize an existing deck through a declared GCL prefix",
-    )
-    update.add_argument("--manifest", type=Path, required=True)
-    update.add_argument("--output", type=Path, required=True)
-    update.add_argument("--deck", type=Path, required=True)
-    update.add_argument("--through", type=int, required=True)
-
-    remainder = commands.add_parser(
-        "prepare-remainder", help="Prepare automatic batches after the deck prefix"
-    )
-    remainder.add_argument("--gcl", type=Path, required=True)
-    remainder.add_argument("--deck", type=Path, required=True)
-    remainder.add_argument("--work-dir", type=Path, default=Path(".batch"))
-    remainder.add_argument("--batch-size", type=int, default=100)
-    remainder.add_argument("--model", default="gpt-5.6-terra")
-    remainder.add_argument("--reasoning-effort", default="medium")
-
-    run_plan = commands.add_parser(
-        "run-plan", help="Run and resume an unattended remainder plan"
-    )
-    run_plan.add_argument("--plan", type=Path, required=True)
-    run_plan.add_argument("--deck", type=Path, required=True)
-    run_plan.add_argument("--max-repair-rounds", type=int, default=2)
-    run_plan.add_argument("--poll-seconds", type=int, default=30)
-    run_plan.add_argument("--confirm-cost", action="store_true")
     return parser
 
 
@@ -232,15 +182,8 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "generate":
             result = generate_from_workspace(
                 workspace_path=args.workspace,
-                output_format=args.format,
                 output_path=args.output,
                 template_path=args.template,
-            )
-        elif args.command == "seed-cache":
-            result = seed_population_cache(
-                gcl_path=args.gcl,
-                deck_path=args.deck,
-                batch_root=args.batch_root,
             )
         elif args.command == "prepare":
             result = prepare_batch(
@@ -303,43 +246,6 @@ def main(argv: list[str] | None = None) -> int:
                 output_path=args.output,
                 report_path=args.report,
                 corrections=corrections,
-            )
-        elif args.command == "apply-update":
-            result = apply_update(
-                manifest_path=args.manifest,
-                output_path=args.output,
-                deck_path=args.deck,
-                through=args.through,
-            )
-        elif args.command == "prepare-remainder":
-            result = prepare_remainder_plan(
-                gcl_path=args.gcl,
-                deck_path=args.deck,
-                work_dir=args.work_dir,
-                batch_size=args.batch_size,
-                model=args.model,
-                reasoning_effort=args.reasoning_effort,
-            )
-        elif args.command == "run-plan":
-            if not args.confirm_cost:
-                raise PipelineError(
-                    "Running a plan can incur API charges; repeat with --confirm-cost"
-                )
-            result = run_remainder_plan(
-                plan_path=args.plan,
-                deck_path=args.deck,
-                client=make_openai_client(),
-                confirm_cost=args.confirm_cost,
-                max_repair_rounds=args.max_repair_rounds,
-                poll_seconds=args.poll_seconds,
-            )
-        else:
-            result = apply_results(
-                manifest_path=args.manifest,
-                output_path=args.output,
-                template_path=args.template,
-                deck_output_path=args.deck_output,
-                allow_partial=args.allow_partial,
             )
     except (PipelineError, OSError, json.JSONDecodeError) as error:
         print(f"error: {error}", file=sys.stderr)

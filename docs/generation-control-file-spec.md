@@ -17,8 +17,8 @@ A version 1 GCL filename MUST follow:
 ```
 
 `<deck-name>` MUST be non-empty and SHOULD use lowercase ASCII letters, digits,
-and underscores for portable paths. The name determines the generated CrowdAnki
-package name as defined in `deck-generation-spec.md`.
+and underscores for portable paths. The name determines the logical APKG project
+name as defined in `deck-generation-spec.md`.
 
 Example:
 
