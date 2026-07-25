@@ -76,6 +76,11 @@ is intended to:
 - remove notes whose entries disappear from the GCL;
 - fail rather than overwrite managed content edited outside the generator.
 
+The current Batch tooling also supports staged prefix expansion. A declared
+`--through` boundary preserves matching existing notes and adds validated missing
+notes through that GCL position. Such a prefix deck is an intermediate artifact,
+not the final complete deck.
+
 ## Source-of-truth model
 
 ```text

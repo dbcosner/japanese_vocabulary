@@ -284,3 +284,50 @@ batch-generate apply \
 
 Retry preparation is local and free. Only its `submit --confirm-cost` step starts
 new paid model work.
+
+## 9. Staged synchronized Update
+
+`apply-update` expands an existing generated deck through an explicit GCL prefix.
+It is intended for verified staged construction; a deck built through only part
+of the GCL is not the final complete deck.
+
+Prepare entries 101–200 after verifying that the existing deck contains entries
+1–100:
+
+```bash
+batch-generate prepare \
+  --gcl gcl/n1_vocabulary_generation_control_file.txt \
+  --work-dir .batch \
+  --start 101 \
+  --end 200
+```
+
+Submit, check, and collect the fresh manifest:
+
+```bash
+batch-generate submit \
+  --manifest .batch/manifest_000101_000200.json \
+  --confirm-cost
+
+batch-generate status \
+  --state .batch/state_000101_000200.json
+
+batch-generate collect \
+  --state .batch/state_000101_000200.json
+```
+
+Then preserve entries 1–100 and add the validated entries 101–200:
+
+```bash
+batch-generate apply-update \
+  --manifest .batch/manifest_000101_000200.json \
+  --output .batch/output_000101_000200.jsonl \
+  --deck n1_vocabulary_crowdanki_deck/n1_vocabulary_crowdanki_deck.json \
+  --through 200
+```
+
+Update matches existing notes using both annotation-free vocabulary and the
+complete authoritative reading. It preserves matched note objects unchanged,
+rejects ambiguous or unmatchable notes, prevents generated duplicates, reports
+identified removals, validates all new cards, and atomically replaces the deck
+only after the complete proposed prefix passes.

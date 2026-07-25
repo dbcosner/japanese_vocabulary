@@ -14,6 +14,7 @@ from japanese_vocabulary_batch.pipeline import (
     GclEntry,
     apply_reading_normalization,
     apply_results,
+    apply_update,
     card_schema,
     collect_batch,
     merge_retry_output,
@@ -407,6 +408,73 @@ class BatchGenerationTests(unittest.TestCase):
         self.assertTrue(
             deck_output.with_suffix(".generation-report.json").exists()
         )
+
+    def test_update_preserves_existing_note_and_adds_only_missing_card(self):
+        prepared = prepare_batch(
+            gcl_path=self.gcl,
+            work_dir=self.root / "update-work",
+            start=2,
+            end=2,
+            model="gpt-test",
+            reasoning_effort="low",
+        )
+        existing_note = {
+            "__type__": "Note",
+            "guid": "preserve-this-guid",
+            "fields": [
+                "<b>あ</b>う",
+                "既存の定義。",
+                (
+                    "<div>事故に<b>あった</b>。</div>"
+                    "<div>災難に<b>あわない</b>。</div>"
+                    "<div>盗難に<b>あった</b>。</div>"
+                ),
+                "遭う",
+            ],
+            "note_model_uuid": "model-test",
+            "tags": ["preserved"],
+        }
+        deck = json.loads(self.template.read_text(encoding="utf-8"))
+        deck["notes"] = [existing_note]
+        deck_dir = self.root / "update_deck"
+        deck_dir.mkdir()
+        deck_path = deck_dir / "update_deck.json"
+        deck_path.write_text(
+            json.dumps(deck, ensure_ascii=False), encoding="utf-8"
+        )
+        card = {
+            "status": "card",
+            "issue": "",
+            "gcl_entry": "内閣[ないかく]",
+            "resolved_gcl_entry": "内閣[ないかく]",
+            "additional_gcl_entries": [],
+            "reading": "<b>ないかく</b>",
+            "definition": "国の行政を担う最高機関。",
+            "examples": [
+                "新しい<b>ないかく</b>が発足した。",
+                "<b>ないかく</b>の方針が示された。",
+                "<b>ないかく</b>は政策を改めた。",
+            ],
+            "example_count_rationale": "",
+            "vocabulary": "内閣",
+        }
+        output = self.root / "update-output.jsonl"
+        output.write_text(
+            response_line(prepared["requests"][0]["custom_id"], card) + "\n",
+            encoding="utf-8",
+        )
+        result = apply_update(
+            manifest_path=Path(prepared["manifest_path"]),
+            output_path=output,
+            deck_path=deck_path,
+            through=2,
+        )
+        updated = json.loads(deck_path.read_text(encoding="utf-8"))
+        self.assertTrue(result["published"])
+        self.assertEqual(result["preserved"], 1)
+        self.assertEqual(result["added"], 1)
+        self.assertEqual(updated["notes"][0], existing_note)
+        self.assertEqual(updated["notes"][1]["fields"][3], "内閣")
 
     def test_example_count_policy(self):
         card = {

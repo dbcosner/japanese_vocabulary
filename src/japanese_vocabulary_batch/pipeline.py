@@ -899,6 +899,13 @@ def vocabulary_from_gcl(entry: str) -> str:
     return value
 
 
+def authoritative_reading_from_gcl(entry: str) -> str:
+    match = READING_ANNOTATION_RE.search(entry)
+    if not match:
+        raise PipelineError(f"GCL entry has no authoritative reading: {entry}")
+    return match.group(1)
+
+
 def validate_resolved_gcl(expected_gcl: str, resolved_gcl: str) -> list[str]:
     if not resolved_gcl:
         return ["resolved_gcl_entry is empty"]
@@ -1118,6 +1125,189 @@ def apply_results(
     report["deck_output_path"] = str(deck_output_path.resolve())
     atomic_write_json(report_path, report)
     return report
+
+
+def apply_update(
+    *,
+    manifest_path: Path,
+    output_path: Path,
+    deck_path: Path,
+    through: int,
+) -> dict[str, Any]:
+    if deck_path.parent.name != deck_path.stem:
+        raise PipelineError(
+            "CrowdAnki output must be inside a directory with the same base name "
+            "as the JSON file"
+        )
+    manifest = load_manifest(manifest_path)
+    gcl_path = Path(manifest["gcl_path"])
+    if sha256_file(gcl_path) != manifest["gcl_sha256"]:
+        raise PipelineError("GCL changed after the generation batch was prepared")
+    entries, _ = clean_and_read_gcl(gcl_path)
+    if through < 1 or through > len(entries):
+        raise PipelineError(
+            f"Invalid update boundary {through}; GCL has {len(entries)} entries"
+        )
+    desired = entries[:through]
+    desired_by_id = {entry.identity: entry for entry in desired}
+    all_by_key: dict[tuple[str, str], list[GclEntry]] = {}
+    for entry in entries:
+        key = (
+            vocabulary_from_gcl(entry.text),
+            authoritative_reading_from_gcl(entry.text),
+        )
+        all_by_key.setdefault(key, []).append(entry)
+
+    deck = json.loads(deck_path.read_text(encoding="utf-8-sig"))
+    notes = deck.get("notes")
+    if not isinstance(notes, list):
+        raise PipelineError("Existing deck does not contain a notes array")
+    existing_by_id: dict[str, dict[str, Any]] = {}
+    removed_duplicates: list[dict[str, Any]] = []
+    scheduled_removals: list[dict[str, Any]] = []
+    unmatchable: list[dict[str, Any]] = []
+    for position, note in enumerate(notes, start=1):
+        fields = note.get("fields") if isinstance(note, dict) else None
+        if not isinstance(fields, list) or len(fields) != 4:
+            unmatchable.append(
+                {"note_position": position, "reason": "expected four fields"}
+            )
+            continue
+        key = (fields[3], strip_tags(fields[0]))
+        candidates = all_by_key.get(key, [])
+        if len(candidates) != 1:
+            unmatchable.append(
+                {
+                    "note_position": position,
+                    "vocabulary": fields[3],
+                    "reading": strip_tags(fields[0]),
+                    "reason": f"matched {len(candidates)} GCL entries",
+                }
+            )
+            continue
+        entry = candidates[0]
+        if entry.identity not in desired_by_id:
+            scheduled_removals.append(
+                {
+                    "note_position": position,
+                    "gcl_entry": entry.text,
+                    "reason": f"outside requested prefix 1-{through}",
+                }
+            )
+            continue
+        if entry.identity in existing_by_id:
+            removed_duplicates.append(
+                {"note_position": position, "gcl_entry": entry.text}
+            )
+            continue
+        existing_by_id[entry.identity] = note
+    if unmatchable:
+        raise PipelineError(
+            f"{len(unmatchable)} existing note(s) could not be matched safely"
+        )
+
+    results = parse_output(output_path)
+    request_by_id = {
+        request["custom_id"]: request for request in manifest["requests"]
+    }
+    result_ids = set(results)
+    request_ids = set(request_by_id)
+    if result_ids != request_ids:
+        raise PipelineError(
+            f"Output reconciliation failed: {len(request_ids - result_ids)} "
+            f"missing, {len(result_ids - request_ids)} unexpected"
+        )
+    generated_by_id: dict[str, tuple[dict[str, Any], dict[str, Any]]] = {}
+    findings: list[dict[str, Any]] = []
+    for custom_id, request in request_by_id.items():
+        entry = desired_by_id.get(custom_id)
+        if entry is None or request["gcl_entry"] != entry.text:
+            findings.append(
+                {
+                    **request,
+                    "errors": ["generated entry is outside the requested prefix"],
+                }
+            )
+            continue
+        card = results[custom_id]
+        errors = validate_card(card, entry.text)
+        if card.get("additional_gcl_entries"):
+            errors.append("fully annotated GCL responses cannot add readings")
+        if custom_id in existing_by_id:
+            errors.append("generated output would duplicate an existing note")
+        if errors:
+            findings.append({**request, "errors": errors})
+        else:
+            generated_by_id[custom_id] = (request, card)
+
+    missing_ids = (
+        set(desired_by_id) - set(existing_by_id) - set(generated_by_id)
+    )
+    if missing_ids:
+        findings.extend(
+            {
+                "custom_id": custom_id,
+                "source_index": desired_by_id[custom_id].source_index,
+                "gcl_entry": desired_by_id[custom_id].text,
+                "errors": ["no existing or generated card for requested entry"],
+            }
+            for custom_id in sorted(missing_ids)
+        )
+
+    report_path = deck_path.with_suffix(".update-report.json")
+    report = {
+        "operation": "update",
+        "manifest_path": str(manifest_path.resolve()),
+        "output_path": str(output_path.resolve()),
+        "deck_path": str(deck_path.resolve()),
+        "through": through,
+        "preserved": len(existing_by_id),
+        "added": len(generated_by_id),
+        "removed": len(scheduled_removals) + len(removed_duplicates),
+        "scheduled_removals": scheduled_removals,
+        "duplicate_notes_removed": removed_duplicates,
+        "findings": findings,
+        "published": False,
+    }
+    if findings:
+        atomic_write_json(report_path, report)
+        raise PipelineError(
+            f"{len(findings)} update finding(s) require review; see {report_path}"
+        )
+
+    note_models = deck.get("note_models") or []
+    if not note_models or not note_models[0].get("crowdanki_uuid"):
+        raise PipelineError("Existing deck does not contain a usable note model")
+    note_model_uuid = note_models[0]["crowdanki_uuid"]
+    proposed_notes: list[dict[str, Any]] = []
+    for entry in desired:
+        preserved = existing_by_id.get(entry.identity)
+        if preserved is not None:
+            proposed_notes.append(preserved)
+            continue
+        _, card = generated_by_id[entry.identity]
+        proposed_notes.append(
+            {
+                "__type__": "Note",
+                "fields": [
+                    card["reading"],
+                    card["definition"],
+                    "\n".join(
+                        f"<div>{example}</div>" for example in card["examples"]
+                    ),
+                    card["vocabulary"],
+                ],
+                "guid": deterministic_guid(entry.text),
+                "note_model_uuid": note_model_uuid,
+                "tags": [],
+            }
+        )
+    deck["notes"] = proposed_notes
+    atomic_write_json(deck_path, deck)
+    report["published"] = True
+    report["final_notes"] = len(proposed_notes)
+    atomic_write_json(report_path, report)
+    return {"report_path": str(report_path), **report}
 
 
 def read_dotenv_api_key(env_path: Path = Path(".env")) -> str:

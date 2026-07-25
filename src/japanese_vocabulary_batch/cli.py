@@ -9,6 +9,7 @@ from .pipeline import (
     PipelineError,
     apply_reading_normalization,
     apply_results,
+    apply_update,
     collect_batch,
     make_openai_client,
     merge_retry_output,
@@ -102,6 +103,15 @@ def build_parser() -> argparse.ArgumentParser:
     apply.add_argument("--template", type=Path, required=True)
     apply.add_argument("--deck-output", type=Path, required=True)
     apply.add_argument("--allow-partial", action="store_true")
+
+    update = commands.add_parser(
+        "apply-update",
+        help="Synchronize an existing deck through a declared GCL prefix",
+    )
+    update.add_argument("--manifest", type=Path, required=True)
+    update.add_argument("--output", type=Path, required=True)
+    update.add_argument("--deck", type=Path, required=True)
+    update.add_argument("--through", type=int, required=True)
     return parser
 
 
@@ -173,6 +183,13 @@ def main(argv: list[str] | None = None) -> int:
                 output_path=args.output,
                 report_path=args.report,
                 corrections=corrections,
+            )
+        elif args.command == "apply-update":
+            result = apply_update(
+                manifest_path=args.manifest,
+                output_path=args.output,
+                deck_path=args.deck,
+                through=args.through,
             )
         else:
             result = apply_results(
