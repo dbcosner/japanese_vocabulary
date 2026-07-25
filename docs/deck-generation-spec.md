@@ -89,10 +89,11 @@ path. Failure or interruption MUST NOT leave a partial GCL presented as valid.
 
 Generate accepts:
 
-- one valid authoritative GCL;
+- one populated deck workspace containing its authoritative GCL snapshot and
+  complete accepted-card cache;
 - one compatible CrowdAnki deck template;
-- generation configuration; and
-- the approved content-generation mechanism.
+- one requested output format (`crowdanki` or `apkg`); and
+- one output path.
 
 Generate MUST NOT require the source JSON from which the GCL may have been
 derived.
@@ -123,19 +124,18 @@ The policy for deck, configuration, note-model, and template UUIDs is unresolved
 
 Generate MUST:
 
-1. parse and validate the complete GCL;
-2. resolve or report every ambiguous entry according to the stop policy;
-3. produce content for every eligible entry;
-4. validate every generated field;
+1. parse and validate the workspace's complete GCL;
+2. reconcile every GCL identity with exactly one accepted cached card;
+3. reject stale, missing, unexpected, or invalid cached cards;
+4. select the requested output renderer;
 5. construct one note per distinct eligible GCL entry;
-6. validate the complete CrowdAnki object; and
+6. validate the complete CrowdAnki object or APKG package; and
 7. publish output only when the run satisfies the adopted error policy.
 
 Output MUST contain no test note, partial placeholder content, or editorial
-annotation. Generate creates a complete new artifact. If its requested output path
-already exists, Generate MUST overwrite that file with the complete newly
-generated deck. It MUST NOT inspect or preserve the existing file as though it
-were an Update input.
+annotation. CrowdAnki generation MAY reconcile an associated existing JSON deck
+to preserve note metadata. APKG generation MUST rebuild a complete package with
+stable deck, model, and note identifiers.
 
 Overwrite publication MUST occur only after the replacement deck has been
 completely written and validated. A write failure MUST NOT leave a truncated file

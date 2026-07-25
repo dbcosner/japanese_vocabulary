@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import json
 import os
+import sqlite3
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -17,6 +19,7 @@ from japanese_vocabulary_batch.pipeline import (
     apply_update,
     card_schema,
     collect_batch,
+    generate_from_workspace,
     generate_crowdanki,
     merge_retry_output,
     prepare_batch,
@@ -120,6 +123,21 @@ class BatchGenerationTests(unittest.TestCase):
                             "__type__": "NoteModel",
                             "crowdanki_uuid": "model-test",
                             "name": "Vocabulary",
+                            "css": ".card { font-family: sans-serif; }",
+                            "flds": [
+                                {"name": "Reading"},
+                                {"name": "Definition"},
+                                {"name": "Examples"},
+                                {"name": "Vocabulary"},
+                            ],
+                            "sortf": 0,
+                            "tmpls": [
+                                {
+                                    "name": "Vocabulary Card",
+                                    "qfmt": "{{Reading}} {{Definition}} {{Examples}}",
+                                    "afmt": "{{FrontSide}}<hr>{{Vocabulary}}",
+                                }
+                            ],
                         }
                     ],
                     "notes": [
@@ -369,6 +387,106 @@ class BatchGenerationTests(unittest.TestCase):
         self.assertEqual(result["new_cards_prepared"], 0)
         accepted = Path(result["accepted_path"]).read_text(encoding="utf-8")
         self.assertIn("例文一", accepted)
+
+    def test_workspace_generates_crowdanki_and_apkg_with_stable_ids(self):
+        deck_dir = self.root / "source_deck"
+        deck_dir.mkdir()
+        deck_path = deck_dir / "source_deck.json"
+        deck = json.loads(self.template.read_text(encoding="utf-8"))
+        entries = (
+            ("遭う[あう]", "あう", "遭う"),
+            ("内閣[ないかく]", "ないかく", "内閣"),
+        )
+        from japanese_vocabulary_batch.pipeline import deterministic_guid
+
+        deck["notes"] = []
+        for entry, reading, vocabulary in entries:
+            card = self.card(entry, reading, vocabulary)
+            deck["notes"].append(
+                {
+                    "__type__": "Note",
+                    "guid": deterministic_guid(entry),
+                    "fields": [
+                        card["reading"],
+                        card["definition"],
+                        "\n".join(
+                            f"<div>{example}</div>"
+                            for example in card["examples"]
+                        ),
+                        vocabulary,
+                    ],
+                    "note_model_uuid": "model-test",
+                    "tags": [],
+                }
+            )
+        deck_path.write_text(json.dumps(deck, ensure_ascii=False), encoding="utf-8")
+        seeded = seed_population_cache(
+            gcl_path=self.gcl,
+            deck_path=deck_path,
+            batch_root=self.root / ".batch",
+        )
+        workspace = Path(seeded["workspace"])
+
+        crowdanki_dir = self.root / "published"
+        crowdanki_dir.mkdir()
+        crowdanki_path = crowdanki_dir / "published.json"
+        crowdanki = generate_from_workspace(
+            workspace_path=workspace,
+            output_format="crowdanki",
+            output_path=crowdanki_path,
+            template_path=self.template,
+        )
+        self.assertEqual(crowdanki["notes"], 2)
+        published = json.loads(crowdanki_path.read_text(encoding="utf-8"))
+        self.assertEqual(len(published["notes"]), 2)
+        original_guid = published["notes"][0]["guid"]
+        published["notes"][0]["fields"][1] = "stale definition"
+        published["notes"][0]["tags"] = ["preserve-me"]
+        crowdanki_path.write_text(
+            json.dumps(published, ensure_ascii=False), encoding="utf-8"
+        )
+        refreshed = generate_from_workspace(
+            workspace_path=workspace,
+            output_format="crowdanki",
+            output_path=crowdanki_path,
+            template_path=self.template,
+        )
+        published = json.loads(crowdanki_path.read_text(encoding="utf-8"))
+        self.assertEqual(refreshed["updated"], 2)
+        self.assertEqual(published["notes"][0]["fields"][1], "簡潔な定義。")
+        self.assertEqual(published["notes"][0]["guid"], original_guid)
+        self.assertEqual(published["notes"][0]["tags"], ["preserve-me"])
+
+        apkg_path = self.root / "published.apkg"
+        first = generate_from_workspace(
+            workspace_path=workspace,
+            output_format="apkg",
+            output_path=apkg_path,
+            template_path=self.template,
+        )
+        second = generate_from_workspace(
+            workspace_path=workspace,
+            output_format="apkg",
+            output_path=apkg_path,
+            template_path=self.template,
+        )
+        self.assertEqual(first["deck_id"], second["deck_id"])
+        self.assertEqual(first["model_id"], second["model_id"])
+        self.assertEqual(first["notes"], 2)
+        with zipfile.ZipFile(apkg_path) as package:
+            self.assertIn("collection.anki2", package.namelist())
+            database_path = self.root / "collection.anki2"
+            database_path.write_bytes(package.read("collection.anki2"))
+        connection = sqlite3.connect(database_path)
+        try:
+            self.assertEqual(connection.execute("select count(*) from notes").fetchone()[0], 2)
+            self.assertEqual(connection.execute("select count(*) from cards").fetchone()[0], 2)
+            fields = connection.execute(
+                "select flds from notes order by id"
+            ).fetchall()
+            self.assertTrue(any("例文一" in row[0] for row in fields))
+        finally:
+            connection.close()
 
     def test_generate_rejects_unannotated_gcl_entries(self):
         self.gcl.write_text(
@@ -756,6 +874,17 @@ class BatchGenerationTests(unittest.TestCase):
         card["example_count_rationale"] = "六例"
         self.assertIn(
             "examples must contain one to five items",
+            validate_card(card, "内閣[ないかく]"),
+        )
+
+        card["examples"] = [
+            "新しい<b>ないかく</b、方針が示された。",
+            "<b>ないかく</b>が発足した。",
+            "<b>ないかく</b>は法案を決定した。",
+        ]
+        card["example_count_rationale"] = ""
+        self.assertIn(
+            "examples must contain balanced bold markup",
             validate_card(card, "内閣[ないかく]"),
         )
 

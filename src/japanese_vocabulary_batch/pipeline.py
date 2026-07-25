@@ -1120,6 +1120,269 @@ def generate_crowdanki(
     )
 
 
+def _stable_anki_id(project_id: str, kind: str) -> int:
+    digest = hashlib.sha256(f"{project_id}:{kind}".encode("utf-8")).digest()
+    return (1 << 30) + (int.from_bytes(digest[:8], "big") % (1 << 30))
+
+
+def _load_complete_workspace(
+    workspace_path: Path,
+) -> tuple[dict[str, Any], list[GclEntry], Path, dict[str, dict[str, Any]]]:
+    project_path = workspace_path / "project.json"
+    if not project_path.is_file():
+        raise PipelineError(f"Population workspace has no project.json: {workspace_path}")
+    project = json.loads(project_path.read_text(encoding="utf-8"))
+    gcl_path = Path(project["gcl_path"])
+    if not gcl_path.is_file():
+        raise PipelineError(f"Workspace GCL is missing: {gcl_path}")
+    entries, _ = clean_and_read_gcl(gcl_path)
+    if sha256_file(gcl_path) != project.get("gcl_sha256"):
+        raise PipelineError(
+            "GCL changed after the last population check; run populate first"
+        )
+    accepted_path = Path(
+        project.get("accepted_path") or workspace_path / "cards" / "accepted.jsonl"
+    )
+    if not accepted_path.is_file():
+        fallback = workspace_path / "cards" / "accepted.jsonl"
+        if not fallback.is_file():
+            raise PipelineError(f"Workspace accepted-card cache is missing: {accepted_path}")
+        accepted_path = fallback
+    records = _read_output_records(accepted_path)
+    raw_by_id = {record.get("custom_id"): record for record in records}
+    if None in raw_by_id or len(raw_by_id) != len(records):
+        raise PipelineError("Accepted-card cache has missing or duplicate identities")
+    cards = parse_output_records(records)
+    expected_by_id = {entry.identity: entry for entry in entries}
+    missing = expected_by_id.keys() - cards.keys()
+    unexpected = cards.keys() - expected_by_id.keys()
+    findings = []
+    for custom_id, entry in expected_by_id.items():
+        if custom_id in cards:
+            errors = validate_card(cards[custom_id], entry.text)
+            if errors:
+                findings.append(
+                    {
+                        "custom_id": custom_id,
+                        "gcl_entry": entry.text,
+                        "errors": errors,
+                    }
+                )
+    if missing or unexpected or findings:
+        raise PipelineError(
+            "Population cache is not generation-ready: "
+            f"{len(missing)} missing, {len(unexpected)} unexpected, "
+            f"{len(findings)} invalid"
+        )
+    return project, entries, accepted_path, cards
+
+
+def _workspace_generation_manifest(
+    *,
+    workspace_path: Path,
+    project: dict[str, Any],
+    entries: list[GclEntry],
+    accepted_path: Path,
+) -> Path:
+    manifest_path = workspace_path / "generate-manifest.json"
+    manifest = {
+        "version": 2,
+        "operation": "generate",
+        "gcl_path": project["gcl_path"],
+        "gcl_sha256": project["gcl_sha256"],
+        "input_path": str(accepted_path.resolve()),
+        "input_sha256": sha256_file(accepted_path),
+        "model": project.get("model"),
+        "reasoning_effort": project.get("reasoning_effort"),
+        "range": {"start": 1, "end": len(entries)},
+        "total_gcl_entries": len(entries),
+        "duplicate_entries_removed": [],
+        "requests": [
+            {
+                "custom_id": entry.identity,
+                "source_index": entry.source_index,
+                "gcl_entry": entry.text,
+            }
+            for entry in entries
+        ],
+    }
+    atomic_write_json(manifest_path, manifest)
+    return manifest_path
+
+
+def _template_parts(template_path: Path) -> tuple[dict[str, Any], dict[str, Any]]:
+    template = json.loads(template_path.read_text(encoding="utf-8-sig"))
+    note_models = template.get("note_models") or []
+    if len(note_models) != 1:
+        raise PipelineError("Deck template must contain exactly one note model")
+    model = note_models[0]
+    fields = model.get("flds") or []
+    card_templates = model.get("tmpls") or []
+    if not fields or not card_templates:
+        raise PipelineError("Deck template has no fields or card templates")
+    return template, model
+
+
+def _generate_apkg(
+    *,
+    project: dict[str, Any],
+    entries: list[GclEntry],
+    cards: dict[str, dict[str, Any]],
+    template_path: Path,
+    output_path: Path,
+) -> dict[str, Any]:
+    try:
+        import genanki
+    except ImportError as error:
+        raise PipelineError(
+            "APKG generation dependency is unavailable; reinstall the project "
+            "environment from pyproject.toml"
+        ) from error
+
+    template, source_model = _template_parts(template_path)
+    project_id = project["project_id"]
+    deck_id = _stable_anki_id(project_id, "deck")
+    model_id = _stable_anki_id(project_id, "model")
+    deck_name = project.get("deck_name") or re.sub(
+        r"\s*-\s*CrowdAnki\s*$", "", template.get("name", "")
+    )
+    if not deck_name:
+        deck_name = project["deck_key"].replace("_", " ").strip().title()
+    model = genanki.Model(
+        model_id,
+        source_model.get("name", "Japanese Vocabulary Note").replace(
+            " with CrowdAnki", ""
+        ),
+        fields=[
+            {
+                "name": field["name"],
+                **(
+                    {"font": field["font"]}
+                    if isinstance(field.get("font"), str)
+                    else {}
+                ),
+            }
+            for field in source_model["flds"]
+        ],
+        templates=[
+            {
+                "name": card_template["name"].replace(" with CrowdAnki", ""),
+                "qfmt": card_template["qfmt"],
+                "afmt": card_template["afmt"],
+            }
+            for card_template in source_model["tmpls"]
+        ],
+        css=source_model.get("css", ""),
+        sort_field_index=int(source_model.get("sortf", 0)),
+    )
+    deck = genanki.Deck(deck_id, deck_name)
+
+    class StableNote(genanki.Note):
+        def __init__(self, *, stable_guid: str, **kwargs: Any) -> None:
+            self._stable_guid = stable_guid
+            super().__init__(**kwargs)
+
+        @property
+        def guid(self) -> str:
+            return self._stable_guid
+
+    for entry in entries:
+        card = cards[entry.identity]
+        examples_html = "\n".join(
+            f"<div>{example}</div>" for example in card["examples"]
+        )
+        deck.add_note(
+            StableNote(
+                stable_guid=deterministic_guid(entry.text),
+                model=model,
+                fields=[
+                    card["reading"],
+                    card["definition"],
+                    examples_html,
+                    card["vocabulary"],
+                ],
+            )
+        )
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    temporary_dir = Path(
+        tempfile.mkdtemp(prefix=f".{output_path.stem}.", dir=output_path.parent)
+    )
+    temporary_path = temporary_dir / output_path.name
+    try:
+        genanki.Package(deck).write_to_file(str(temporary_path))
+        os.replace(temporary_path, output_path)
+    finally:
+        if temporary_path.exists():
+            temporary_path.unlink()
+        temporary_dir.rmdir()
+    return {
+        "format": "apkg",
+        "output_path": str(output_path.resolve()),
+        "deck_name": deck_name,
+        "deck_id": deck_id,
+        "model_id": model_id,
+        "notes": len(entries),
+        "published": True,
+    }
+
+
+def generate_from_workspace(
+    *,
+    workspace_path: Path,
+    output_format: str,
+    output_path: Path,
+    template_path: Path,
+) -> dict[str, Any]:
+    """Generate a final deck using only one populated deck workspace."""
+    if output_format not in {"crowdanki", "apkg"}:
+        raise PipelineError(f"Unsupported deck format: {output_format}")
+    expected_suffix = ".json" if output_format == "crowdanki" else ".apkg"
+    if output_path.suffix.lower() != expected_suffix:
+        raise PipelineError(
+            f"{output_format} output must use the {expected_suffix} extension"
+        )
+    project, entries, accepted_path, cards = _load_complete_workspace(
+        workspace_path
+    )
+    manifest_path = _workspace_generation_manifest(
+        workspace_path=workspace_path,
+        project=project,
+        entries=entries,
+        accepted_path=accepted_path,
+    )
+    if output_format == "crowdanki":
+        if output_path.exists():
+            result = apply_update(
+                manifest_path=manifest_path,
+                output_path=accepted_path,
+                deck_path=output_path,
+                through=len(entries),
+                refresh_existing=True,
+            )
+        else:
+            result = apply_results(
+                manifest_path=manifest_path,
+                output_path=accepted_path,
+                template_path=template_path,
+                deck_output_path=output_path,
+            )
+        result["format"] = "crowdanki"
+        result["notes"] = result.get("final_notes", result.get("valid_cards"))
+        result["output_path"] = str(output_path.resolve())
+    else:
+        result = _generate_apkg(
+            project=project,
+            entries=entries,
+            cards=cards,
+            template_path=template_path,
+            output_path=output_path,
+        )
+    project.setdefault("outputs", {})[output_format] = str(output_path.resolve())
+    atomic_write_json(workspace_path / "project.json", project)
+    atomic_write_json(workspace_path / f"generate-{output_format}-report.json", result)
+    return result
+
+
 def prepare_retry(
     *,
     manifest_path: Path,
@@ -1528,6 +1791,20 @@ def concealed_target_pattern(vocabulary: str) -> re.Pattern[str] | None:
     return None
 
 
+def validate_bold_markup(value: str) -> bool:
+    if re.search(r"</?b(?!>)", value, flags=re.IGNORECASE):
+        return False
+    depth = 0
+    for tag in re.findall(r"</?b>", value, flags=re.IGNORECASE):
+        if tag.lower() == "<b>":
+            depth += 1
+        else:
+            depth -= 1
+            if depth < 0:
+                return False
+    return depth == 0
+
+
 def validate_card(card: dict[str, Any], expected_gcl: str) -> list[str]:
     errors: list[str] = []
     if card.get("status") != "card":
@@ -1546,7 +1823,7 @@ def validate_card(card: dict[str, Any], expected_gcl: str) -> list[str]:
     plain_reading = strip_tags(reading)
     if not plain_reading or not HIRAGANA_RE.fullmatch(plain_reading):
         errors.append("reading must contain hiragana only after HTML removal")
-    if reading.count("<b>") != reading.count("</b>") or "<b>" not in reading:
+    if not validate_bold_markup(reading) or "<b>" not in reading:
         errors.append("reading must contain balanced bold markup")
     definition = card.get("definition", "")
     examples = card.get("examples", [])
@@ -1562,6 +1839,8 @@ def validate_card(card: dict[str, Any], expected_gcl: str) -> list[str]:
         errors.append("examples must contain one to five items")
     elif any(not isinstance(example, str) or not example.strip() for example in examples):
         errors.append("examples must be non-empty strings")
+    elif any(not validate_bold_markup(example) for example in examples):
+        errors.append("examples must contain balanced bold markup")
     if isinstance(examples, list) and 1 <= len(examples) <= 5:
         rationale = card.get("example_count_rationale", "")
         if len(examples) == 3:
@@ -1706,6 +1985,7 @@ def apply_update(
     deck_path: Path,
     through: int,
     allow_partial: bool = False,
+    refresh_existing: bool = False,
 ) -> dict[str, Any]:
     if deck_path.parent.name != deck_path.stem:
         raise PipelineError(
@@ -1825,8 +2105,10 @@ def apply_update(
             errors.append("fully annotated GCL responses cannot add readings")
         if custom_id in existing_by_id:
             # A complete population cache naturally includes records for notes
-            # already present in the deck. Preserve those notes rather than
-            # treating the cached record as an attempted duplicate.
+            # already present in the deck. Workspace-driven generation refreshes
+            # their fields while preserving stable note metadata.
+            if refresh_existing and not errors:
+                generated_by_id[custom_id] = (request, card)
             continue
         if errors:
             findings.append({**request, "errors": errors})
@@ -1848,6 +2130,8 @@ def apply_update(
         )
 
     report_path = deck_path.with_suffix(".update-report.json")
+    updated_count = len(set(existing_by_id) & set(generated_by_id))
+    added_count = len(set(generated_by_id) - set(existing_by_id))
     report = {
         "operation": "update",
         "manifest_path": str(manifest_path.resolve()),
@@ -1855,7 +2139,8 @@ def apply_update(
         "deck_path": str(deck_path.resolve()),
         "through": through,
         "preserved": len(existing_by_id),
-        "added": len(generated_by_id),
+        "updated": updated_count,
+        "added": added_count,
         "removed": len(scheduled_removals) + len(removed_duplicates),
         "scheduled_removals": scheduled_removals,
         "duplicate_notes_removed": removed_duplicates,
@@ -1876,7 +2161,21 @@ def apply_update(
     for entry in desired:
         preserved = existing_by_id.get(entry.identity)
         if preserved is not None:
-            proposed_notes.append(preserved)
+            generated = generated_by_id.get(entry.identity)
+            if generated is None:
+                proposed_notes.append(preserved)
+                continue
+            _, card = generated
+            refreshed = dict(preserved)
+            refreshed["fields"] = [
+                card["reading"],
+                card["definition"],
+                "\n".join(
+                    f"<div>{example}</div>" for example in card["examples"]
+                ),
+                card["vocabulary"],
+            ]
+            proposed_notes.append(refreshed)
             continue
         generated = generated_by_id.get(entry.identity)
         if generated is None:

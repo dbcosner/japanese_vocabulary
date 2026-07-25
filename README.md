@@ -62,19 +62,31 @@ After the prepared batches have been submitted and collected with the existing
 `submit`, `status`, and `collect` commands, rerun `populate` to validate and
 incorporate completed outputs into `cards/accepted.jsonl`.
 
-Generate the final deck:
+Generate CrowdAnki JSON from the populated workspace:
 
 ```bash
 batch-generate generate \
-  --gcl gcl/n1_vocabulary_generation_control_file.txt \
+  --workspace .batch/n1_vocabulary \
+  --format crowdanki \
   --template templates/N1_vocabulary_-_CrowdAnki/deck.json \
-  --deck n1_vocabulary_crowdanki_deck/n1_vocabulary_crowdanki_deck.json
+  --output n1_vocabulary_crowdanki_deck/n1_vocabulary_crowdanki_deck.json
 ```
 
-Generate automatically performs the incremental population check. If cards are
-missing, it prepares only those cards and exits without publishing a partial
-deck or incurring API charges. Once population is complete, the same command
-atomically creates or updates the deck.
+Generate an `.apkg` from the same workspace:
+
+```bash
+batch-generate generate \
+  --workspace .batch/n1_vocabulary \
+  --format apkg \
+  --template templates/N1_vocabulary_-_CrowdAnki/deck.json \
+  --output n1_vocabulary.apkg
+```
+
+Generate validates the GCL snapshot and every accepted card before publishing.
+It refuses incomplete, stale, or invalid workspaces. CrowdAnki generation
+reconciles an existing JSON deck while preserving stable note metadata; APKG
+generation rebuilds the package with deterministic deck, model, and note
+identifiers so repeated imports update the same logical notes.
 
 For a one-time migration from a previously generated complete CrowdAnki deck,
 `seed-cache` reconstructs the accepted-card cache from the deck's four fields.

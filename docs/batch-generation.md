@@ -15,8 +15,9 @@ respect to model generation:
   `.batch/<deck-name>/` workspace and incorporates valid completed outputs;
 - `seed-cache` strictly migrates a complete generated deck into a population
   cache without making an API call;
-- `generate` performs the same offline population check and publishes only when
-  every current GCL entry has accepted card data;
+- `generate` validates a specified population workspace and publishes either
+  CrowdAnki JSON or native Anki APKG only when every current GCL entry has
+  accepted card data;
 - `status` retrieves batch metadata;
 - `collect` downloads already generated output; and
 - `prepare-retry` and `merge-retry` locally prepare and reconcile rejected-only

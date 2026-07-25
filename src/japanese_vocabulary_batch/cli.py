@@ -11,7 +11,7 @@ from .pipeline import (
     apply_results,
     apply_update,
     collect_batch,
-    generate_crowdanki,
+    generate_from_workspace,
     make_openai_client,
     merge_retry_output,
     prepare_batch,
@@ -50,19 +50,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     generate = commands.add_parser(
         "generate",
-        help="Reconcile the current GCL into a complete generated deck",
+        help="Generate CrowdAnki JSON or APKG from a populated deck workspace",
     )
-    generate.add_argument("--gcl", type=Path, required=True)
-    generate.add_argument("--deck", type=Path, required=True)
-    generate.add_argument("--template", type=Path, required=True)
-    generate.add_argument("--batch-root", type=Path, default=Path(".batch"))
-    generate.add_argument("--batch-size", type=int, default=100)
-    generate.add_argument("--model", default="gpt-5.6-terra")
+    generate.add_argument("--workspace", type=Path, required=True)
     generate.add_argument(
-        "--reasoning-effort",
-        choices=["none", "low", "medium", "high", "xhigh", "max"],
-        default="medium",
+        "--format", choices=["crowdanki", "apkg"], required=True
     )
+    generate.add_argument("--output", type=Path, required=True)
+    generate.add_argument("--template", type=Path, required=True)
 
     seed_cache = commands.add_parser(
         "seed-cache",
@@ -195,14 +190,11 @@ def main(argv: list[str] | None = None) -> int:
                 reasoning_effort=args.reasoning_effort,
             )
         elif args.command == "generate":
-            result = generate_crowdanki(
-                gcl_path=args.gcl,
-                deck_path=args.deck,
+            result = generate_from_workspace(
+                workspace_path=args.workspace,
+                output_format=args.format,
+                output_path=args.output,
                 template_path=args.template,
-                batch_root=args.batch_root,
-                batch_size=args.batch_size,
-                model=args.model,
-                reasoning_effort=args.reasoning_effort,
             )
         elif args.command == "seed-cache":
             result = seed_population_cache(
