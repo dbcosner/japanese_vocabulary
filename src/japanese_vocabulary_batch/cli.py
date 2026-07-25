@@ -44,6 +44,16 @@ def build_parser() -> argparse.ArgumentParser:
         help="Deck name, or a full *_generation_control_file.txt filename",
     )
     import_command.add_argument("--output-dir", type=Path, default=Path("gcl"))
+    import_command.add_argument(
+        "--decisions",
+        type=Path,
+        help="Optional explicit per-import cleanup decisions JSON",
+    )
+    import_command.add_argument(
+        "--replace",
+        action="store_true",
+        help="Replace an existing proposed GCL and its review report",
+    )
 
     populate = commands.add_parser(
         "populate",
@@ -197,6 +207,8 @@ def main(argv: list[str] | None = None) -> int:
                 apkg_path=args.apkg,
                 gcl_name=args.name,
                 output_dir=args.output_dir,
+                decisions_path=args.decisions,
+                replace=args.replace,
             )
         elif args.command == "populate":
             result = prepare_population(

@@ -45,7 +45,7 @@ For each file, validation MUST verify:
 - non-empty vocabulary after annotation removal;
 - supported annotation order and multiplicity;
 - exactly one complete hiragana `[reading]` on every entry;
-- full-width affix placeholders;
+- ASCII U+007E affix placeholders;
 - canonical ASCII `(な)` markers rather than full-width parentheses;
 - bracket-form readings rather than whitespace-separated inline readings;
 - absence of unsupported control characters; and
@@ -62,7 +62,7 @@ For each note, validation MUST verify:
 
 - `Reading`, `Definition`, `Examples`, and `Vocabulary` are present and non-empty;
 - the response's request-entry and resolved-entry values each equal the complete
-  canonical GCL entry exactly, including `[reading]`, `～`, and `(な)`;
+  canonical GCL entry exactly, including `[reading]`, `~`, and `(な)`;
 - the displayed reading, after HTML removal, equals the authoritative reading
   and does not omit or add okurigana or a na-adjective reading suffix;
 - the definition and every example use the sense belonging to the authoritative
@@ -231,7 +231,7 @@ A release test suite MUST include:
 - a prefix and a suffix;
 - two entries sharing a written form but having different supplied readings;
 - malformed brackets;
-- ASCII `~` in place of `～`;
+- a noncanonical tilde variant in place of ASCII U+007E `~`;
 - ambiguous reading escalation;
 - target concealment in an inflected example;
 - target concealment inside compounds, including `器` in `容器`, `志` in `意志`,

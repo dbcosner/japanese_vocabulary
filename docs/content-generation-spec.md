@@ -204,7 +204,7 @@ constructions. Following particles, including `の`, and conjugated forms of
 
 For entries marked `(な)`:
 
-- examples SHOULD include attributive `～な` use and predicate or noun-like use
+- examples SHOULD include attributive `~な` use and predicate or noun-like use
   when both are natural for the entry;
 - the literal GCL annotation MUST NOT be copied into a field; and
 - the grammatical `な` MAY and normally will appear when required by a sentence.
@@ -220,7 +220,7 @@ For affix entries:
 - examples MUST embed it within authentic words;
 - the entire occurrence of the target affix within those words MUST be replaced
   by its hiragana reading in bold; and
-- the placeholder `～` MUST NOT appear on the card.
+- the placeholder `~` MUST NOT appear on the card.
 
 ## 6. Target concealment
 

@@ -35,8 +35,20 @@ This writes `gcl/my_vocabulary_generation_control_file.txt`. `--name` may also
 be the complete GCL filename, and `--output-dir` can select another directory.
 Import uses named vocabulary and reading fields where available (with the
 documented first/second-field fallback), removes HTML presentation markup,
-requires a complete hiragana reading, preserves note order, and reports exact
-duplicates.
+retains complete hiragana readings, preserves unresolved expressions for the
+reading-resolution stage, preserves note order, and reports exact duplicates.
+
+Import also writes `<name>_generation_control_file.import-review.json`. Ambiguous
+structures are excluded and recorded there rather than guessed. Explicit
+source-specific decisions can be applied reproducibly:
+
+```bash
+batch-generate import-apkg \
+  --apkg path/to/source.apkg \
+  --name my_vocabulary \
+  --decisions path/to/import-decisions.json \
+  --replace
+```
 
 Create and Update are not separate phases. Generate creates a missing deck or
 updates an associated existing deck to the complete desired GCL state. Existing
@@ -203,13 +215,13 @@ GCL entries may include generation-only annotations:
 遭う[あう]
 一入[ひとしお]
 静か[しずか](な)
-～化[か]
-無～[む]
+~化[か]
+無~[む]
 ```
 
 - `[reading]` supplies an authoritative reading.
 - `(な)` identifies a na-adjective.
-- `～` identifies a prefix or suffix attachment point.
+- `~` (ASCII U+007E) identifies a prefix or suffix attachment point.
 
 These annotations guide content generation and must not appear on generated
 cards.

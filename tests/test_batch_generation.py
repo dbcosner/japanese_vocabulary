@@ -198,6 +198,63 @@ class BatchGenerationTests(unittest.TestCase):
         self.assertEqual(result["source_notes"], 3)
         self.assertEqual(result["entries"], 2)
         self.assertEqual(len(result["duplicates_removed"]), 1)
+        self.assertTrue(Path(result["review_path"]).is_file())
+        self.assertEqual(result["review_items"][0]["reason"], "exact duplicate")
+
+    def test_import_apkg_flags_ambiguous_structure_and_applies_decisions(self):
+        database = self.root / "collection.anki2"
+        connection = sqlite3.connect(database)
+        connection.execute("CREATE TABLE col (models TEXT NOT NULL)")
+        connection.execute(
+            "CREATE TABLE notes (id INTEGER, mid INTEGER, flds TEXT NOT NULL)"
+        )
+        connection.execute(
+            "INSERT INTO col VALUES (?)",
+            (json.dumps({"1": {"flds": [{"name": "Expression"}, {"name": "Reading"}]}}),),
+        )
+        connection.executemany(
+            "INSERT INTO notes VALUES (?, 1, ?)",
+            [
+                (1, "～化\x1f〜か"),
+                (2, "片道 ⇔ 往復\x1fかたみち⇔おうふく"),
+                (3, "無作法（な）\x1fぶさほう（な）"),
+            ],
+        )
+        connection.commit()
+        connection.close()
+        package = self.root / "source.apkg"
+        with zipfile.ZipFile(package, "w") as archive:
+            archive.write(database, "collection.anki2")
+
+        canonical = import_apkg(package, "canonical", self.root / "canonical")
+        canonical_text = Path(canonical["gcl_path"]).read_text(encoding="utf-8")
+        self.assertIn("~化[か]", canonical_text)
+        self.assertNotIn("片道", canonical_text)
+        self.assertIn("無作法[ぶさほう](な)", canonical_text)
+        self.assertEqual(len(canonical["review_items"]), 1)
+
+        decisions = self.root / "decisions.json"
+        decisions.write_text(
+            json.dumps(
+                {
+                    "rules": {
+                        "split_comparisons": True,
+                        "strip_parentheticals_except_na": True,
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
+        decided = import_apkg(
+            package,
+            "decided",
+            self.root / "decided",
+            decisions_path=decisions,
+        )
+        decided_text = Path(decided["gcl_path"]).read_text(encoding="utf-8")
+        self.assertIn("片道[かたみち]", decided_text)
+        self.assertIn("往復[おうふく]", decided_text)
+        self.assertIn("無作法[ぶさほう](な)", decided_text)
 
     def test_import_apkg_cli_uses_requested_full_gcl_name(self):
         database = self.root / "collection.anki2"
@@ -233,6 +290,35 @@ class BatchGenerationTests(unittest.TestCase):
         self.assertTrue(
             (self.root / "output" / "custom_generation_control_file.txt").is_file()
         )
+
+    def test_import_apkg_prefers_modern_collection_over_compatibility_database(self):
+        package = self.root / "modern.apkg"
+        with zipfile.ZipFile(package, "w") as archive:
+            archive.writestr("collection.anki21b", b"modern")
+            archive.writestr("collection.anki2", b"placeholder")
+
+        class FakeReader:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return None
+
+            def read(self):
+                return b"database"
+
+        fake_decompressor = SimpleNamespace(
+            stream_reader=lambda value: FakeReader()
+        )
+        fake_zstandard = SimpleNamespace(
+            ZstdDecompressor=lambda: fake_decompressor
+        )
+        with (
+            patch.dict("sys.modules", {"zstandard": fake_zstandard}),
+            patch("sqlite3.connect", side_effect=sqlite3.DatabaseError("checked modern")),
+        ):
+            with self.assertRaisesRegex(PipelineError, "checked modern"):
+                import_apkg(package, "modern", self.root / "gcl")
 
     def tearDown(self):
         self.temporary.cleanup()

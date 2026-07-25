@@ -27,7 +27,7 @@ make diffs surprising.
 
 ## Q3. ASCII and full-width affix markers
 
-**Question:** Should ASCII `~` be accepted and canonicalized to `～`, or rejected?
+**Question:** Which tilde code point is canonical for affix placeholders?
 
 **Status:** Resolved by D11.
 
@@ -343,7 +343,8 @@ operation.
 
 - Date: 2026-07-24
 - Status: accepted
-- Decision: Normalize `（な）` to `(な)`, ASCII `~` to `～`,
+- Decision: Normalize `（な）` to `(な)`, every recognized tilde variant to ASCII
+  tilde U+007E (`~`),
   whitespace-separated `来る　きたる` to `来る[きたる]`, and `故（に）` to
   `故[ゆえ]`. Optional particles such as the `に` in `故に` belong in generated
   examples, not editorial annotation syntax.

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import html
+import io
 import json
 import os
 import re
@@ -52,6 +53,16 @@ def _plain_anki_field(value: str) -> str:
     return html.unescape(value).strip()
 
 
+def _first_anki_field_line(value: str) -> str:
+    first_line = re.split(
+        r"<br\s*/?>|</?div\b[^>]*>",
+        value,
+        maxsplit=1,
+        flags=re.IGNORECASE,
+    )[0]
+    return _plain_anki_field(first_line)
+
+
 def _gcl_output_path(name: str, output_dir: Path) -> Path:
     if not name or Path(name).name != name:
         raise PipelineError("GCL name must be a filename or portable deck name")
@@ -64,23 +75,40 @@ def _gcl_output_path(name: str, output_dir: Path) -> Path:
     return output_dir / filename
 
 
-def import_apkg(apkg_path: Path, gcl_name: str, output_dir: Path = Path("gcl")) -> dict[str, Any]:
-    """Create a resolved version-1 GCL from the notes in an Anki package."""
+def import_apkg(
+    apkg_path: Path,
+    gcl_name: str,
+    output_dir: Path = Path("gcl"),
+    *,
+    decisions_path: Path | None = None,
+    replace: bool = False,
+) -> dict[str, Any]:
+    """Create a proposed version-1 GCL and an import-review report from APKG."""
     if apkg_path.suffix.lower() != ".apkg":
         raise PipelineError(f"Import source must be an .apkg file: {apkg_path}")
     if not apkg_path.is_file():
         raise PipelineError(f"APKG file not found: {apkg_path}")
 
     output_path = _gcl_output_path(gcl_name, output_dir)
-    if output_path.exists():
+    review_path = output_path.with_suffix(".import-review.json")
+    if output_path.exists() and not replace:
         raise PipelineError(f"Refusing to overwrite existing GCL: {output_path}")
+    decisions: dict[str, Any] = {}
+    if decisions_path is not None:
+        decisions = json.loads(decisions_path.read_text(encoding="utf-8"))
+    rules = decisions.get("rules", {})
+    overrides = decisions.get("note_overrides", {})
 
     try:
         with zipfile.ZipFile(apkg_path) as package:
             collection_name = next(
                 (
                     name
-                    for name in ("collection.anki21", "collection.anki2")
+                    for name in (
+                        "collection.anki21b",
+                        "collection.anki21",
+                        "collection.anki2",
+                    )
                     if name in package.namelist()
                 ),
                 None,
@@ -88,6 +116,17 @@ def import_apkg(apkg_path: Path, gcl_name: str, output_dir: Path = Path("gcl")) 
             if collection_name is None:
                 raise PipelineError("APKG does not contain an Anki collection database")
             collection_bytes = package.read(collection_name)
+            if collection_name.endswith("21b"):
+                try:
+                    import zstandard
+                except ImportError as error:
+                    raise PipelineError(
+                        "Modern APKG import requires the 'zstandard' package"
+                    ) from error
+                with zstandard.ZstdDecompressor().stream_reader(
+                    io.BytesIO(collection_bytes)
+                ) as reader:
+                    collection_bytes = reader.read()
     except (OSError, zipfile.BadZipFile, KeyError) as error:
         raise PipelineError(f"Could not read APKG: {error}") from error
 
@@ -98,10 +137,20 @@ def import_apkg(apkg_path: Path, gcl_name: str, output_dir: Path = Path("gcl")) 
         database_path.write_bytes(collection_bytes)
         connection = sqlite3.connect(database_path)
         try:
-            model_json = connection.execute("SELECT models FROM col").fetchone()
-            if not model_json:
+            model_row = connection.execute("SELECT models FROM col").fetchone()
+            if not model_row:
                 raise PipelineError("Anki collection has no note models")
-            models = json.loads(model_json[0])
+            if model_row[0]:
+                models = json.loads(model_row[0])
+            else:
+                models = {}
+                for model_id, ordinal, field_name in connection.execute(
+                    "SELECT ntid, ord, name FROM fields ORDER BY ntid, ord"
+                ):
+                    model = models.setdefault(str(model_id), {"flds": []})
+                    while len(model["flds"]) <= ordinal:
+                        model["flds"].append({"name": ""})
+                    model["flds"][ordinal] = {"name": field_name}
             notes = connection.execute(
                 "SELECT id, mid, flds FROM notes ORDER BY id"
             ).fetchall()
@@ -132,9 +181,51 @@ def import_apkg(apkg_path: Path, gcl_name: str, output_dir: Path = Path("gcl")) 
         )
         model_fields[int(model_id)] = (vocabulary_index, reading_index)
 
-    entries: list[str] = []
+    proposed_primary: list[tuple[int, int, str]] = []
+    proposed_additional: list[tuple[int, int, str]] = []
+    review_items: list[dict[str, Any]] = []
     duplicates: list[dict[str, Any]] = []
-    seen: set[str] = set()
+
+    def review(
+        note_position: int,
+        note_id: int,
+        reason: str,
+        vocabulary: str,
+        source_reading: str,
+    ) -> None:
+        review_items.append(
+            {
+                "note_position": note_position,
+                "note_id": note_id,
+                "reason": reason,
+                "vocabulary": vocabulary,
+                "source_reading": source_reading,
+            }
+        )
+
+    def make_entry(vocabulary: str, reading: str) -> str | None:
+        vocabulary = re.sub(r"\s+", " ", vocabulary).strip()
+        vocabulary = vocabulary.replace("～", "~").replace("〜", "~")
+        reading = re.sub(r"\s+", "", reading)
+        reading = reading.replace("～", "~").replace("〜", "~").strip("~")
+        na_marker = ""
+        if vocabulary.endswith(("（な）", "(な)")):
+            vocabulary = vocabulary[:-3]
+            na_marker = "(な)"
+        elif vocabulary.endswith("な"):
+            vocabulary = vocabulary[:-1]
+            if reading.endswith("な"):
+                reading = reading[:-1]
+            na_marker = "(な)"
+        if reading.endswith(("（な）", "(な)")):
+            reading = reading[:-3]
+            na_marker = "(な)"
+        if not vocabulary:
+            return None
+        if HIRAGANA_RE.fullmatch(reading):
+            return f"{vocabulary}[{reading}]{na_marker}"
+        return f"{vocabulary}{na_marker}"
+
     for note_position, (note_id, model_id, encoded_fields) in enumerate(notes, start=1):
         fields = encoded_fields.split(FIELD_SEPARATOR)
         indices = model_fields.get(model_id)
@@ -143,19 +234,167 @@ def import_apkg(apkg_path: Path, gcl_name: str, output_dir: Path = Path("gcl")) 
         vocabulary_index, reading_index = indices
         if vocabulary_index >= len(fields) or reading_index < 0 or reading_index >= len(fields):
             raise PipelineError(f"Note {note_id} does not contain vocabulary and reading fields")
-        vocabulary = _plain_anki_field(fields[vocabulary_index])
-        reading = re.sub(r"\s+", "", _plain_anki_field(fields[reading_index]))
+        vocabulary_field = fields[vocabulary_index]
+        reading_field = fields[reading_index]
+        vocabulary = _plain_anki_field(vocabulary_field)
+        raw_reading = re.sub(r"\s+", "", _first_anki_field_line(reading_field))
+        override = overrides.get(str(note_id), ...)
+        if override is not ...:
+            review(
+                note_position,
+                note_id,
+                "explicit per-import decision",
+                vocabulary,
+                raw_reading,
+            )
+            if override is not None:
+                for entry in override:
+                    proposed_primary.append((note_position, note_id, entry))
+            continue
+
+        possible_swapped_reading = re.sub(
+            r"\s+", "", _first_anki_field_line(vocabulary_field)
+        )
+        possible_swapped_vocabulary = _plain_anki_field(reading_field)
+        if (
+            (not vocabulary or "\n" in vocabulary)
+            and HIRAGANA_RE.fullmatch(possible_swapped_reading)
+            and possible_swapped_vocabulary
+            and "\n" not in possible_swapped_vocabulary
+        ):
+            vocabulary = possible_swapped_vocabulary
+            raw_reading = possible_swapped_reading
+
         if not vocabulary or "\n" in vocabulary:
-            raise PipelineError(f"Note {note_id} has an empty or multiline vocabulary field")
-        if not HIRAGANA_RE.fullmatch(reading):
-            raise PipelineError(
-                f"Note {note_id} has no complete hiragana reading: {reading!r}"
+            review(
+                note_position, note_id, "empty or multiline expression",
+                vocabulary, raw_reading
             )
-        entry = f"{vocabulary}[{reading}]"
+            continue
+
+        has_unsupported_parenthetical = bool(
+            re.search(r"（(?!な）)[^）]*）|\((?!な\))[^)]*\)", vocabulary)
+            or re.search(r"（(?!な）)[^）]*）|\((?!な\))[^)]*\)", raw_reading)
+        )
+        if has_unsupported_parenthetical:
+            if rules.get("strip_parentheticals_except_na"):
+                vocabulary = re.sub(r"（(?!な）)[^）]*）|\((?!な\))[^)]*\)", "", vocabulary)
+                raw_reading = re.sub(r"（(?!な）)[^）]*）|\((?!な\))[^)]*\)", "", raw_reading)
+            else:
+                review(
+                    note_position, note_id, "unsupported parenthetical text",
+                    vocabulary, raw_reading
+                )
+                continue
+
+        editorial_pattern = re.compile(
+            r"\s*(?:\((?:onyomi|kunyomi|irregular reading)\)|"
+            r"[「（](?:音読み|訓読み)[」）]|-?\s*2 versions)\s*",
+            re.IGNORECASE,
+        )
+        had_editorial_label = bool(editorial_pattern.search(vocabulary))
+        had_version_instruction = bool(
+            re.search(r"-?\s*2 versions", vocabulary, re.IGNORECASE)
+        )
+        if had_editorial_label:
+            if rules.get("strip_editorial_labels"):
+                vocabulary = editorial_pattern.sub("", vocabulary).strip()
+            else:
+                review(
+                    note_position, note_id, "editorial label in expression",
+                    vocabulary, raw_reading
+                )
+                continue
+
+        vocabulary = vocabulary.replace("～", "~").replace("〜", "~")
+        raw_reading = raw_reading.replace("～", "~").replace("〜", "~")
+
+        if "⇔" in vocabulary:
+            if not rules.get("split_comparisons"):
+                review(
+                    note_position, note_id, "multiple contrasted expressions",
+                    vocabulary, raw_reading
+                )
+                continue
+            expressions = [value.strip() for value in vocabulary.split("⇔")]
+            readings = [value.strip() for value in raw_reading.split("⇔")]
+            if not raw_reading:
+                readings = [""] * len(expressions)
+            if len(expressions) != len(readings):
+                review(
+                    note_position, note_id, "comparison sides do not align",
+                    vocabulary, raw_reading
+                )
+                continue
+            for expression, reading in zip(expressions, readings, strict=True):
+                entry = make_entry(expression, reading)
+                if entry:
+                    proposed_primary.append((note_position, note_id, entry))
+            if not raw_reading:
+                review(
+                    note_position, note_id, "split comparison has no readings",
+                    vocabulary, raw_reading
+                )
+            continue
+
+        if re.search(r"\s[/／]\s", vocabulary):
+            if not rules.get("split_equivalent_spellings"):
+                review(
+                    note_position, note_id, "multiple written forms",
+                    vocabulary, raw_reading
+                )
+                continue
+            for expression in re.split(r"\s+[/／]\s+", vocabulary):
+                entry = make_entry(expression, raw_reading)
+                if entry:
+                    proposed_primary.append((note_position, note_id, entry))
+            continue
+
+        reading_parts = re.split(r"[;；・]", raw_reading)
+        slash_parts = re.split(r"[／/]", raw_reading)
+        has_multiple_readings = len(reading_parts) > 1 or len(slash_parts) > 1
+        is_affix = vocabulary.startswith("~") or vocabulary.endswith("~")
+        if has_multiple_readings and not (is_affix and len(slash_parts) > 1):
+            entry = make_entry(vocabulary, "")
+            if entry:
+                proposed_primary.append((note_position, note_id, entry))
+            review(
+                note_position, note_id, "multiple proposed readings",
+                vocabulary, raw_reading
+            )
+            continue
+
+        if is_affix and len(slash_parts) > 1:
+            for index, reading in enumerate(slash_parts):
+                entry = make_entry(vocabulary, reading)
+                if entry:
+                    target = proposed_primary if index == 0 else proposed_additional
+                    target.append((note_position, note_id, entry))
+            continue
+
+        entry = make_entry(vocabulary, "" if had_version_instruction else raw_reading)
+        if entry is None:
+            review(
+                note_position, note_id, "empty expression after normalization",
+                vocabulary, raw_reading
+            )
+            continue
+        proposed_primary.append((note_position, note_id, entry))
+        if "[" not in entry:
+            review(
+                note_position, note_id, "missing or unusable reading",
+                vocabulary, raw_reading
+            )
+
+    entries: list[str] = []
+    seen: set[str] = set()
+    for note_position, note_id, entry in proposed_primary + proposed_additional:
         if entry in seen:
-            duplicates.append(
-                {"note_position": note_position, "note_id": note_id, "entry": entry}
-            )
+            duplicate = {
+                "note_position": note_position, "note_id": note_id, "entry": entry
+            }
+            duplicates.append(duplicate)
+            review_items.append({**duplicate, "reason": "exact duplicate"})
             continue
         seen.add(entry)
         entries.append(entry)
@@ -166,13 +405,20 @@ def import_apkg(apkg_path: Path, gcl_name: str, output_dir: Path = Path("gcl")) 
         output_path,
         "# GCL Version: 1\n\n" + "\n".join(entries) + "\n",
     )
-    return {
+    report = {
         "source": str(apkg_path.resolve()),
         "gcl_path": str(output_path.resolve()),
+        "review_path": str(review_path.resolve()),
+        "decisions_path": (
+            str(decisions_path.resolve()) if decisions_path is not None else None
+        ),
         "source_notes": len(notes),
         "entries": len(entries),
         "duplicates_removed": duplicates,
+        "review_items": review_items,
     }
+    atomic_write_json(review_path, report)
+    return report
 
 
 def atomic_write_text(path: Path, text: str) -> None:
@@ -214,20 +460,27 @@ def clean_and_read_gcl(
     entries: list[GclEntry] = []
     duplicate_report: list[dict[str, Any]] = []
     cleaned_lines: list[str] = []
+    normalized = False
 
     for line_number, raw_line in enumerate(lines, start=1):
         line = raw_line.strip()
         if not line or line.startswith("#"):
             cleaned_lines.append(raw_line)
             continue
+        canonical_line = (
+            line.replace("～", "~").replace("〜", "~").replace("（な）", "(な)")
+        )
+        if canonical_line != line:
+            normalized = True
+        line = canonical_line
         if line in seen:
             duplicate_report.append({"line": line_number, "entry": line})
             continue
         seen.add(line)
-        cleaned_lines.append(raw_line)
+        cleaned_lines.append(line)
         entries.append(GclEntry(len(entries) + 1, line))
 
-    if duplicate_report:
+    if duplicate_report or normalized:
         atomic_write_text(path, "\n".join(cleaned_lines).rstrip() + "\n")
     if not entries:
         raise PipelineError(f"GCL contains no vocabulary entries: {path}")
@@ -1863,9 +2116,9 @@ def strip_tags(value: str) -> str:
 def vocabulary_from_gcl(entry: str) -> str:
     value = READING_ANNOTATION_RE.sub("", entry)
     value = value.replace("(な)", "")
-    if value.startswith("～"):
+    if value.startswith("~"):
         value = value[1:]
-    if value.endswith("～"):
+    if value.endswith("~"):
         value = value[:-1]
     return value
 

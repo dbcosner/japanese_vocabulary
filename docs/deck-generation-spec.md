@@ -21,7 +21,8 @@ failure status.
 
 ### 2.1 Inputs and preconditions
 
-Import accepts one source CrowdAnki JSON file. The source:
+Import accepts one source CrowdAnki JSON file or native Anki `.apkg` file. The
+source:
 
 - MUST be valid UTF-8 JSON;
 - MUST represent a supported CrowdAnki deck structure; and
@@ -52,8 +53,18 @@ Import MUST NOT:
 - retain the source JSON as the authority after editorial adoption of the GCL; or
 - silently omit a source note.
 
-Its report MUST reconcile source-note count with created entries, entries skipped
-as exact duplicates, entries skipped under another approved rule, and errors.
+Its structured import-review report MUST reconcile source-note count with created
+entries, entries skipped as exact duplicates, entries skipped under another
+approved rule, and errors. It MUST include source note identity, original
+expression and reading material, and a reason for every note that could not be
+imported safely.
+
+Import MUST flag rather than guess when a note contains contrasted expressions,
+multiple written forms, unsupported parenthetical text, editorial labels,
+multiple offered readings outside established affix logic, reversed or corrupt
+fields, or an unusable reading. A source-specific decisions file MAY explicitly
+authorize deterministic repairs. Such decisions MUST remain separate from the
+canonical importer and MUST be recorded in the review report.
 Before publication, Import MUST deduplicate the proposed GCL. When exact
 duplicates are encountered, Import MUST retain the first occurrence
 and omit later occurrences from the proposed GCL.
@@ -80,8 +91,11 @@ appended to the end of the authoritative GCL as required by
 
 ### 2.3 Atomicity
 
-Import MUST write and validate a proposed GCL before publishing it to the requested
-path. Failure or interruption MUST NOT leave a partial GCL presented as valid.
+APKG extraction MAY write an unresolved proposed GCL for review and subsequent
+reading resolution. It MUST NOT present that proposal as a complete authoritative
+GCL. Import MUST atomically write the proposal and review report. Completing
+Import MUST validate a fully resolved GCL before publication. Failure or
+interruption MUST NOT leave a partial GCL presented as valid.
 
 ## 3. Generate operation
 

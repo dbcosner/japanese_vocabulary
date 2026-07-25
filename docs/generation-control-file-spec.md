@@ -81,8 +81,8 @@ Examples:
 一入[ひとしお]
 静か[しずか](な)
 一入[ひとしお](な)
-～化[か]
-無～[む]
+~化[か]
+無~[む]
 ```
 
 The annotations MUST be removed to derive the target vocabulary displayed on the
@@ -264,23 +264,23 @@ Rules:
 Syntax:
 
 ```text
-～<expression>
-<expression>～
+~<expression>
+<expression>~
 ```
 
 Rules:
 
-- A leading `～` marks a suffix.
-- A trailing `～` marks a prefix.
+- A leading `~` marks a suffix.
+- A trailing `~` marks a prefix.
 - The marker describes an open attachment position; it is not target vocabulary.
 - The marker MUST be removed from the `Vocabulary` field.
 - Generated definitions MUST describe the affix’s function.
 - Examples MUST show the affix in natural, complete words.
 - An entry with both a leading and trailing placeholder is invalid in version 1.
 
-Version 1 defines only full-width `～`. During GCL cleanup, ASCII `~` MUST be
-normalized to `～` and reported. Newly authored ASCII `~` SHOULD be rejected so
-the canonical form remains visible to the editor.
+Version 1 defines only ASCII tilde U+007E (`~`). During GCL cleanup, full-width
+tilde U+FF5E (`～`), wave dash U+301C (`〜`), and other recognized tilde variants
+MUST be normalized to `~`. The file remains UTF-8 encoded.
 
 ## 9. Legacy inline reading and usage forms
 

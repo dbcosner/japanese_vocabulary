@@ -1,0 +1,869 @@
+{
+  "source": "C:\\Users\\Drew\\Development\\japanese_vocabulary\\apkg_exports\\Nihongo So-Matome N2 Kanji.apkg",
+  "gcl_path": "C:\\Users\\Drew\\Development\\japanese_vocabulary\\apkg_exports\\nihongo_so_matome_n2_kanji_generation_control_file.txt",
+  "review_path": "C:\\Users\\Drew\\Development\\japanese_vocabulary\\apkg_exports\\nihongo_so_matome_n2_kanji_generation_control_file.import-review.json",
+  "decisions_path": "C:\\Users\\Drew\\Development\\japanese_vocabulary\\apkg_exports\\nihongo_so_matome_n2_kanji_import_decisions.json",
+  "source_notes": 2172,
+  "entries": 2179,
+  "duplicates_removed": [
+    {
+      "note_position": 445,
+      "note_id": 1403697729203,
+      "entry": "往復[おうふく]"
+    },
+    {
+      "note_position": 448,
+      "note_id": 1403698006624,
+      "entry": "老人[ろうじん]"
+    },
+    {
+      "note_position": 451,
+      "note_id": 1403698125452,
+      "entry": "捨てる[すてる]"
+    },
+    {
+      "note_position": 924,
+      "note_id": 1403779381028,
+      "entry": "反対[はんたい]"
+    },
+    {
+      "note_position": 2168,
+      "note_id": 1410174183113,
+      "entry": "込む[こむ]"
+    },
+    {
+      "note_position": 2169,
+      "note_id": 1410174842436,
+      "entry": "汚染[おせん]"
+    }
+  ],
+  "review_items": [
+    {
+      "note_position": 123,
+      "note_id": 1359872942438,
+      "reason": "explicit per-import decision",
+      "vocabulary": "１万円札",
+      "source_reading": "１まんえんさつ"
+    },
+    {
+      "note_position": 368,
+      "note_id": 1399139613350,
+      "reason": "missing or unusable reading",
+      "vocabulary": "設計",
+      "source_reading": ""
+    },
+    {
+      "note_position": 372,
+      "note_id": 1399139844336,
+      "reason": "missing or unusable reading",
+      "vocabulary": "乗り換え",
+      "source_reading": ""
+    },
+    {
+      "note_position": 373,
+      "note_id": 1399139866240,
+      "reason": "missing or unusable reading",
+      "vocabulary": "風向",
+      "source_reading": ""
+    },
+    {
+      "note_position": 374,
+      "note_id": 1399139985562,
+      "reason": "missing or unusable reading",
+      "vocabulary": "風の向き",
+      "source_reading": ""
+    },
+    {
+      "note_position": 378,
+      "note_id": 1399140111239,
+      "reason": "missing or unusable reading",
+      "vocabulary": "停電",
+      "source_reading": ""
+    },
+    {
+      "note_position": 380,
+      "note_id": 1399140157849,
+      "reason": "missing or unusable reading",
+      "vocabulary": "暖房",
+      "source_reading": ""
+    },
+    {
+      "note_position": 381,
+      "note_id": 1399140181395,
+      "reason": "missing or unusable reading",
+      "vocabulary": "温暖な",
+      "source_reading": ""
+    },
+    {
+      "note_position": 382,
+      "note_id": 1399140221315,
+      "reason": "missing or unusable reading",
+      "vocabulary": "暖かい",
+      "source_reading": ""
+    },
+    {
+      "note_position": 384,
+      "note_id": 1399140271210,
+      "reason": "missing or unusable reading",
+      "vocabulary": "掃除",
+      "source_reading": ""
+    },
+    {
+      "note_position": 386,
+      "note_id": 1399140310310,
+      "reason": "missing or unusable reading",
+      "vocabulary": "湿度",
+      "source_reading": ""
+    },
+    {
+      "note_position": 387,
+      "note_id": 1399140344164,
+      "reason": "missing or unusable reading",
+      "vocabulary": "湿気",
+      "source_reading": ""
+    },
+    {
+      "note_position": 388,
+      "note_id": 1399140367548,
+      "reason": "multiple proposed readings",
+      "vocabulary": "湿る",
+      "source_reading": "しめる;しとる"
+    },
+    {
+      "note_position": 391,
+      "note_id": 1399140502795,
+      "reason": "missing or unusable reading",
+      "vocabulary": "標本",
+      "source_reading": ""
+    },
+    {
+      "note_position": 394,
+      "note_id": 1399140592673,
+      "reason": "missing or unusable reading",
+      "vocabulary": "~巻",
+      "source_reading": ""
+    },
+    {
+      "note_position": 396,
+      "note_id": 1399140649545,
+      "reason": "missing or unusable reading",
+      "vocabulary": "巻き戻し",
+      "source_reading": ""
+    },
+    {
+      "note_position": 399,
+      "note_id": 1399140723662,
+      "reason": "missing or unusable reading",
+      "vocabulary": "音量",
+      "source_reading": ""
+    },
+    {
+      "note_position": 400,
+      "note_id": 1399140740348,
+      "reason": "missing or unusable reading",
+      "vocabulary": "風量",
+      "source_reading": ""
+    },
+    {
+      "note_position": 404,
+      "note_id": 1399140821727,
+      "reason": "missing or unusable reading",
+      "vocabulary": "予定",
+      "source_reading": ""
+    },
+    {
+      "note_position": 407,
+      "note_id": 1399140874600,
+      "reason": "missing or unusable reading",
+      "vocabulary": "予算",
+      "source_reading": ""
+    },
+    {
+      "note_position": 408,
+      "note_id": 1399140891631,
+      "reason": "missing or unusable reading",
+      "vocabulary": "予約",
+      "source_reading": ""
+    },
+    {
+      "note_position": 410,
+      "note_id": 1399140930984,
+      "reason": "missing or unusable reading",
+      "vocabulary": "約束",
+      "source_reading": ""
+    },
+    {
+      "note_position": 413,
+      "note_id": 1399141164993,
+      "reason": "missing or unusable reading",
+      "vocabulary": "携帯電話",
+      "source_reading": ""
+    },
+    {
+      "note_position": 414,
+      "note_id": 1399141203554,
+      "reason": "missing or unusable reading",
+      "vocabulary": "帯",
+      "source_reading": ""
+    },
+    {
+      "note_position": 416,
+      "note_id": 1399141243975,
+      "reason": "missing or unusable reading",
+      "vocabulary": "保険",
+      "source_reading": ""
+    },
+    {
+      "note_position": 422,
+      "note_id": 1399141401803,
+      "reason": "missing or unusable reading",
+      "vocabulary": "書留郵便",
+      "source_reading": ""
+    },
+    {
+      "note_position": 424,
+      "note_id": 1399141505446,
+      "reason": "missing or unusable reading",
+      "vocabulary": "守る",
+      "source_reading": ""
+    },
+    {
+      "note_position": 425,
+      "note_id": 1399141517829,
+      "reason": "missing or unusable reading",
+      "vocabulary": "留守",
+      "source_reading": "Absencefromhome"
+    },
+    {
+      "note_position": 427,
+      "note_id": 1399141560570,
+      "reason": "missing or unusable reading",
+      "vocabulary": "伝言",
+      "source_reading": ""
+    },
+    {
+      "note_position": 428,
+      "note_id": 1399141617893,
+      "reason": "missing or unusable reading",
+      "vocabulary": "手伝う",
+      "source_reading": ""
+    },
+    {
+      "note_position": 430,
+      "note_id": 1399141657100,
+      "reason": "missing or unusable reading",
+      "vocabulary": "返済",
+      "source_reading": ""
+    },
+    {
+      "note_position": 432,
+      "note_id": 1399141705644,
+      "reason": "missing or unusable reading",
+      "vocabulary": "~済み",
+      "source_reading": ""
+    },
+    {
+      "note_position": 433,
+      "note_id": 1399141760575,
+      "reason": "missing or unusable reading",
+      "vocabulary": "用件",
+      "source_reading": ""
+    },
+    {
+      "note_position": 449,
+      "note_id": 1403698046016,
+      "reason": "split comparison has no readings",
+      "vocabulary": "年老いた　⇔　若い",
+      "source_reading": ""
+    },
+    {
+      "note_position": 491,
+      "note_id": 1403700013699,
+      "reason": "missing or unusable reading",
+      "vocabulary": "収まる",
+      "source_reading": ""
+    },
+    {
+      "note_position": 516,
+      "note_id": 1403701038173,
+      "reason": "missing or unusable reading",
+      "vocabulary": "その他",
+      "source_reading": "そのたそのほか"
+    },
+    {
+      "note_position": 525,
+      "note_id": 1403702813360,
+      "reason": "missing or unusable reading",
+      "vocabulary": "~等",
+      "source_reading": "~とうなど"
+    },
+    {
+      "note_position": 539,
+      "note_id": 1403703122110,
+      "reason": "missing or unusable reading",
+      "vocabulary": "当てる",
+      "source_reading": ""
+    },
+    {
+      "note_position": 568,
+      "note_id": 1403704361150,
+      "reason": "missing or unusable reading",
+      "vocabulary": "限る",
+      "source_reading": ""
+    },
+    {
+      "note_position": 600,
+      "note_id": 1403754966295,
+      "reason": "explicit per-import decision",
+      "vocabulary": "レジ袋",
+      "source_reading": "レジぶくろ"
+    },
+    {
+      "note_position": 609,
+      "note_id": 1403755253232,
+      "reason": "missing or unusable reading",
+      "vocabulary": "燃やせる",
+      "source_reading": ""
+    },
+    {
+      "note_position": 610,
+      "note_id": 1403755293255,
+      "reason": "missing or unusable reading",
+      "vocabulary": "燃える",
+      "source_reading": ""
+    },
+    {
+      "note_position": 613,
+      "note_id": 1403755399041,
+      "reason": "multiple proposed readings",
+      "vocabulary": "紅葉",
+      "source_reading": "こうよう・もみじ"
+    },
+    {
+      "note_position": 618,
+      "note_id": 1403755518140,
+      "reason": "missing or unusable reading",
+      "vocabulary": "埋める",
+      "source_reading": ""
+    },
+    {
+      "note_position": 664,
+      "note_id": 1403760950888,
+      "reason": "missing or unusable reading",
+      "vocabulary": "断る",
+      "source_reading": ""
+    },
+    {
+      "note_position": 670,
+      "note_id": 1403761059633,
+      "reason": "missing or unusable reading",
+      "vocabulary": "記入",
+      "source_reading": ""
+    },
+    {
+      "note_position": 729,
+      "note_id": 1403762363483,
+      "reason": "missing or unusable reading",
+      "vocabulary": "越える",
+      "source_reading": ""
+    },
+    {
+      "note_position": 802,
+      "note_id": 1403767936489,
+      "reason": "missing or unusable reading",
+      "vocabulary": "欠ける",
+      "source_reading": ""
+    },
+    {
+      "note_position": 809,
+      "note_id": 1403768106112,
+      "reason": "missing or unusable reading",
+      "vocabulary": "治る",
+      "source_reading": ""
+    },
+    {
+      "note_position": 941,
+      "note_id": 1403779712291,
+      "reason": "missing or unusable reading",
+      "vocabulary": "直る",
+      "source_reading": ""
+    },
+    {
+      "note_position": 1047,
+      "note_id": 1403781940614,
+      "reason": "missing or unusable reading",
+      "vocabulary": "胸",
+      "source_reading": ""
+    },
+    {
+      "note_position": 1121,
+      "note_id": 1403786337625,
+      "reason": "multiple proposed readings",
+      "vocabulary": "洗濯機",
+      "source_reading": "せんたくき/せんたっき"
+    },
+    {
+      "note_position": 1287,
+      "note_id": 1403852714625,
+      "reason": "missing or unusable reading",
+      "vocabulary": "差す",
+      "source_reading": ""
+    },
+    {
+      "note_position": 1331,
+      "note_id": 1403855230710,
+      "reason": "multiple proposed readings",
+      "vocabulary": "得る",
+      "source_reading": "うる/える"
+    },
+    {
+      "note_position": 1454,
+      "note_id": 1403861682417,
+      "reason": "explicit per-import decision",
+      "vocabulary": "築～年",
+      "source_reading": "ちく～ねん"
+    },
+    {
+      "note_position": 1580,
+      "note_id": 1403870233476,
+      "reason": "missing or unusable reading",
+      "vocabulary": "綿",
+      "source_reading": "めん"
+    },
+    {
+      "note_position": 1585,
+      "note_id": 1403870438105,
+      "reason": "missing or unusable reading",
+      "vocabulary": "厚生労働省",
+      "source_reading": ""
+    },
+    {
+      "note_position": 1594,
+      "note_id": 1403870762381,
+      "reason": "missing or unusable reading",
+      "vocabulary": "薄まる",
+      "source_reading": ""
+    },
+    {
+      "note_position": 1599,
+      "note_id": 1403870937975,
+      "reason": "missing or unusable reading",
+      "vocabulary": "積極的",
+      "source_reading": ""
+    },
+    {
+      "note_position": 1693,
+      "note_id": 1403875472176,
+      "reason": "missing or unusable reading",
+      "vocabulary": "匹敵する",
+      "source_reading": ""
+    },
+    {
+      "note_position": 1706,
+      "note_id": 1403876447454,
+      "reason": "missing or unusable reading",
+      "vocabulary": "居酒屋",
+      "source_reading": ""
+    },
+    {
+      "note_position": 1841,
+      "note_id": 1403928611505,
+      "reason": "missing or unusable reading",
+      "vocabulary": "晴れる",
+      "source_reading": "tobesunny"
+    },
+    {
+      "note_position": 1853,
+      "note_id": 1403928971524,
+      "reason": "missing or unusable reading",
+      "vocabulary": "陽気",
+      "source_reading": "ようき"
+    },
+    {
+      "note_position": 1892,
+      "note_id": 1403931228258,
+      "reason": "missing or unusable reading",
+      "vocabulary": "捕らえる",
+      "source_reading": ""
+    },
+    {
+      "note_position": 1911,
+      "note_id": 1403931847022,
+      "reason": "missing or unusable reading",
+      "vocabulary": "亡くす",
+      "source_reading": ""
+    },
+    {
+      "note_position": 1992,
+      "note_id": 1403939854725,
+      "reason": "missing or unusable reading",
+      "vocabulary": "抱く",
+      "source_reading": "1.だく"
+    },
+    {
+      "note_position": 2079,
+      "note_id": 1403944376055,
+      "reason": "missing or unusable reading",
+      "vocabulary": "独り",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2104,
+      "note_id": 1405085364897,
+      "reason": "missing or unusable reading",
+      "vocabulary": "通信",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2105,
+      "note_id": 1405085427891,
+      "reason": "missing or unusable reading",
+      "vocabulary": "信じる",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2106,
+      "note_id": 1405085448700,
+      "reason": "missing or unusable reading",
+      "vocabulary": "着信履歴",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2107,
+      "note_id": 1405085618228,
+      "reason": "missing or unusable reading",
+      "vocabulary": "歴史",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2108,
+      "note_id": 1405085645305,
+      "reason": "missing or unusable reading",
+      "vocabulary": "履歴書",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2110,
+      "note_id": 1405085734019,
+      "reason": "missing or unusable reading",
+      "vocabulary": "送信箱",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2111,
+      "note_id": 1405085761736,
+      "reason": "missing or unusable reading",
+      "vocabulary": "新規",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2113,
+      "note_id": 1405085911768,
+      "reason": "missing or unusable reading",
+      "vocabulary": "大変な",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2115,
+      "note_id": 1405086042460,
+      "reason": "missing or unusable reading",
+      "vocabulary": "選手",
+      "source_reading": "Athlete"
+    },
+    {
+      "note_position": 2116,
+      "note_id": 1405086059016,
+      "reason": "missing or unusable reading",
+      "vocabulary": "選ぶ",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2117,
+      "note_id": 1405086090672,
+      "reason": "missing or unusable reading",
+      "vocabulary": "決める",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2118,
+      "note_id": 1405086109413,
+      "reason": "missing or unusable reading",
+      "vocabulary": "決まる",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2122,
+      "note_id": 1405086225074,
+      "reason": "missing or unusable reading",
+      "vocabulary": "山登り",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2125,
+      "note_id": 1405086315995,
+      "reason": "missing or unusable reading",
+      "vocabulary": "長編",
+      "source_reading": "alongwork"
+    },
+    {
+      "note_position": 2126,
+      "note_id": 1405086327609,
+      "reason": "missing or unusable reading",
+      "vocabulary": "編み物",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2127,
+      "note_id": 1405086346805,
+      "reason": "missing or unusable reading",
+      "vocabulary": "機能",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2132,
+      "note_id": 1410172072286,
+      "reason": "missing or unusable reading",
+      "vocabulary": "完了",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2133,
+      "note_id": 1410172129945,
+      "reason": "missing or unusable reading",
+      "vocabulary": "完成",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2135,
+      "note_id": 1410172179995,
+      "reason": "missing or unusable reading",
+      "vocabulary": "終了",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2136,
+      "note_id": 1410172199363,
+      "reason": "missing or unusable reading",
+      "vocabulary": "修了",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2137,
+      "note_id": 1410172227063,
+      "reason": "missing or unusable reading",
+      "vocabulary": "画像",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2138,
+      "note_id": 1410172252830,
+      "reason": "missing or unusable reading",
+      "vocabulary": "映像",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2139,
+      "note_id": 1410172280338,
+      "reason": "missing or unusable reading",
+      "vocabulary": "現像",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2142,
+      "note_id": 1410172435851,
+      "reason": "missing or unusable reading",
+      "vocabulary": "人類",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2144,
+      "note_id": 1410172481219,
+      "reason": "missing or unusable reading",
+      "vocabulary": "入学式",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2145,
+      "note_id": 1410172510775,
+      "reason": "missing or unusable reading",
+      "vocabulary": "日本式",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2146,
+      "note_id": 1410172527165,
+      "reason": "missing or unusable reading",
+      "vocabulary": "正式な",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2149,
+      "note_id": 1410172618960,
+      "reason": "missing or unusable reading",
+      "vocabulary": "ご存知",
+      "source_reading": "Know"
+    },
+    {
+      "note_position": 2150,
+      "note_id": 1410172643900,
+      "reason": "missing or unusable reading",
+      "vocabulary": "存在",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2152,
+      "note_id": 1410172696697,
+      "reason": "missing or unusable reading",
+      "vocabulary": "印",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2153,
+      "note_id": 1410172733811,
+      "reason": "multiple proposed readings",
+      "vocabulary": "目印",
+      "source_reading": "Markforquickidentification;landmarkorguide"
+    },
+    {
+      "note_position": 2154,
+      "note_id": 1410172752505,
+      "reason": "missing or unusable reading",
+      "vocabulary": "印刷",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2155,
+      "note_id": 1410172773006,
+      "reason": "missing or unusable reading",
+      "vocabulary": "拡大",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2156,
+      "note_id": 1410172790253,
+      "reason": "missing or unusable reading",
+      "vocabulary": "縮小",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2158,
+      "note_id": 1410172935536,
+      "reason": "missing or unusable reading",
+      "vocabulary": "同様",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2159,
+      "note_id": 1410172967117,
+      "reason": "missing or unusable reading",
+      "vocabulary": "~様",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2161,
+      "note_id": 1410173146381,
+      "reason": "missing or unusable reading",
+      "vocabulary": "要る",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2162,
+      "note_id": 1410173158855,
+      "reason": "missing or unusable reading",
+      "vocabulary": "利用",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2163,
+      "note_id": 1410173205950,
+      "reason": "missing or unusable reading",
+      "vocabulary": "便利な",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2164,
+      "note_id": 1410173228560,
+      "reason": "missing or unusable reading",
+      "vocabulary": "金利",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2165,
+      "note_id": 1410173282822,
+      "reason": "missing or unusable reading",
+      "vocabulary": "細かい",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2167,
+      "note_id": 1410173725677,
+      "reason": "missing or unusable reading",
+      "vocabulary": "金額",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2168,
+      "note_id": 1410174183113,
+      "reason": "explicit per-import decision",
+      "vocabulary": "込む混む",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2170,
+      "note_id": 1410174920392,
+      "reason": "missing or unusable reading",
+      "vocabulary": "~殿",
+      "source_reading": ""
+    },
+    {
+      "note_position": 2171,
+      "note_id": 1593035532588,
+      "reason": "explicit per-import decision",
+      "vocabulary": "しょうわ\nThe Showa Period",
+      "source_reading": "昭和"
+    },
+    {
+      "note_position": 2172,
+      "note_id": 1593204721244,
+      "reason": "explicit per-import decision",
+      "vocabulary": "でんどう1. Palace, shrine, temple, sanctuary2. Hall of fame",
+      "source_reading": "殿堂"
+    },
+    {
+      "note_position": 445,
+      "note_id": 1403697729203,
+      "entry": "往復[おうふく]",
+      "reason": "exact duplicate"
+    },
+    {
+      "note_position": 448,
+      "note_id": 1403698006624,
+      "entry": "老人[ろうじん]",
+      "reason": "exact duplicate"
+    },
+    {
+      "note_position": 451,
+      "note_id": 1403698125452,
+      "entry": "捨てる[すてる]",
+      "reason": "exact duplicate"
+    },
+    {
+      "note_position": 924,
+      "note_id": 1403779381028,
+      "entry": "反対[はんたい]",
+      "reason": "exact duplicate"
+    },
+    {
+      "note_position": 2168,
+      "note_id": 1410174183113,
+      "entry": "込む[こむ]",
+      "reason": "exact duplicate"
+    },
+    {
+      "note_position": 2169,
+      "note_id": 1410174842436,
+      "entry": "汚染[おせん]",
+      "reason": "exact duplicate"
+    }
+  ]
+}
