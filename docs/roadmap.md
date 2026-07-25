@@ -7,7 +7,8 @@ after it is specified in the normative documents.
 
 - Resolve the remaining GCL syntax questions, especially comments, normalization,
   and ASCII `~`.
-- Select a stable entry identity and CrowdAnki GUID strategy.
+- Retain the canonical complete annotated GCL entry as stable identity and select
+  the CrowdAnki GUID strategy.
 - Define state storage, explicit-regeneration controls, and atomic output.
 - Define example-field HTML and error scope.
 

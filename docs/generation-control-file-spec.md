@@ -70,19 +70,19 @@ After the header, each content-bearing line represents one entry:
 An annotated entry contains:
 
 - one target vocabulary expression;
-- optionally one authoritative reading in square brackets;
+- exactly one authoritative reading in square brackets;
 - optionally the literal marker `(な)`; and
 - optionally one affix placeholder at the beginning or end.
 
 Examples:
 
 ```text
-遭う
+遭う[あう]
 一入[ひとしお]
-静か(な)
+静か[しずか](な)
 一入[ひとしお](な)
-～化
-無～
+～化[か]
+無～[む]
 ```
 
 The annotations MUST be removed to derive the target vocabulary displayed on the
@@ -97,6 +97,20 @@ spelling, reading, part of speech, or semantic group.
 Changing annotations on an existing entry is an edit to that entry, not an
 addition, and does not move it. This rule applies prospectively; it does not
 require earlier additions to be reordered.
+
+An editor MAY append a bare expression without `[reading]` as temporary working
+input for Update. Such a file is unresolved and is not yet a valid published GCL.
+At the beginning of Update, before entry identity or deck changes are classified,
+the reading-resolution stage MUST:
+
+1. resolve every unannotated expression;
+2. annotate the expression in its existing position with the first qualifying
+   reading;
+3. append other qualifying readings to the end;
+4. deduplicate the complete annotated entries again; and
+5. atomically publish the fully resolved GCL.
+
+Update MUST stop before modifying the deck when any reading remains unresolved.
 
 ### 5.2 Exact duplicate entries
 
@@ -133,12 +147,12 @@ Syntax:
 Rules:
 
 - `<reading>` MUST be non-empty.
-- A supplied reading MUST be treated as authoritative.
+- Every entry MUST supply a reading, and it MUST be treated as authoritative.
 - The reading annotation MUST occur after the expression and before `(な)`, when
   both are present.
 - At most one reading annotation is permitted per entry.
-- The reading SHOULD be written entirely in hiragana. Any other script MUST be
-  flagged for editorial review until an explicit policy is adopted.
+- The reading MUST be written entirely in hiragana and MUST include the complete
+  reading, including okurigana.
 - Square brackets that are part of an expression are not supported in version 1.
 
 Entries with the same written expression and different authoritative readings are
@@ -149,14 +163,21 @@ distinct editorial entries, for example:
 縁[えん]
 ```
 
-The generator MUST generate each according to its supplied reading. How these
-entries receive stable distinct identities remains unresolved.
+The generator MUST generate each according to its supplied reading. Entry identity
+MUST derive from the complete canonical annotated entry and MUST NOT include its
+physical line number.
 
-For an unannotated entry with multiple qualifying readings under
-`content-generation-spec.md`, the generator MUST annotate the existing entry with
-the most common qualifying reading and append each remaining qualifying reading
-as a separate entry. Archaic, obsolete, markedly uncommon, compound-only, or
-contrived-example readings MUST NOT be appended.
+Import MUST resolve every proposed expression before publishing a GCL. The most
+common qualifying reading remains in the expression's original position and each
+remaining qualifying reading is appended as a separate annotated entry. Archaic,
+obsolete, markedly uncommon, compound-only, or contrived-example readings MUST
+NOT be appended. After resolution, Import MUST deduplicate the complete annotated
+entries again because previously unannotated expressions may resolve to an entry
+that already exists.
+
+Generate MUST reject an unannotated entry as unresolved input. Update MUST route
+unannotated entries through its required pre-classification reading-resolution
+stage and MUST NOT infer readings during card generation.
 
 When clarification produces an additional desired reading rather than replacing
 the intended reading of an existing entry, the additional reading MUST be

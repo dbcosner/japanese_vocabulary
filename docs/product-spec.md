@@ -133,6 +133,8 @@ Import MUST apply the reading-resolution and disambiguation rules in
 additional qualifying readings in the established order, and omit archaic,
 uncommon, or unnatural alternatives under that policy. It MUST stop for editorial
 clarification when the policy does not permit a reliable decision.
+It MUST publish no unannotated entry and MUST deduplicate the complete annotated
+entries again after reading resolution.
 
 The generator MUST NOT assume that the initial-import field layout is also the
 layout of the generated-deck template.
@@ -141,6 +143,9 @@ layout of the generated-deck template.
 
 Once a GCL has been created, that GCL becomes the authoritative vocabulary list
 for its deck. New vocabulary and editorial changes MUST be made in the GCL.
+An editor may append bare expressions as temporary working additions. Update
+MUST resolve and atomically annotate those additions before treating the GCL as
+operation-ready or classifying deck changes.
 
 The generated CrowdAnki deck MUST be reproducible from:
 
@@ -163,7 +168,9 @@ The system MUST support this conceptual workflow:
 3. Surface ambiguous or malformed imports for editorial resolution.
 4. Deduplicate the proposed GCL and resolve or report ambiguous readings and
    interpretations.
-5. Conclude Import with a valid GCL and report.
+5. Verify that every entry has exactly one complete authoritative reading,
+   deduplicate again after resolution, and conclude Import with a valid GCL and
+   report.
 6. In a separate Generate operation, generate content for every resolved entry.
 7. Validate the content and output deck.
 8. Emit the complete generated CrowdAnki deck.
@@ -176,24 +183,26 @@ explicitly requests both operations.
 The system MUST support this conceptual workflow:
 
 1. Read the authoritative GCL.
-2. Purge exact duplicate GCL entries while retaining separately annotated
-   readings.
-3. Read and verify the associated generated CrowdAnki JSON.
-4. Classify new, unchanged, changed, absent-from-GCL, and explicitly regenerated
+2. Resolve every unannotated manual addition, append qualifying alternate
+   readings, and deduplicate the resulting annotated entries.
+3. Atomically publish and validate the fully resolved GCL.
+4. Read and verify the associated generated CrowdAnki JSON.
+5. Classify new, unchanged, changed, absent-from-GCL, and explicitly regenerated
    entries.
-5. Confirm that entries classified as existing will not be emitted as duplicate
+6. Confirm that entries classified as existing will not be emitted as duplicate
    notes.
-6. Generate and validate content only where required by the update policy.
-7. Preserve previously generated cards byte-for-byte at the field-content level
+7. Generate and validate content only where required by the update policy.
+8. Preserve previously generated cards byte-for-byte at the field-content level
    unless explicit regeneration was requested.
-8. Report and remove existing notes whose identities are absent from the GCL.
-9. Append new note objects to the proposed deck's `notes` array.
-10. Validate and atomically replace the complete JSON file; Update MUST NOT append
+9. Report and remove existing notes whose identities are absent from the GCL.
+10. Append new note objects to the proposed deck's `notes` array.
+11. Validate and atomically replace the complete JSON file; Update MUST NOT append
     raw text to a JSON file.
-11. Emit a valid updated deck and an Update report.
+12. Emit a valid updated deck and an Update report.
 
-Reordering a GCL entry MUST NOT by itself cause content regeneration. The exact
-identity and explicit-regeneration mechanisms are unresolved.
+Reordering a GCL entry MUST NOT by itself cause content regeneration. Entry
+identity is the complete canonical annotated GCL entry and does not contain its
+line number. The explicit-regeneration mechanism remains unresolved.
 
 Generate MUST replace an existing file at its requested output path. This
 replacement is intentional Generate behavior and MUST NOT be interpreted as

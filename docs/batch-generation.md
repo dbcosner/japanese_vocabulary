@@ -57,7 +57,69 @@ submission and status behavior through a fake client, collection, card
 validation, review-item rejection, atomic publication, and removal of the
 template placeholder note.
 
-## 4. Proof-of-concept batch
+## 4. Import-stage reading normalization
+
+Generate accepts only fully annotated GCL entries. For a legacy GCL containing
+unannotated expressions—or a proposed GCL being created by Import—prepare a
+reading-only batch locally:
+
+```bash
+batch-generate prepare-readings \
+  --gcl gcl/n1_vocabulary_generation_control_file.txt \
+  --work-dir .batch
+```
+
+Inspect `.batch/input_readings.jsonl`, then explicitly submit it:
+
+```bash
+batch-generate submit \
+  --manifest .batch/manifest_readings.json \
+  --confirm-cost
+```
+
+Check and collect the batch:
+
+```bash
+batch-generate status \
+  --state .batch/state_readings.json
+
+batch-generate collect \
+  --state .batch/state_readings.json
+```
+
+Validate every result and atomically replace the GCL:
+
+```bash
+batch-generate apply-readings \
+  --manifest .batch/manifest_readings.json \
+  --output .batch/output_readings.jsonl \
+  --report .batch/reading-normalization-report.json
+```
+
+The apply step preserves existing annotations, annotates the original position
+with the first qualifying reading, appends other qualifying readings, and removes
+exact duplicates exposed after resolution. It publishes nothing if any reading
+requires review.
+
+This is a reusable Import stage, not a migration-only tool. Future Import
+implementations MUST invoke the same preparation, validation, alternate-reading,
+post-resolution deduplication, and atomic-publication behavior before declaring a
+new GCL complete. The standalone commands remain available for legacy or manually
+authored unresolved GCLs.
+
+Future Update implementations MUST invoke this stage first whenever an editor has
+appended unannotated vocabulary. Update must complete `prepare-readings`,
+submission, collection, and `apply-readings` before it classifies additions,
+removals, or unchanged cards. If every entry is already annotated, Update may
+proceed directly to classification.
+
+If the report contains review findings, the existing `prepare-retry`,
+`merge-retry`, and `apply-readings` workflow can retry only those reading
+requests while retaining successful responses.
+
+Only the `submit --confirm-cost` step incurs API charges.
+
+## 5. Proof-of-concept batch
 
 Prepare entries 176 through 200 without contacting OpenAI:
 
@@ -112,7 +174,7 @@ batch-generate apply \
 `--allow-partial` is required because a pilot manifest does not cover the complete
 GCL. It must not be used for final publication.
 
-## 5. Full generation
+## 6. Full generation
 
 After accepting the pilot, omit `--start` and `--end` to prepare every deduplicated
 GCL entry:
@@ -137,7 +199,7 @@ batch-generate apply \
 Use the actual ending index printed by `prepare`; the example `001666` is not a
 permanent assumption.
 
-## 6. Publication and review rules
+## 7. Publication and review rules
 
 `apply` publishes no deck when:
 
@@ -155,7 +217,7 @@ Findings are written beside the requested deck as
 new batch for the affected entries, and do not treat a partial artifact as the
 final deck.
 
-## 7. Retry only rejected cards
+## 8. Retry only rejected cards
 
 Do not repay for cards that already passed local validation. Prepare a retry from
 the original manifest and its generation report:

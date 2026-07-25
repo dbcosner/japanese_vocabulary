@@ -7,11 +7,13 @@ from pathlib import Path
 
 from .pipeline import (
     PipelineError,
+    apply_reading_normalization,
     apply_results,
     collect_batch,
     make_openai_client,
     merge_retry_output,
     prepare_batch,
+    prepare_reading_normalization,
     prepare_retry,
     refresh_status,
     submit_batch,
@@ -35,6 +37,19 @@ def build_parser() -> argparse.ArgumentParser:
         "--reasoning-effort",
         choices=["none", "low", "medium", "high", "xhigh", "max"],
         default="medium",
+    )
+
+    prepare_readings = commands.add_parser(
+        "prepare-readings",
+        help="Prepare Import-stage resolution for every unresolved GCL entry",
+    )
+    prepare_readings.add_argument("--gcl", type=Path, required=True)
+    prepare_readings.add_argument("--work-dir", type=Path, default=Path(".batch"))
+    prepare_readings.add_argument("--model", default="gpt-5.6-terra")
+    prepare_readings.add_argument(
+        "--reasoning-effort",
+        choices=["none", "low", "medium", "high", "xhigh", "max"],
+        default="low",
     )
 
     retry = commands.add_parser(
@@ -66,6 +81,14 @@ def build_parser() -> argparse.ArgumentParser:
     merge.add_argument("--retry-output", type=Path, required=True)
     merge.add_argument("--merged-output", type=Path, required=True)
 
+    apply_readings = commands.add_parser(
+        "apply-readings",
+        help="Validate reading results and atomically publish the annotated GCL",
+    )
+    apply_readings.add_argument("--manifest", type=Path, required=True)
+    apply_readings.add_argument("--output", type=Path, required=True)
+    apply_readings.add_argument("--report", type=Path, required=True)
+
     apply = commands.add_parser("apply", help="Validate and build CrowdAnki JSON")
     apply.add_argument("--manifest", type=Path, required=True)
     apply.add_argument("--output", type=Path, required=True)
@@ -88,6 +111,13 @@ def main(argv: list[str] | None = None) -> int:
                 work_dir=args.work_dir,
                 start=args.start,
                 end=args.end,
+                model=args.model,
+                reasoning_effort=args.reasoning_effort,
+            )
+        elif args.command == "prepare-readings":
+            result = prepare_reading_normalization(
+                gcl_path=args.gcl,
+                work_dir=args.work_dir,
                 model=args.model,
                 reasoning_effort=args.reasoning_effort,
             )
@@ -117,6 +147,12 @@ def main(argv: list[str] | None = None) -> int:
                 retry_manifest_path=args.retry_manifest,
                 retry_output_path=args.retry_output,
                 merged_output_path=args.merged_output,
+            )
+        elif args.command == "apply-readings":
+            result = apply_reading_normalization(
+                manifest_path=args.manifest,
+                output_path=args.output,
+                report_path=args.report,
             )
         else:
             result = apply_results(

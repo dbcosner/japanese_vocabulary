@@ -23,13 +23,14 @@ Generate MUST validate:
 
 Update MUST validate:
 
-1. GCL preflight deduplication;
-2. the cleaned GCL and existing generated deck;
-3. GCL-to-deck association;
-4. entry classification and external drift;
-5. added or regenerated content;
-6. identity and preservation; and
-7. the completed updated CrowdAnki deck package.
+1. pre-classification reading resolution for every unannotated manual addition;
+2. GCL preflight and post-resolution deduplication;
+3. the fully annotated cleaned GCL and existing generated deck;
+4. GCL-to-deck association;
+5. entry classification and external drift;
+6. added or regenerated content;
+7. identity and preservation; and
+8. the completed updated CrowdAnki deck package.
 
 Checks that can detect unsafe output MUST run before replacing a last known-good
 deck.
@@ -43,6 +44,7 @@ For each file, validation MUST verify:
 - unambiguous version 1 entry syntax;
 - non-empty vocabulary after annotation removal;
 - supported annotation order and multiplicity;
+- exactly one complete hiragana `[reading]` on every entry;
 - full-width affix placeholders;
 - canonical ASCII `(な)` markers rather than full-width parentheses;
 - bracket-form readings rather than whitespace-separated inline readings;
@@ -60,7 +62,7 @@ For each note, validation MUST verify:
 
 - `Reading`, `Definition`, `Examples`, and `Vocabulary` are present and non-empty;
 - the resolved reading agrees with a supplied authoritative reading;
-- every automatically included alternate reading supports at least one natural,
+- every Import-resolved alternate reading supports at least one natural,
   non-contrived contemporary example and normally supports three;
 - no automatically included reading is merely archaic, obsolete, markedly
   uncommon, or limited to unrelated compounds;

@@ -441,3 +441,40 @@ operation.
   `card-format-spec.md`, `validation-spec.md`, Batch generation schema and tests
 - Supersedes: the fixed three-to-five count in D12 and the affected
   specifications; D12's reading-inclusion policy otherwise remains in force
+
+### Decision D17: Every published GCL entry has an authoritative reading
+
+- Date: 2026-07-25
+- Status: accepted
+- Decision: Import resolves every proposed vocabulary expression before
+  publishing a GCL. Every published entry contains exactly one complete hiragana
+  `[reading]`, including okurigana. Multiple qualifying readings become separate
+  annotated entries. Import deduplicates again after resolution. Generate and
+  Update reject unannotated entries rather than infer readings.
+- Rationale: Fully resolved GCLs eliminate repeated ambiguity during Generate and
+  Update and make the canonical annotated entry a stable identity independent of
+  line position.
+- Affected specifications: `README.md`, `product-spec.md`,
+  `generation-control-file-spec.md`, `content-generation-spec.md`,
+  `deck-generation-spec.md`, `validation-spec.md`, Batch generation tooling and
+  tests
+- Supersedes: D12 only as to when reading inference occurs; D12's qualifying
+  reading policy remains the Import-time policy
+
+### Decision D18: Update resolves manual bare additions before classification
+
+- Date: 2026-07-25
+- Status: accepted
+- Decision: An editor may append bare vocabulary expressions to a working GCL.
+  Update begins by running the retained reading-resolution capability, annotating
+  the original position with the first qualifying reading, appending other
+  qualifying readings, deduplicating after resolution, and atomically publishing
+  the completed GCL. Only then may Update classify or change deck notes.
+- Rationale: Editors can maintain active vocabulary lists with simple appended
+  terms while every operation-ready GCL and stable entry identity remains fully
+  resolved.
+- Affected specifications: `README.md`, `product-spec.md`,
+  `generation-control-file-spec.md`, `deck-generation-spec.md`,
+  `validation-spec.md`, Batch generation documentation
+- Supersedes: D17 only to permit temporary unresolved working additions; D17
+  remains controlling for every published operation-ready GCL

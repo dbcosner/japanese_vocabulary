@@ -41,7 +41,8 @@ as normative requirement terms.
   note model, card template, CSS, and deck configuration.
 - **Generation Control File (GCL)**: the manually curated, authoritative list of
   vocabulary entries for one deck.
-- **GCL entry**: one vocabulary expression plus optional generation annotations.
+- **GCL entry**: one vocabulary expression, exactly one authoritative `[reading]`,
+  and any applicable generation annotations.
 - **Target vocabulary**: the written Japanese expression obtained after removing
   GCL annotations.
 - **Target occurrence**: use of the target vocabulary in a definition or example,

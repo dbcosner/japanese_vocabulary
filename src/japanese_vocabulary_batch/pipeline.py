@@ -17,6 +17,9 @@ TERMINAL_STATUSES = {"completed", "failed", "expired", "cancelled"}
 HIRAGANA_RE = re.compile(r"^[\u3040-\u309fー]+$")
 TAG_RE = re.compile(r"<[^>]+>")
 READING_ANNOTATION_RE = re.compile(r"\[([^\[\]]+)\](?=\(な\)$|$)")
+ANNOTATED_GCL_RE = re.compile(
+    r"^(?P<expression>[^\[\]\(\)]+)\[(?P<reading>[ぁ-ゖー]+)\](?P<na>\(な\))?$"
+)
 
 
 class PipelineError(RuntimeError):
@@ -30,8 +33,8 @@ class GclEntry:
 
     @property
     def identity(self) -> str:
-        digest = hashlib.sha256(self.text.encode("utf-8")).hexdigest()[:12]
-        return f"gcl-{self.source_index:06d}-{digest}"
+        digest = hashlib.sha256(self.text.encode("utf-8")).hexdigest()[:20]
+        return f"gcl-{digest}"
 
 
 def atomic_write_text(path: Path, text: str) -> None:
@@ -65,7 +68,9 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def clean_and_read_gcl(path: Path) -> tuple[list[GclEntry], list[dict[str, Any]]]:
+def clean_and_read_gcl(
+    path: Path, *, require_readings: bool = True
+) -> tuple[list[GclEntry], list[dict[str, Any]]]:
     lines = path.read_text(encoding="utf-8-sig").splitlines()
     seen: set[str] = set()
     entries: list[GclEntry] = []
@@ -88,6 +93,19 @@ def clean_and_read_gcl(path: Path) -> tuple[list[GclEntry], list[dict[str, Any]]
         atomic_write_text(path, "\n".join(cleaned_lines).rstrip() + "\n")
     if not entries:
         raise PipelineError(f"GCL contains no vocabulary entries: {path}")
+    if require_readings:
+        unresolved = [
+            entry for entry in entries if not ANNOTATED_GCL_RE.fullmatch(entry.text)
+        ]
+        if unresolved:
+            preview = ", ".join(
+                f"{entry.source_index}:{entry.text}" for entry in unresolved[:5]
+            )
+            raise PipelineError(
+                f"GCL contains {len(unresolved)} unresolved or malformed "
+                f"entry/entries; every entry requires a complete [reading]. "
+                f"First entries: {preview}"
+            )
     return entries, duplicate_report
 
 
@@ -151,6 +169,52 @@ def card_schema() -> dict[str, Any]:
     }
 
 
+def reading_resolution_schema() -> dict[str, Any]:
+    return {
+        "type": "object",
+        "properties": {
+            "result": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "enum": ["resolved", "needs_review"],
+                    },
+                    "issue": {"type": "string"},
+                    "gcl_entry": {"type": "string"},
+                    "readings": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                    },
+                },
+                "required": ["status", "issue", "gcl_entry", "readings"],
+                "additionalProperties": False,
+            }
+        },
+        "required": ["result"],
+        "additionalProperties": False,
+    }
+
+
+def reading_resolution_instructions() -> str:
+    return """Resolve the readings for one Japanese vocabulary expression.
+Return only the required JSON object, with all response fields inside result.
+
+Apply these rules:
+- Copy gcl_entry byte-for-byte from the request.
+- Return every useful contemporary standalone reading of the requested expression,
+  ordered with the most common intended reading first.
+- Exclude archaic, obsolete, markedly uncommon, compound-only, and specialist
+  readings when natural standalone example sentences would be contrived.
+- Each reading must be complete hiragana, including okurigana: 添う -> そう,
+  嘆く -> なげく, and 継ぐ -> つぐ.
+- Do not return partial stems, brackets, annotations, explanations, or duplicates
+  inside readings.
+- Use status resolved with an empty issue when the readings are reliable.
+- Use needs_review with a concise issue and an empty readings array when reliable
+  resolution is impossible."""
+
+
 def generation_instructions() -> str:
     return """You generate one Japanese vocabulary card for an advanced learner.
 Return only the required JSON object, with all response fields inside result.
@@ -163,10 +227,8 @@ Apply these rules:
   継ぐ[つぐ], 侵す[おかす], and 浸す[ひたす]. Never put brackets inside a
   word (添[そう]う or 継[つ]ぐ) and never use parentheses for a reading
   (嘆(なげ)く).
-- If an unannotated expression has several useful contemporary readings, use the
-  most common one and list the remaining qualifying annotated entries in
-  additional_gcl_entries. Exclude archaic, uncommon, compound-only, or unnatural
-  readings. Return needs_review when a reliable decision is impossible.
+- Every input has one authoritative reading. Copy resolved_gcl_entry exactly from
+  gcl_entry and return an empty additional_gcl_entries array.
 - reading is hiragana with only kanji-corresponding portions inside <b> tags.
   Original kana and okurigana remain unbolded.
 - definition is concise natural Japanese for a JLPT N1 learner.
@@ -212,6 +274,210 @@ def make_request(entry: GclEntry, model: str, reasoning_effort: str) -> dict[str
             },
         },
     }
+
+
+def make_reading_request(
+    entry: GclEntry, model: str, reasoning_effort: str
+) -> dict[str, Any]:
+    return {
+        "custom_id": entry.identity,
+        "method": "POST",
+        "url": ENDPOINT,
+        "body": {
+            "model": model,
+            "reasoning": {"effort": reasoning_effort},
+            "store": False,
+            "input": [
+                {
+                    "role": "developer",
+                    "content": reading_resolution_instructions(),
+                },
+                {
+                    "role": "user",
+                    "content": f"Resolve this GCL expression: {entry.text}",
+                },
+            ],
+            "text": {
+                "format": {
+                    "type": "json_schema",
+                    "name": "japanese_vocabulary_readings",
+                    "strict": True,
+                    "schema": reading_resolution_schema(),
+                }
+            },
+        },
+    }
+
+
+def prepare_reading_normalization(
+    *,
+    gcl_path: Path,
+    work_dir: Path,
+    model: str = "gpt-5.6-terra",
+    reasoning_effort: str = "low",
+) -> dict[str, Any]:
+    entries, duplicates = clean_and_read_gcl(gcl_path, require_readings=False)
+    unresolved = [
+        entry for entry in entries if not ANNOTATED_GCL_RE.fullmatch(entry.text)
+    ]
+    if not unresolved:
+        raise PipelineError("GCL is already fully annotated")
+    work_dir.mkdir(parents=True, exist_ok=True)
+    input_path = work_dir / "input_readings.jsonl"
+    manifest_path = work_dir / "manifest_readings.json"
+    atomic_write_text(
+        input_path,
+        "\n".join(
+            json.dumps(
+                make_reading_request(entry, model, reasoning_effort),
+                ensure_ascii=False,
+            )
+            for entry in unresolved
+        ) + "\n",
+    )
+    manifest = {
+        "version": 1,
+        "operation": "normalize-readings",
+        "gcl_path": str(gcl_path.resolve()),
+        "gcl_sha256": sha256_file(gcl_path),
+        "input_path": str(input_path.resolve()),
+        "input_sha256": sha256_file(input_path),
+        "model": model,
+        "reasoning_effort": reasoning_effort,
+        "range": {"start": 1, "end": len(entries)},
+        "total_gcl_entries": len(entries),
+        "duplicate_entries_removed": duplicates,
+        "requests": [
+            {
+                "custom_id": entry.identity,
+                "source_index": entry.source_index,
+                "gcl_entry": entry.text,
+            }
+            for entry in unresolved
+        ],
+    }
+    atomic_write_json(manifest_path, manifest)
+    return {"manifest_path": str(manifest_path), **manifest}
+
+
+def apply_reading_normalization(
+    *,
+    manifest_path: Path,
+    output_path: Path,
+    report_path: Path,
+) -> dict[str, Any]:
+    manifest = load_manifest(manifest_path)
+    if manifest.get("operation") != "normalize-readings":
+        raise PipelineError("Manifest is not a reading-normalization manifest")
+    gcl_path = Path(manifest["gcl_path"])
+    if sha256_file(gcl_path) != manifest["gcl_sha256"]:
+        raise PipelineError("GCL changed after reading normalization was prepared")
+    entries, _ = clean_and_read_gcl(gcl_path, require_readings=False)
+    results = parse_output(output_path)
+    expected_ids = {request["custom_id"] for request in manifest["requests"]}
+    missing = expected_ids - results.keys()
+    unexpected = results.keys() - expected_ids
+    if missing or unexpected:
+        raise PipelineError(
+            f"Output reconciliation failed: {len(missing)} missing, "
+            f"{len(unexpected)} unexpected"
+        )
+    request_by_index = {
+        request["source_index"]: request for request in manifest["requests"]
+    }
+    findings: list[dict[str, Any]] = []
+    primary_by_index: dict[int, str] = {}
+    alternates: list[str] = []
+    for entry in entries:
+        request = request_by_index.get(entry.source_index)
+        if request is None:
+            continue
+        result = results[request["custom_id"]]
+        errors: list[str] = []
+        if result.get("status") != "resolved":
+            errors.append(result.get("issue") or "reading requires editorial review")
+        if result.get("gcl_entry") != entry.text:
+            errors.append("response gcl_entry does not match request")
+        readings = result.get("readings")
+        if (
+            not isinstance(readings, list)
+            or not readings
+            or any(
+                not isinstance(reading, str)
+                or not HIRAGANA_RE.fullmatch(reading)
+                for reading in readings
+            )
+        ):
+            errors.append("readings must contain complete hiragana readings")
+        elif len(readings) != len(set(readings)):
+            errors.append("readings contains duplicates")
+        if errors:
+            findings.append(
+                {
+                    "custom_id": request["custom_id"],
+                    "source_index": entry.source_index,
+                    "gcl_entry": entry.text,
+                    "errors": errors,
+                }
+            )
+            continue
+        expression = entry.text[:-3] if entry.text.endswith("(な)") else entry.text
+        suffix = "(な)" if entry.text.endswith("(な)") else ""
+        resolved_entries = [
+            f"{expression}[{reading}]{suffix}" for reading in readings
+        ]
+        primary_by_index[entry.source_index] = resolved_entries[0]
+        alternates.extend(resolved_entries[1:])
+
+    report = {
+        "operation": "normalize-readings",
+        "manifest_path": str(manifest_path.resolve()),
+        "output_path": str(output_path.resolve()),
+        "gcl_path": str(gcl_path.resolve()),
+        "entries_requested": len(manifest["requests"]),
+        "entries_resolved": len(primary_by_index),
+        "entries_requiring_review": len(findings),
+        "published": False,
+        "findings": findings,
+    }
+    if findings:
+        atomic_write_json(report_path, report)
+        raise PipelineError(
+            f"{len(findings)} reading(s) require review; see {report_path}"
+        )
+
+    proposed = [
+        primary_by_index.get(entry.source_index, entry.text) for entry in entries
+    ]
+    proposed.extend(alternates)
+    seen: set[str] = set()
+    canonical: list[str] = []
+    removed: list[dict[str, Any]] = []
+    for position, text_value in enumerate(proposed, start=1):
+        if text_value in seen:
+            removed.append({"position": position, "entry": text_value})
+            continue
+        seen.add(text_value)
+        canonical.append(text_value)
+    for text_value in canonical:
+        if not ANNOTATED_GCL_RE.fullmatch(text_value):
+            raise PipelineError(
+                f"Reading normalization produced invalid GCL entry: {text_value}"
+            )
+    atomic_write_text(
+        gcl_path,
+        "# GCL Version: 1\n\n" + "\n".join(canonical) + "\n",
+    )
+    report.update(
+        {
+            "published": True,
+            "final_entries": len(canonical),
+            "duplicates_removed_after_resolution": removed,
+            "gcl_sha256": sha256_file(gcl_path),
+        }
+    )
+    atomic_write_json(report_path, report)
+    return {"report_path": str(report_path), **report}
 
 
 def prepare_batch(
@@ -299,9 +565,14 @@ def prepare_retry(
         GclEntry(request["source_index"], request["gcl_entry"])
         for request in selected
     ]
+    request_factory = (
+        make_reading_request
+        if original.get("operation") == "normalize-readings"
+        else make_request
+    )
     jsonl = "\n".join(
         json.dumps(
-            make_request(
+            request_factory(
                 entry, original["model"], original["reasoning_effort"]
             ),
             ensure_ascii=False,
@@ -311,7 +582,7 @@ def prepare_retry(
     atomic_write_text(input_path, jsonl)
     retry_manifest = {
         "version": 1,
-        "operation": "generate-retry",
+        "operation": f'{original.get("operation", "generate")}-retry',
         "base_manifest_path": str(manifest_path.resolve()),
         "generation_report_path": str(report_path.resolve()),
         "gcl_path": original["gcl_path"],
@@ -632,6 +903,8 @@ def validate_card(card: dict[str, Any], expected_gcl: str) -> list[str]:
         return errors
     if card.get("gcl_entry") != expected_gcl:
         errors.append("response gcl_entry does not match request")
+    if card.get("resolved_gcl_entry") != expected_gcl:
+        errors.append("resolved_gcl_entry must match the authoritative GCL entry")
     errors.extend(
         validate_resolved_gcl(
             expected_gcl, card.get("resolved_gcl_entry", "")

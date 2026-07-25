@@ -14,9 +14,9 @@ All generated content MUST correspond to one resolved reading and interpretation
 
 ## 2. Reading resolution
 
-### 2.1 Supplied reading
+### 2.1 Authoritative reading
 
-When `[reading]` is supplied:
+Every valid GCL entry supplies `[reading]`:
 
 - it MUST be treated as authoritative;
 - the definition and examples MUST be generated for that reading and its intended
@@ -26,10 +26,10 @@ When `[reading]` is supplied:
 If the supplied reading is incompatible with the expression or still permits
 materially different interpretations, processing requires clarification.
 
-### 2.2 Inferred reading
+### 2.2 Import-time reading resolution
 
-When no reading is supplied, the generator MUST determine the reading from the
-expression and relevant linguistic evidence.
+Import MUST determine the reading of each proposed expression before publishing
+the GCL. Generate and Update MUST NOT perform this inference.
 
 If multiple readings are established in contemporary Japanese, the generator MUST
 create a separate entry and card for each reading that:
@@ -41,7 +41,7 @@ create a separate entry and card for each reading that:
 - is a reading of the expression as presented, rather than only a bound reading
   in unrelated compounds.
 
-The most common qualifying reading MUST annotate the existing GCL entry. Other
+The most common qualifying reading MUST annotate the proposed entry. Other
 qualifying readings MUST be appended to the end of the GCL.
 
 The generator MUST exclude a reading when it is archaic, obsolete, markedly
@@ -58,7 +58,7 @@ request identifying:
 - the plausible readings or interpretations, when known; and
 - the information needed to resolve the ambiguity.
 
-For a reading-only clarification, the generator MUST present the plausible
+For a reading-only clarification, Import MUST present the plausible
 qualifying readings in a deliberate order. The editor may select one reading or
 use the `全` response defined in `generation-control-file-spec.md` to request cards
 for every offered reading. Each resulting card MUST be generated for its own

@@ -52,6 +52,10 @@ proposed entries and resolves readings and interpretations under the established
 disambiguation policy before publishing the GCL. The source export is
 authoritative only for this initial import.
 
+Reading resolution is a retained Import capability. The same Batch-backed stage
+used to normalize a legacy GCL is reused whenever a future Import produces
+unresolved expressions.
+
 ### Generate
 
 Create a complete new CrowdAnki JSON deck from a GCL and a compatible deck
@@ -84,14 +88,19 @@ Once a GCL has been adopted, vocabulary additions and editorial changes belong i
 that file. The original export is no longer consulted during routine Generate or
 Update operations.
 
+To add vocabulary, an editor may append bare expressions to the end of the GCL.
+Update begins by resolving those additions to complete `[reading]` annotations,
+appending other qualifying readings, and deduplicating before it compares the GCL
+with the deck. The deck is not modified until that reading stage succeeds.
+
 GCL entries may include generation-only annotations:
 
 ```text
-遭う
+遭う[あう]
 一入[ひとしお]
-静か(な)
-～化
-無～
+静か[しずか](な)
+～化[か]
+無～[む]
 ```
 
 - `[reading]` supplies an authoritative reading.
@@ -101,14 +110,11 @@ GCL entries may include generation-only annotations:
 These annotations guide content generation and must not appear on generated
 cards.
 
-When a term has more than one plausible reading, the intended reading is recorded
-with `[reading]`. Different requested readings of the same written expression are
-separate GCL entries and produce separate cards. Newly requested entries are
-appended to the end of an existing GCL.
-
-When an unannotated expression has multiple natural contemporary readings, the
-project creates a card for each automatically. Archaic, uncommon, or contextually
-marginal readings are omitted when they would require contrived examples.
+Every GCL entry records one complete authoritative `[reading]`. Different
+qualifying readings of the same written expression are separate GCL entries and
+produce separate cards. Import resolves these readings before publishing the GCL;
+Generate and Update reject unresolved entries. Newly requested entries are
+resolved and appended to the end of an existing GCL.
 
 Exact duplicate GCL lines are not separate vocabulary entries. Deduplication keeps
 the first occurrence, removes later occurrences, and preserves the order of all
@@ -129,8 +135,8 @@ duplicates.
   `Examples`, and `Vocabulary`.
 - Deck templates provide the CrowdAnki note model, card templates, CSS, and deck
   configuration.
-- Stable entry identity and generation state will allow Update to match GCL
-  entries to existing notes without relying on line numbers.
+- Stable entry identity derives from the complete annotated GCL entry, allowing
+  Update to match entries without relying on mutable line numbers.
 - Large files are expected. Processing should avoid quadratic entry matching,
   report progress for long operations, and publish outputs atomically.
 - The detailed validation contract covers GCL syntax, linguistic content, target

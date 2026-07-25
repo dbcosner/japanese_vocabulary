@@ -61,6 +61,14 @@ resolution is not possible, Import MUST emit the numbered clarification workflow
 defined in `generation-control-file-spec.md` and MUST NOT publish an unresolved
 GCL as complete.
 
+The Batch reading-resolution capability used to normalize an existing unresolved
+GCL is also the required reusable reading-resolution stage for future Import
+operations. It MUST NOT be removed after the current GCL has been normalized.
+
+After resolving all readings, Import MUST perform a second exact deduplication
+pass over the complete annotated entries. Import MUST publish no entry without
+exactly one complete hiragana `[reading]`.
+
 After initial import, any later requested vocabulary additions MUST be
 appended to the end of the authoritative GCL as required by
 `generation-control-file-spec.md`.
@@ -87,6 +95,7 @@ derived.
 Before any content generation, Generate MUST purge exact duplicate GCL lines,
 publish the cleaned GCL, and validate it. Entries that differ by `[reading]`,
 `(な)`, or affix annotation are distinct and MUST be retained.
+Generate MUST reject any entry without a complete authoritative `[reading]`.
 
 ### 3.2 Template use
 
@@ -174,7 +183,14 @@ Update accepts:
 - a compatible template and configuration; and
 - the approved content-generation mechanism.
 
-Before changing anything, Update MUST verify GCL-to-deck association and template,
+Before changing anything, Update MUST resolve every unannotated entry through the
+same retained Batch-backed reading-resolution stage used by Import. It MUST
+atomically publish a fully annotated, post-resolution-deduplicated GCL before
+classifying entries or changing the deck. If resolution requires a paid Batch,
+Update MUST pause for explicit cost confirmation and resume only after the
+results have been collected and validated.
+
+After reading resolution, Update MUST verify GCL-to-deck association and template,
 note-model, and state compatibility. The association mechanism is unresolved.
 
 Before association-based entry classification, Update MUST purge exact duplicate
@@ -266,8 +282,9 @@ Identity MUST distinguish entries such as `脅かす[おどかす]` and
 field.
 
 Generate MUST establish the identity information required by later Update.
-Physical line number alone MUST NOT be used as stable identity. The identity key,
-GUID algorithm, and state store remain open questions.
+Physical line number MUST NOT participate in stable identity. The canonical
+complete annotated GCL entry is the identity key. The GUID algorithm and state
+store remain open questions.
 
 ## 6. Large-file requirements
 

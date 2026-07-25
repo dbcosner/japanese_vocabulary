@@ -11,11 +11,14 @@ from unittest.mock import patch
 from japanese_vocabulary_batch.cli import main
 from japanese_vocabulary_batch.pipeline import (
     PipelineError,
+    GclEntry,
+    apply_reading_normalization,
     apply_results,
     card_schema,
     collect_batch,
     merge_retry_output,
     prepare_batch,
+    prepare_reading_normalization,
     prepare_retry,
     refresh_status,
     read_dotenv_api_key,
@@ -160,6 +163,66 @@ class BatchGenerationTests(unittest.TestCase):
         self.assertTrue(
             requests[0]["body"]["text"]["format"]["strict"]
         )
+
+    def test_generate_rejects_unannotated_gcl_entries(self):
+        self.gcl.write_text(
+            "# GCL Version: 1\n\n遭う\n内閣[ないかく]\n",
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(PipelineError, "every entry requires"):
+            self.prepare()
+
+    def test_identity_does_not_depend_on_line_number(self):
+        self.assertEqual(
+            GclEntry(1, "遭う[あう]").identity,
+            GclEntry(999, "遭う[あう]").identity,
+        )
+
+    def test_reading_normalization_annotates_expands_and_deduplicates(self):
+        self.gcl.write_text(
+            "# GCL Version: 1\n\n煙る\n煙る[けぶる]\n内閣\n",
+            encoding="utf-8",
+        )
+        prepared = prepare_reading_normalization(
+            gcl_path=self.gcl,
+            work_dir=self.root / "readings",
+            model="gpt-test",
+            reasoning_effort="low",
+        )
+        self.assertEqual(len(prepared["requests"]), 2)
+        resolved = {
+            "煙る": ["けむる", "けぶる"],
+            "内閣": ["ないかく"],
+        }
+        lines = []
+        for request in prepared["requests"]:
+            result = {
+                "status": "resolved",
+                "issue": "",
+                "gcl_entry": request["gcl_entry"],
+                "readings": resolved[request["gcl_entry"]],
+            }
+            lines.append(
+                response_line(request["custom_id"], {"result": result})
+            )
+        output = self.root / "reading-output.jsonl"
+        output.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        report = apply_reading_normalization(
+            manifest_path=Path(prepared["manifest_path"]),
+            output_path=output,
+            report_path=self.root / "reading-report.json",
+        )
+        self.assertTrue(report["published"])
+        self.assertEqual(
+            self.gcl.read_text(encoding="utf-8"),
+            (
+                "# GCL Version: 1\n\n"
+                "煙る[けむる]\n"
+                "煙る[けぶる]\n"
+                "内閣[ないかく]\n"
+            ),
+        )
+        self.assertEqual(len(report["duplicates_removed_after_resolution"]), 1)
 
     def test_schema_requires_examples_only_for_cards(self):
         alternatives = card_schema()["properties"]["result"]["anyOf"]
@@ -422,16 +485,17 @@ class BatchGenerationTests(unittest.TestCase):
             "example_count_rationale": "",
             "vocabulary": "値する",
         }
-        self.assertEqual(validate_card(card, "値する"), [])
+        card["gcl_entry"] = "値する[あたいする]"
+        self.assertEqual(validate_card(card, "値する[あたいする]"), [])
         card["definition"] = "十分に値する内容だ。"
         self.assertIn(
             "definition reveals the written vocabulary",
-            validate_card(card, "値する"),
+            validate_card(card, "値する[あたいする]"),
         )
         card["definition"] = "検討に値している。"
         self.assertIn(
             "definition reveals an inflected written target",
-            validate_card(card, "値する"),
+            validate_card(card, "値する[あたいする]"),
         )
 
     def test_prepare_retry_and_merge_replace_only_findings(self):
