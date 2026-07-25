@@ -5,6 +5,7 @@ import json
 import os
 import re
 import tempfile
+import time
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
@@ -1190,6 +1191,7 @@ def apply_update(
     output_path: Path,
     deck_path: Path,
     through: int,
+    allow_partial: bool = False,
 ) -> dict[str, Any]:
     if deck_path.parent.name != deck_path.stem:
         raise PipelineError(
@@ -1269,7 +1271,7 @@ def apply_update(
     }
     result_ids = set(results)
     request_ids = set(request_by_id)
-    if result_ids != request_ids:
+    if (not allow_partial and result_ids != request_ids) or not result_ids <= request_ids:
         raise PipelineError(
             f"Output reconciliation failed: {len(request_ids - result_ids)} "
             f"missing, {len(result_ids - request_ids)} unexpected"
@@ -1326,7 +1328,7 @@ def apply_update(
         "findings": findings,
         "published": False,
     }
-    if findings:
+    if findings and not allow_partial:
         atomic_write_json(report_path, report)
         raise PipelineError(
             f"{len(findings)} update finding(s) require review; see {report_path}"
@@ -1342,7 +1344,10 @@ def apply_update(
         if preserved is not None:
             proposed_notes.append(preserved)
             continue
-        _, card = generated_by_id[entry.identity]
+        generated = generated_by_id.get(entry.identity)
+        if generated is None:
+            continue
+        _, card = generated
         proposed_notes.append(
             {
                 "__type__": "Note",
@@ -1365,6 +1370,248 @@ def apply_update(
     report["final_notes"] = len(proposed_notes)
     atomic_write_json(report_path, report)
     return {"report_path": str(report_path), **report}
+
+
+def _deck_prefix_length(deck_path: Path, entries: list[GclEntry]) -> int:
+    deck = json.loads(deck_path.read_text(encoding="utf-8-sig"))
+    keys = []
+    for note in deck.get("notes", []):
+        fields = note.get("fields", [])
+        if len(fields) != 4:
+            raise PipelineError("Existing deck contains a note without four fields")
+        keys.append((fields[3], strip_tags(fields[0])))
+    expected = [
+        (vocabulary_from_gcl(entry.text), authoritative_reading_from_gcl(entry.text))
+        for entry in entries
+    ]
+    if keys != expected[: len(keys)]:
+        raise PipelineError("Existing deck is not a contiguous prefix of the GCL")
+    return len(keys)
+
+
+def prepare_remainder_plan(
+    *,
+    gcl_path: Path,
+    deck_path: Path,
+    work_dir: Path,
+    batch_size: int = 100,
+    model: str = "gpt-5.6-terra",
+    reasoning_effort: str = "medium",
+) -> dict[str, Any]:
+    if batch_size < 1:
+        raise PipelineError("Batch size must be positive")
+    entries, _ = clean_and_read_gcl(gcl_path)
+    prefix = _deck_prefix_length(deck_path, entries)
+    jobs = []
+    for start in range(prefix + 1, len(entries) + 1, batch_size):
+        end = min(start + batch_size - 1, len(entries))
+        prepared = prepare_batch(
+            gcl_path=gcl_path,
+            work_dir=work_dir,
+            start=start,
+            end=end,
+            model=model,
+            reasoning_effort=reasoning_effort,
+        )
+        jobs.append(
+            {
+                "start": start,
+                "end": end,
+                "manifest_path": str(Path(prepared["manifest_path"]).resolve()),
+                "status": "prepared",
+                "repair_round": 0,
+            }
+        )
+    plan_path = work_dir / "remainder-plan.json"
+    plan = {
+        "version": 1,
+        "operation": "remainder",
+        "gcl_path": str(gcl_path.resolve()),
+        "gcl_sha256": sha256_file(gcl_path),
+        "deck_path": str(deck_path.resolve()),
+        "starting_notes": prefix,
+        "total_gcl_entries": len(entries),
+        "batch_size": batch_size,
+        "jobs": jobs,
+        "review_queue": [],
+        "status": "prepared" if jobs else "completed",
+    }
+    atomic_write_json(plan_path, plan)
+    return {"plan_path": str(plan_path), **plan}
+
+
+def _validation_findings(manifest_path: Path, output_path: Path) -> list[dict[str, Any]]:
+    manifest = load_manifest(manifest_path)
+    results = parse_output(output_path)
+    findings = []
+    for request in manifest["requests"]:
+        card = results.get(request["custom_id"])
+        errors = (
+            ["batch output did not contain this card"]
+            if card is None
+            else validate_card(card, request["gcl_entry"])
+        )
+        if card and card.get("additional_gcl_entries"):
+            errors.append("fully annotated GCL responses cannot add readings")
+        if errors:
+            findings.append({**request, "errors": errors})
+    return findings
+
+
+def run_remainder_plan(
+    *,
+    plan_path: Path,
+    deck_path: Path,
+    client: Any,
+    confirm_cost: bool,
+    max_repair_rounds: int = 2,
+    poll_seconds: int = 30,
+) -> dict[str, Any]:
+    if not confirm_cost:
+        raise PipelineError("Running a plan can incur API charges")
+    plan = json.loads(plan_path.read_text(encoding="utf-8"))
+    if max_repair_rounds < 0:
+        raise PipelineError("Maximum repair rounds cannot be negative")
+    if sha256_file(Path(plan["gcl_path"])) != plan["gcl_sha256"]:
+        raise PipelineError("GCL changed after the remainder plan was prepared")
+    if Path(plan["deck_path"]).resolve() != deck_path.resolve():
+        raise PipelineError("Deck does not match the prepared remainder plan")
+    plan["status"] = "running"
+    # Submit every original batch first so remote processing occurs concurrently.
+    for job in plan["jobs"]:
+        if not job.get("state_path"):
+            submitted = submit_batch(
+                Path(job["manifest_path"]), client=client, confirm_cost=True
+            )
+            job["state_path"] = str(Path(submitted["state_path"]).resolve())
+            job["status"] = submitted["status"]
+            atomic_write_json(plan_path, plan)
+    review: list[dict[str, Any]] = []
+    accepted_records: dict[str, dict[str, Any]] = {}
+    all_requests: list[dict[str, Any]] = []
+    work_dir = plan_path.parent
+    for job in plan["jobs"]:
+        base_manifest = Path(job["manifest_path"])
+        all_requests.extend(load_manifest(base_manifest)["requests"])
+        job_accepted_path = work_dir / (
+            f"accepted_{job['start']:06d}_{job['end']:06d}.jsonl"
+        )
+        job_records: dict[str, dict[str, Any]] = {}
+        if job_accepted_path.exists():
+            job_records = {
+                record["custom_id"]: record
+                for record in _read_output_records(job_accepted_path)
+            }
+            accepted_records.update(job_records)
+        if job.get("status") in {"accepted", "needs_review"}:
+            review.extend(job.get("review_findings", []))
+            continue
+        current_manifest = Path(job.get("repair_manifest_path", base_manifest))
+        current_state = Path(job["state_path"])
+        current_output: Path | None = None
+        round_number = int(job.get("repair_round", 0))
+        while True:
+            state = refresh_status(current_state, client=client)
+            job["status"] = state["status"]
+            atomic_write_json(plan_path, plan)
+            if state["status"] not in TERMINAL_STATUSES:
+                time.sleep(max(1, min(poll_seconds, 60)))
+                continue
+            if state["status"] != "completed":
+                review.extend(
+                    {**request, "errors": [f"batch ended with {state['status']}"]}
+                    for request in load_manifest(current_manifest)["requests"]
+                )
+                break
+            collected = collect_batch(current_state, client=client)
+            current_output = Path(collected["output_path"])
+            findings = _validation_findings(current_manifest, current_output)
+            failed_ids = {item["custom_id"] for item in findings}
+            for record in _read_output_records(current_output):
+                if record["custom_id"] not in failed_ids:
+                    accepted_records[record["custom_id"]] = record
+                    job_records[record["custom_id"]] = record
+            atomic_write_text(
+                job_accepted_path,
+                "\n".join(
+                    json.dumps(value, ensure_ascii=False)
+                    for value in job_records.values()
+                )
+                + ("\n" if job_records else ""),
+            )
+            if not findings:
+                job["status"] = "accepted"
+                break
+            if round_number >= max_repair_rounds:
+                review.extend(findings)
+                job["review_findings"] = findings
+                job["status"] = "needs_review"
+                break
+            round_number += 1
+            report_path = work_dir / (
+                f"repair-report_{job['start']:06d}_{job['end']:06d}_"
+                f"round{round_number}.json"
+            )
+            atomic_write_json(
+                report_path,
+                {"output_path": str(current_output.resolve()), "findings": findings},
+            )
+            retry_dir = work_dir / f"repair-round-{round_number}"
+            retry = prepare_retry(
+                manifest_path=current_manifest,
+                report_path=report_path,
+                work_dir=retry_dir,
+            )
+            current_manifest = Path(retry["manifest_path"])
+            submitted = submit_batch(current_manifest, client=client, confirm_cost=True)
+            current_state = Path(submitted["state_path"])
+            job.update(
+                {
+                    "repair_round": round_number,
+                    "repair_manifest_path": str(current_manifest.resolve()),
+                    "repair_state_path": str(current_state.resolve()),
+                    "state_path": str(current_state.resolve()),
+                    "status": submitted["status"],
+                }
+            )
+            atomic_write_json(plan_path, plan)
+    combined_output = work_dir / "remainder-accepted-output.jsonl"
+    atomic_write_text(
+        combined_output,
+        "\n".join(json.dumps(value, ensure_ascii=False) for value in accepted_records.values())
+        + ("\n" if accepted_records else ""),
+    )
+    base = load_manifest(Path(plan["jobs"][0]["manifest_path"])) if plan["jobs"] else {}
+    combined_manifest = work_dir / "remainder-accepted-manifest.json"
+    manifest_value = {
+        "version": 1,
+        "operation": "remainder-accepted",
+        "gcl_path": plan["gcl_path"],
+        "gcl_sha256": plan["gcl_sha256"],
+        "input_path": str(combined_output.resolve()),
+        "input_sha256": sha256_file(combined_output),
+        "model": base.get("model"),
+        "reasoning_effort": base.get("reasoning_effort"),
+        "range": {"start": plan["starting_notes"] + 1, "end": plan["total_gcl_entries"]},
+        "total_gcl_entries": plan["total_gcl_entries"],
+        "duplicate_entries_removed": [],
+        "requests": all_requests,
+    }
+    atomic_write_json(combined_manifest, manifest_value)
+    update = apply_update(
+        manifest_path=combined_manifest,
+        output_path=combined_output,
+        deck_path=deck_path,
+        through=plan["total_gcl_entries"],
+        allow_partial=True,
+    )
+    plan["review_queue"] = review
+    plan["status"] = "completed_with_review" if review else "completed"
+    plan["final_notes"] = update["final_notes"]
+    plan["accepted_cards"] = len(accepted_records)
+    atomic_write_json(work_dir / "remainder-review.json", review)
+    atomic_write_json(plan_path, plan)
+    return {"plan_path": str(plan_path), **plan}
 
 
 def read_dotenv_api_key(env_path: Path = Path(".env")) -> str:

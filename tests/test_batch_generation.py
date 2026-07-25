@@ -20,6 +20,7 @@ from japanese_vocabulary_batch.pipeline import (
     merge_retry_output,
     prepare_batch,
     prepare_reading_normalization,
+    prepare_remainder_plan,
     prepare_retry,
     refresh_status,
     read_dotenv_api_key,
@@ -661,6 +662,43 @@ class BatchGenerationTests(unittest.TestCase):
         self.assertEqual(result["replaced_records"], 1)
         self.assertEqual(merged[0]["value"], "base")
         self.assertEqual(merged[1]["value"], "retry")
+
+    def test_prepare_remainder_infers_prefix_and_batches_without_ranges(self):
+        deck_dir = self.root / "test_crowdanki_deck"
+        deck_dir.mkdir()
+        deck_path = deck_dir / "test_crowdanki_deck.json"
+        deck = json.loads(self.template.read_text(encoding="utf-8"))
+        deck["notes"] = [
+            {
+                "__type__": "Note",
+                "guid": "existing",
+                "fields": [
+                    "<b>あ</b>う",
+                    "definition",
+                    "<div>example</div>",
+                    "遭う",
+                ],
+                "note_model_uuid": "model-test",
+                "tags": [],
+            }
+        ]
+        deck_path.write_text(
+            json.dumps(deck, ensure_ascii=False), encoding="utf-8"
+        )
+        plan = prepare_remainder_plan(
+            gcl_path=self.gcl,
+            deck_path=deck_path,
+            work_dir=self.root / "remainder",
+            batch_size=1,
+            model="gpt-test",
+            reasoning_effort="low",
+        )
+        self.assertEqual(plan["starting_notes"], 1)
+        self.assertEqual(len(plan["jobs"]), 1)
+        self.assertEqual(
+            (plan["jobs"][0]["start"], plan["jobs"][0]["end"]), (2, 2)
+        )
+        self.assertTrue(Path(plan["plan_path"]).exists())
 
 if __name__ == "__main__":
     unittest.main()

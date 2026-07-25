@@ -1,97 +1,15 @@
 {
   "operation": "update",
   "manifest_path": "C:\\Users\\Drew\\Development\\japanese_vocabulary\\.batch\\manifest_000101_000200.json",
-  "output_path": "C:\\Users\\Drew\\Development\\japanese_vocabulary\\.batch\\output_000101_000200.jsonl",
+  "output_path": "C:\\Users\\Drew\\Development\\japanese_vocabulary\\.batch\\output_merged_000101_000200.jsonl",
   "deck_path": "C:\\Users\\Drew\\Development\\japanese_vocabulary\\n1_vocabulary_crowdanki_deck\\n1_vocabulary_crowdanki_deck.json",
   "through": 200,
   "preserved": 100,
-  "added": 95,
+  "added": 100,
   "removed": 0,
   "scheduled_removals": [],
   "duplicate_notes_removed": [],
-  "findings": [
-    {
-      "custom_id": "gcl-933d5501520236232953",
-      "source_index": 101,
-      "gcl_entry": "内閣[ないかく]",
-      "errors": [
-        "definition reveals the written vocabulary"
-      ]
-    },
-    {
-      "custom_id": "gcl-3b8dba7ff17d8d5f150a",
-      "source_index": 103,
-      "gcl_entry": "～軒[けん]",
-      "errors": [
-        "reading must contain hiragana only after HTML removal",
-        "vocabulary does not match annotation-free GCL entry"
-      ]
-    },
-    {
-      "custom_id": "gcl-b4450df07f03ad2106b0",
-      "source_index": 116,
-      "gcl_entry": "導く[みちびく]",
-      "errors": [
-        "definition reveals an inflected written target"
-      ]
-    },
-    {
-      "custom_id": "gcl-6b3fbcc1fef03221fe64",
-      "source_index": 178,
-      "gcl_entry": "添う[そう]",
-      "errors": [
-        "definition reveals the written vocabulary",
-        "definition reveals an inflected written target"
-      ]
-    },
-    {
-      "custom_id": "gcl-7182d457f1d4cbb5d7f5",
-      "source_index": 188,
-      "gcl_entry": "嘆く[なげく]",
-      "errors": [
-        "definition reveals an inflected written target"
-      ]
-    },
-    {
-      "custom_id": "gcl-3b8dba7ff17d8d5f150a",
-      "source_index": 103,
-      "gcl_entry": "～軒[けん]",
-      "errors": [
-        "no existing or generated card for requested entry"
-      ]
-    },
-    {
-      "custom_id": "gcl-6b3fbcc1fef03221fe64",
-      "source_index": 178,
-      "gcl_entry": "添う[そう]",
-      "errors": [
-        "no existing or generated card for requested entry"
-      ]
-    },
-    {
-      "custom_id": "gcl-7182d457f1d4cbb5d7f5",
-      "source_index": 188,
-      "gcl_entry": "嘆く[なげく]",
-      "errors": [
-        "no existing or generated card for requested entry"
-      ]
-    },
-    {
-      "custom_id": "gcl-933d5501520236232953",
-      "source_index": 101,
-      "gcl_entry": "内閣[ないかく]",
-      "errors": [
-        "no existing or generated card for requested entry"
-      ]
-    },
-    {
-      "custom_id": "gcl-b4450df07f03ad2106b0",
-      "source_index": 116,
-      "gcl_entry": "導く[みちびく]",
-      "errors": [
-        "no existing or generated card for requested entry"
-      ]
-    }
-  ],
-  "published": false
+  "findings": [],
+  "published": true,
+  "final_notes": 200
 }

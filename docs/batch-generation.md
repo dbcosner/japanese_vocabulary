@@ -337,3 +337,39 @@ complete authoritative reading. It preserves matched note objects unchanged,
 rejects ambiguous or unmatchable notes, prevents generated duplicates, reports
 identified removals, validates all new cards, and atomically replaces the deck
 only after the complete proposed prefix passes.
+
+## 10. Unattended remainder generation
+
+After validating an existing deck prefix, prepare every remaining GCL entry in
+100-card batches without supplying ranges:
+
+```bash
+batch-generate prepare-remainder \
+  --gcl gcl/n1_vocabulary_generation_control_file.txt \
+  --deck n1_vocabulary_crowdanki_deck/n1_vocabulary_crowdanki_deck.json \
+  --work-dir .batch \
+  --batch-size 100
+```
+
+This is offline and free. It writes `.batch/remainder-plan.json`. Run or resume
+the plan with:
+
+```bash
+batch-generate run-plan \
+  --plan .batch/remainder-plan.json \
+  --deck n1_vocabulary_crowdanki_deck/n1_vocabulary_crowdanki_deck.json \
+  --max-repair-rounds 2 \
+  --confirm-cost
+```
+
+The runner submits original batches concurrently, polls and collects them,
+performs at most two error-aware repair rounds per rejected card, and persists
+progress throughout. Valid cards are retained even when peers fail. Cards still
+invalid after two repairs are written to `.batch/remainder-review.json`; they do
+not block later valid cards. The final plan status is `completed` or
+`completed_with_review`.
+
+Keep the terminal open and the computer awake for fully unattended collection.
+If the process is interrupted, run the identical command again. Remote Batch API
+work continues while the computer is asleep or off, and saved local state avoids
+resubmitting completed work.

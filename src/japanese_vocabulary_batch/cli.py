@@ -15,9 +15,11 @@ from .pipeline import (
     merge_retry_output,
     prepare_batch,
     prepare_reading_normalization,
+    prepare_remainder_plan,
     prepare_retry,
     refresh_status,
     submit_batch,
+    run_remainder_plan,
 )
 
 
@@ -112,6 +114,25 @@ def build_parser() -> argparse.ArgumentParser:
     update.add_argument("--output", type=Path, required=True)
     update.add_argument("--deck", type=Path, required=True)
     update.add_argument("--through", type=int, required=True)
+
+    remainder = commands.add_parser(
+        "prepare-remainder", help="Prepare automatic batches after the deck prefix"
+    )
+    remainder.add_argument("--gcl", type=Path, required=True)
+    remainder.add_argument("--deck", type=Path, required=True)
+    remainder.add_argument("--work-dir", type=Path, default=Path(".batch"))
+    remainder.add_argument("--batch-size", type=int, default=100)
+    remainder.add_argument("--model", default="gpt-5.6-terra")
+    remainder.add_argument("--reasoning-effort", default="medium")
+
+    run_plan = commands.add_parser(
+        "run-plan", help="Run and resume an unattended remainder plan"
+    )
+    run_plan.add_argument("--plan", type=Path, required=True)
+    run_plan.add_argument("--deck", type=Path, required=True)
+    run_plan.add_argument("--max-repair-rounds", type=int, default=2)
+    run_plan.add_argument("--poll-seconds", type=int, default=30)
+    run_plan.add_argument("--confirm-cost", action="store_true")
     return parser
 
 
@@ -190,6 +211,28 @@ def main(argv: list[str] | None = None) -> int:
                 output_path=args.output,
                 deck_path=args.deck,
                 through=args.through,
+            )
+        elif args.command == "prepare-remainder":
+            result = prepare_remainder_plan(
+                gcl_path=args.gcl,
+                deck_path=args.deck,
+                work_dir=args.work_dir,
+                batch_size=args.batch_size,
+                model=args.model,
+                reasoning_effort=args.reasoning_effort,
+            )
+        elif args.command == "run-plan":
+            if not args.confirm_cost:
+                raise PipelineError(
+                    "Running a plan can incur API charges; repeat with --confirm-cost"
+                )
+            result = run_remainder_plan(
+                plan_path=args.plan,
+                deck_path=args.deck,
+                client=make_openai_client(),
+                confirm_cost=args.confirm_cost,
+                max_repair_rounds=args.max_repair_rounds,
+                poll_seconds=args.poll_seconds,
             )
         else:
             result = apply_results(
