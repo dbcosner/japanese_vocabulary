@@ -20,7 +20,8 @@ Each generated card is intended to:
 - show a hiragana reading on the front, with portions corresponding to kanji in
   bold;
 - provide a concise Japanese definition suitable for a JLPT N1 learner;
-- provide three to five natural Japanese example sentences;
+- normally provide three natural Japanese example sentences, while allowing one
+  to five when natural coverage requires fewer or more;
 - conceal the target vocabulary's original written form throughout the front; and
 - reveal only the original vocabulary expression on the back.
 
@@ -164,7 +165,18 @@ include:
 - [Card format specification](docs/card-format-spec.md)
 - [CrowdAnki operations specification](docs/deck-generation-spec.md)
 - [Validation specification](docs/validation-spec.md)
+- [Batch generation operator guide](docs/batch-generation.md)
 - [Open questions and decision log](docs/open-questions.md)
+
+## Batch generation tooling
+
+The repository includes a resumable Python Batch API client with `prepare`,
+`submit`, `status`, `collect`, and `apply` commands. Only `submit` can start paid
+model processing, and it requires an explicit `--confirm-cost` acknowledgement.
+The test suite uses local fake clients and cannot create a billable batch.
+
+See the [Batch generation operator guide](docs/batch-generation.md) for
+installation, cost-free tests, a 25-card pilot, and the full-generation workflow.
 
 ## Project status
 

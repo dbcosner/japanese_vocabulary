@@ -1,0 +1,22 @@
+.venv/
+.batch/
+__pycache__/
+*.py[cod]
+*.generation-report.json
+
+# Local test, coverage, and editor state.
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.vscode/
+.idea/
+*.log
+Thumbs.db
+.DS_Store
+
+# Local secrets must never be stored in this repository.
+.env
+.env.*
+!.env.example

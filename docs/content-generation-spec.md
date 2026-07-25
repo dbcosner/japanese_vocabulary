@@ -7,7 +7,7 @@ For each valid GCL entry, content generation MUST produce:
 - a hiragana reading with formatting that identifies portions corresponding to
   kanji;
 - one concise Japanese definition;
-- three to five natural Japanese example sentences; and
+- one to five natural Japanese example sentences, normally three; and
 - the annotation-free original vocabulary expression.
 
 All generated content MUST correspond to one resolved reading and interpretation.
@@ -36,7 +36,8 @@ create a separate entry and card for each reading that:
 
 - occurs often enough to be pedagogically useful;
 - supports a clear, non-contrived Japanese definition;
-- supports three to five natural contemporary examples; and
+- supports at least one natural contemporary example and normally supports three;
+  and
 - is a reading of the expression as presented, rather than only a bound reading
   in unrelated compounds.
 
@@ -110,7 +111,23 @@ written target form MUST never be revealed on the front.
 
 ## 4. Example sentences
 
-Each entry MUST have three to five examples. Each example MUST:
+Each entry MUST have one to five examples. The generator SHOULD produce exactly
+three examples by default.
+
+One or two examples MAY be used only when the term has a narrowly constrained
+usage and further examples would be contrived or essentially duplicate an example
+already provided.
+
+Four or five examples MAY be used when additional examples are needed to
+demonstrate distinct common meanings, constructions, collocations, registers, or
+other productive use patterns. Extra examples MUST NOT be added merely to reach
+the maximum.
+
+When the count is not three, generation metadata MUST include a concise rationale
+for using fewer or more examples. This rationale is operational metadata and MUST
+NOT appear on the card.
+
+Each example MUST:
 
 - be a complete, natural Japanese sentence or naturally complete utterance;
 - use standard Japanese orthography except for the concealed target occurrence;

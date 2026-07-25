@@ -94,7 +94,9 @@ word.
 - Both fields MAY contain standard Japanese orthography.
 - Neither field may expose a target occurrence in its original written form.
 - Replaced target portions MUST be hiragana and enclosed in `<b>` tags.
-- `Examples` MUST visibly contain three to five distinct examples.
+- `Examples` MUST visibly contain one to five distinct examples. It SHOULD contain
+  exactly three unless the content-generation specification justifies fewer or
+  more.
 
 ## 7. Styling and compatibility
 
@@ -109,4 +111,3 @@ collocations, or usage notes. Such additions MUST:
 - keep the written vocabulary concealed on the front unless a later specification
   explicitly changes that learning design; and
 - continue to honor an authoritative `[reading]`.
-

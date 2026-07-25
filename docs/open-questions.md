@@ -424,3 +424,20 @@ operation.
   `validation-spec.md`, `roadmap.md`
 - Supersedes: the term `Derive` as the canonical operation name; D01 and D02
   remain in force
+
+### Decision D16: Prefer three examples within a one-to-five range
+
+- Date: 2026-07-25
+- Status: accepted
+- Decision: A card contains one to five natural example sentences and should
+  contain exactly three by default. One or two are permitted when a term's usage
+  is so specific that further examples would be contrived or essentially
+  duplicative. Four or five are permitted when needed to demonstrate additional
+  distinct common use patterns. Generation metadata records the reason whenever
+  the count is not three, but that rationale does not appear on the card.
+- Rationale: Example count should reflect pedagogical coverage and natural usage
+  rather than a rigid quota.
+- Affected specifications: `README.md`, `content-generation-spec.md`,
+  `card-format-spec.md`, `validation-spec.md`, Batch generation schema and tests
+- Supersedes: the fixed three-to-five count in D12 and the affected
+  specifications; D12's reading-inclusion policy otherwise remains in force

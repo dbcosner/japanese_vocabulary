@@ -60,8 +60,8 @@ For each note, validation MUST verify:
 
 - `Reading`, `Definition`, `Examples`, and `Vocabulary` are present and non-empty;
 - the resolved reading agrees with a supplied authoritative reading;
-- every automatically included alternate reading supports three to five natural,
-  non-contrived contemporary examples;
+- every automatically included alternate reading supports at least one natural,
+  non-contrived contemporary example and normally supports three;
 - no automatically included reading is merely archaic, obsolete, markedly
   uncommon, or limited to unrelated compounds;
 - reading text contains only hiragana after HTML is removed;
@@ -69,7 +69,12 @@ For each note, validation MUST verify:
 - kanji-corresponding reading portions are bold and original kana portions are
   not incorrectly bold;
 - the definition is Japanese and addresses the intended sense;
-- exactly three to five distinct examples are present;
+- one to five distinct examples are present;
+- exactly three examples are used by default;
+- a one- or two-example set is accompanied by generation metadata explaining why
+  further examples would be contrived or essentially duplicative;
+- a four- or five-example set is accompanied by generation metadata identifying
+  the additional common use patterns being demonstrated;
 - examples use the intended word or affix naturally;
 - examples for nouns demonstrate commonly productive `Nの…` and `Nする`
   constructions where applicable, without inventing an unsupported construction;

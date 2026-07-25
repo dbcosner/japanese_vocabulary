@@ -1,0 +1,6 @@
+Metadata-Version: 2.4
+Name: japanese-vocabulary-batch
+Version: 0.1.0
+Summary: Offline-safe tooling for generating CrowdAnki vocabulary decks with the OpenAI Batch API
+Requires-Python: >=3.11
+Requires-Dist: openai>=1.0

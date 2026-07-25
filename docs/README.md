@@ -29,6 +29,7 @@ as normative requirement terms.
 | [Card format specification](card-format-spec.md) | Note fields, front/back rendering, and target concealment |
 | [CrowdAnki operations specification](deck-generation-spec.md) | Import, Generate, Update, scalability, and preservation |
 | [Validation specification](validation-spec.md) | Acceptance checks and failure reporting |
+| [Batch generation operator guide](batch-generation.md) | Installation, offline tests, paid boundary, and resumable commands |
 | [Open questions](open-questions.md) | Unresolved product and implementation decisions |
 | [Roadmap](roadmap.md) | Non-binding future capabilities |
 
