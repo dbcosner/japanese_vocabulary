@@ -4,7 +4,7 @@
 
 This specification defines three operations:
 
-- **Derive**: source CrowdAnki JSON to GCL;
+- **Import**: source CrowdAnki JSON to a deduplicated, disambiguated GCL;
 - **Generate**: GCL to a new generated CrowdAnki deck package; and
 - **Update**: GCL plus its associated generated deck package to an updated
   package.
@@ -12,11 +12,11 @@ This specification defines three operations:
 An interface MAY compose operations, but each operation MUST retain its own
 validation boundary, report, and success or failure status.
 
-## 2. Derive operation
+## 2. Import operation
 
 ### 2.1 Inputs and preconditions
 
-Derive accepts one source CrowdAnki JSON file. The source:
+Import accepts one source CrowdAnki JSON file. The source:
 
 - MUST be valid UTF-8 JSON;
 - MUST represent a supported CrowdAnki deck structure; and
@@ -31,16 +31,16 @@ For each source note:
 - malformed or ambiguous notes MUST be reported with enough context to identify
   them.
 
-The source MAY be large. Derive MUST NOT rely on interactive copying of notes or
+The source MAY be large. Import MUST NOT rely on interactive copying of notes or
 loading the JSON into a text editor.
 
 ### 2.2 Output
 
-Derive MUST create one versioned UTF-8 GCL conforming to
+Import MUST create one versioned UTF-8 GCL conforming to
 `generation-control-file-spec.md`. Imported ordering SHOULD follow source note
 ordering until the ordering policy is decided.
 
-Derive MUST NOT:
+Import MUST NOT:
 
 - modify or replace the source JSON;
 - create learner-facing definitions or examples;
@@ -49,16 +49,25 @@ Derive MUST NOT:
 
 Its report MUST reconcile source-note count with created entries, entries skipped
 as exact duplicates, entries skipped under another approved rule, and errors.
-When exact duplicates are encountered, Derive MUST retain the first occurrence
+Before publication, Import MUST deduplicate the proposed GCL. When exact
+duplicates are encountered, Import MUST retain the first occurrence
 and omit later occurrences from the proposed GCL.
 
-After initial derivation, any later requested vocabulary additions MUST be
+Import MUST apply the reading-resolution rules in `content-generation-spec.md`.
+It MUST annotate the existing entry with the first qualifying reading, append
+other qualifying readings to the end of the proposed GCL, and exclude archaic,
+uncommon, or unnatural alternatives under the established policy. When reliable
+resolution is not possible, Import MUST emit the numbered clarification workflow
+defined in `generation-control-file-spec.md` and MUST NOT publish an unresolved
+GCL as complete.
+
+After initial import, any later requested vocabulary additions MUST be
 appended to the end of the authoritative GCL as required by
 `generation-control-file-spec.md`.
 
 ### 2.3 Atomicity
 
-Derive MUST write and validate a proposed GCL before publishing it to the requested
+Import MUST write and validate a proposed GCL before publishing it to the requested
 path. Failure or interruption MUST NOT leave a partial GCL presented as valid.
 
 ## 3. Generate operation
@@ -81,7 +90,7 @@ publish the cleaned GCL, and validate it. Entries that differ by `[reading]`,
 
 ### 3.2 Template use
 
-Generate MUST treat the deck template separately from a Derive source. It MUST
+Generate MUST treat the deck template separately from an Import source. It MUST
 preserve required template structures, including:
 
 - deck and configuration objects;
@@ -172,7 +181,7 @@ Before association-based entry classification, Update MUST purge exact duplicate
 GCL lines, publish the cleaned GCL, and validate it. Separately annotated readings
 MUST remain separate entries.
 
-The original source JSON used by Derive is not an Update input unless it is also,
+The original source JSON used by Import is not an Update input unless it is also,
 independently, the verified associated generated deck. Update MUST NOT confuse the
 source import field contract with the four-field generated-note contract.
 
@@ -186,7 +195,7 @@ Update MUST classify entries as at least:
 - previously generated and unchanged;
 - changed;
 - explicitly selected for regeneration;
-- removed from the GCL; or
+- absent from the GCL; or
 - ambiguous or unmatchable.
 
 Classification MUST occur before content generation. An entry that matches an
@@ -213,15 +222,17 @@ formatting. A changed previously generated entry MUST NOT be regenerated unless
 the entry is explicitly selected for regeneration. Without that request, Update
 MUST preserve the existing note and report the pending editorial change.
 
-For every entry removed from the GCL, Update MUST report the corresponding note as
-scheduled for removal and MUST remove it from the proposed generated JSON. The
-removal report MUST be available before the proposed output is published.
+For every existing generated note whose identity is absent from the GCL, Update
+MUST report the note as scheduled for removal and MUST remove it from the proposed
+generated JSON. The removal report MUST be available before the proposed output
+is published.
 
 Update MUST report unmatchable entries and MUST NOT silently rewrite or delete
 their notes.
 
-Update MUST emit a complete CrowdAnki JSON file, not a patch fragment. It MUST
-validate the complete proposed deck before publication.
+Update MUST append new note objects to the deck's in-memory `notes` array, then
+emit a complete CrowdAnki JSON file, not a patch fragment or raw textual append.
+It MUST validate the complete proposed deck before publication.
 
 Update MUST preserve the package naming and layout contract. It MUST read and
 replace the JSON file inside the associated package directory rather than create a
@@ -280,7 +291,8 @@ Generate and Update outputs MUST:
 - use a package directory and JSON file with identical base names;
 - reside at the project root;
 - be valid UTF-8 JSON representing a CrowdAnki `Deck`;
-- contain exactly the intended generated notes after required GCL removals;
+- contain exactly the notes represented by the GCL after required removals,
+  additions, duplicate cleanup, and explicit regeneration;
 - use the four specified fields in the correct order;
 - assign each note to the intended note-model UUID;
 - contain unique valid note GUIDs;
@@ -292,12 +304,13 @@ reproducible diffs.
 
 ## 8. Operation reports
 
-Every operation MUST emit a report identifying itself as Derive, Generate, or
+Every operation MUST emit a report identifying itself as Import, Generate, or
 Update and containing:
 
 - input and output paths and detected versions;
 - the number and text of exact duplicate GCL entries removed during preflight;
-- relevant processed, created, preserved, regenerated, removed, and failed counts;
+- relevant processed, imported, created, preserved, regenerated, duplicate-cleaned,
+  and failed counts;
 - clarification requests;
 - validation failures with source references; and
 - whether output was published.

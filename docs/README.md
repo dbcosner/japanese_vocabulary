@@ -27,7 +27,7 @@ as normative requirement terms.
 | [Generation Control File specification](generation-control-file-spec.md) | GCL encoding, syntax, parsing, and annotations |
 | [Content generation specification](content-generation-spec.md) | Readings, definitions, examples, and linguistic quality |
 | [Card format specification](card-format-spec.md) | Note fields, front/back rendering, and target concealment |
-| [CrowdAnki operations specification](deck-generation-spec.md) | Derive, Generate, Update, scalability, and preservation |
+| [CrowdAnki operations specification](deck-generation-spec.md) | Import, Generate, Update, scalability, and preservation |
 | [Validation specification](validation-spec.md) | Acceptance checks and failure reporting |
 | [Open questions](open-questions.md) | Unresolved product and implementation decisions |
 | [Roadmap](roadmap.md) | Non-binding future capabilities |
@@ -47,11 +47,13 @@ as normative requirement terms.
   including an inflected form whose target portion is identifiable.
 - **Generated card**: a CrowdAnki note and its rendered card produced from one GCL
   entry.
-- **Derive operation**: creation of a GCL from a source CrowdAnki JSON file.
+- **Import operation**: creation of a deduplicated, disambiguated GCL from a
+  source CrowdAnki JSON file.
 - **Generate operation**: creation of a new generated CrowdAnki JSON file from a
   GCL and deck template.
-- **Update operation**: revision of an associated generated CrowdAnki JSON file to
-  reflect its authoritative GCL.
+- **Update operation**: synchronization of an associated generated CrowdAnki JSON
+  file with its GCL by adding new entries, removing absent entries, and explicitly
+  regenerating selected existing entries.
 - **Associated generated deck**: a generated CrowdAnki JSON file that can be
   reliably identified as belonging to a particular GCL.
 - **Generated deck package**: a directory containing one primary CrowdAnki JSON
@@ -81,7 +83,7 @@ exist. Differences MUST be reported and deliberately reconciled.
 The project has three first-class capabilities:
 
 ```text
-Source CrowdAnki JSON ── Derive ──▶ GCL
+Source CrowdAnki JSON ── Import ──▶ GCL
                                       │
                                       ├── Generate ──▶ New generated JSON
                                       │

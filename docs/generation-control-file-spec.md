@@ -117,10 +117,10 @@ was already represented by a redundant generated note, Update MUST remove that
 redundant note while preserving the note associated with the retained first
 occurrence.
 
-Generate and Update MUST run this deduplication process as a mandatory GCL
-preflight step before parsing entries for generation, matching identities, or
-classifying changes. The cleaned GCL MUST be validated before the requested
-operation proceeds.
+Import MUST run this deduplication process on its proposed GCL before publication.
+Generate and Update MUST run it as a mandatory GCL preflight step before parsing
+entries for generation, matching identities, or classifying changes. The cleaned
+GCL MUST be validated before the requested operation proceeds.
 
 ## 6. Authoritative reading
 

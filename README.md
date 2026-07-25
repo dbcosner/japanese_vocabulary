@@ -37,17 +37,19 @@ guess.
 The project will support three independent operations:
 
 ```text
-Source CrowdAnki JSON ── Derive ──▶ GCL
+Source CrowdAnki JSON ── Import ──▶ GCL
                                       │
                                       ├── Generate ──▶ New CrowdAnki JSON
                                       │
 Existing generated JSON ◀─────────────└── Update ───▶ Updated CrowdAnki JSON
 ```
 
-### Derive
+### Import
 
-Create a UTF-8 GCL from a previous CrowdAnki JSON export. The source export is
-authoritative only for this initial derivation.
+Create a UTF-8 GCL from a previous CrowdAnki JSON export. Import deduplicates the
+proposed entries and resolves readings and interpretations under the established
+disambiguation policy before publishing the GCL. The source export is
+authoritative only for this initial import.
 
 ### Generate
 
@@ -58,15 +60,15 @@ file; it does not preserve content from that file.
 
 ### Update
 
-Update an existing generated CrowdAnki JSON deck from changes to its associated
-GCL. Update is intended to:
+Update an existing generated CrowdAnki JSON deck from its associated GCL. Update
+is intended to:
 
 - generate cards for new entries;
 - match existing entries before generation so an already generated entry is not
   duplicated;
 - preserve unchanged cards and note identities;
 - regenerate changed entries only when explicitly requested;
-- remove notes for entries removed from the GCL; and
+- remove notes whose entries disappear from the GCL;
 - fail rather than overwrite managed content edited outside the generator.
 
 ## Source-of-truth model
@@ -111,7 +113,8 @@ Exact duplicate GCL lines are not separate vocabulary entries. Deduplication kee
 the first occurrence, removes later occurrences, and preserves the order of all
 remaining entries.
 
-Generate and Update always perform this deduplication as a GCL preflight step.
+Import performs this deduplication before publishing its GCL; Generate and Update
+perform it as a GCL preflight step.
 Because `[reading]` is part of the entry, separately annotated readings are not
 duplicates.
 

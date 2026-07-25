@@ -182,8 +182,8 @@ document observed limits, report progress, and preserve outputs on failure.
 
 ## Q21. Operation interface and composition
 
-**Question:** How are Derive, Generate, and Update invoked, and may one command
-explicitly compose Derive followed by Generate?
+**Question:** How are Import, Generate, and Update invoked, and may one command
+explicitly compose Import followed by Generate?
 
 The interface must keep inputs, outputs, reports, and failures separable by
 operation.
@@ -371,13 +371,14 @@ operation.
   multi-reading expression; D08 and D10 remain available for genuinely uncertain
   cases
 
-### Decision D13: Generate and Update purge duplicates first
+### Decision D13: Import, Generate, and Update purge duplicates first
 
 - Date: 2026-07-24
 - Status: accepted
-- Decision: Generate and Update begin with mandatory GCL deduplication. The first
-  exact annotated-entry line is retained, later exact lines are removed, and the
-  cleaned GCL is published and validated before the requested operation continues.
+- Decision: Import deduplicates its proposed GCL before publication, and Generate
+  and Update begin with the same mandatory GCL deduplication. The first exact
+  annotated-entry line is retained, later exact lines are removed, and the cleaned
+  GCL is published and validated before the requested operation continues.
   Because `[reading]` is part of the comparison key, alternative readings are
   distinct rather than duplicates.
 - Rationale: Every deck operation should consume a canonical GCL without losing
@@ -385,8 +386,8 @@ operation.
 - Affected specifications: `README.md`, `product-spec.md`,
   `generation-control-file-spec.md`, `deck-generation-spec.md`,
   `validation-spec.md`
-- Supersedes: D09 only insofar as it makes that cleanup mandatory preflight for
-  Generate and Update
+- Supersedes: D09 only insofar as it makes that cleanup mandatory for Import and
+  mandatory preflight for Generate and Update
 
 ### Decision D14: Demonstrate productive noun constructions
 
@@ -402,3 +403,24 @@ operation.
   `validation-spec.md`
 - Supersedes: the less specific noun-example guidance in
   `content-generation-spec.md`
+
+### Decision D15: Canonical operations and synchronized Update
+
+- Date: 2026-07-25
+- Status: accepted
+- Decision: The three canonical operations are Import, Generate, and Update.
+  Import converts a source CrowdAnki JSON file into a deduplicated and
+  disambiguated GCL. Generate creates a new complete CrowdAnki deck package from
+  a GCL. Update synchronizes deck membership with the GCL: it preserves unchanged
+  notes, appends notes for new entries, removes notes for entries absent from the
+  GCL, and regenerates an existing note only when explicitly requested. Update
+  constructs and atomically replaces a complete valid JSON document; it never
+  appends raw text to the file.
+- Rationale: These names describe the user-facing workflows directly, while an
+  identity-aware synchronized Update supports additions and removals without
+  losing the existing explicit card-alteration policy.
+- Affected specifications: `README.md`, `product-spec.md`,
+  `generation-control-file-spec.md`, `deck-generation-spec.md`,
+  `validation-spec.md`, `roadmap.md`
+- Supersedes: the term `Derive` as the canonical operation name; D01 and D02
+  remain in force

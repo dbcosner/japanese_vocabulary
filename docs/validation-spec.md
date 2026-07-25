@@ -4,12 +4,14 @@
 
 A conforming implementation MUST validate each capability independently.
 
-Derive MUST validate:
+Import MUST validate:
 
 1. source JSON encoding and CrowdAnki structure;
 2. source note field availability;
-3. conversion completeness; and
-4. the completed GCL.
+3. conversion completeness;
+4. deduplication of proposed entries;
+5. reading and interpretation resolution, including clarification outcomes; and
+6. the completed GCL.
 
 Generate MUST validate:
 
@@ -111,7 +113,8 @@ The completed JSON MUST be parsed and checked for:
 - unique valid note GUIDs;
 - absence of the template test note;
 - absence of unintended media references; and
-- note counts reflecting removal of every note whose GCL entry was removed.
+- note counts reflecting removal of notes absent from the GCL plus newly added or
+  explicitly regenerated notes.
 
 At least one representative card SHOULD be rendered or imported in a test
 environment before a new template version is accepted.
@@ -127,14 +130,13 @@ It MUST verify that:
 - new entries do not collide with existing identities;
 - explicitly regenerated entries are clearly reported; and
 - changed entries are preserved unless explicitly selected for regeneration;
-- notes corresponding to removed GCL entries are reported and absent from the
-  proposed output;
+- notes absent from the GCL are reported and omitted from the proposed output;
 - unmatchable entries stop publication; and
 - external changes to managed fields or identities stop publication.
 
 ## 7. Scale and resilience validation
 
-The test suite MUST include representative large files for Derive, Generate, and
+The test suite MUST include representative large files for Import, Generate, and
 Update. It MUST verify:
 
 - complete note and entry counts;
@@ -171,7 +173,11 @@ Each finding MUST include:
 
 A release test suite MUST include:
 
-- Derive from a valid source export without generating a deck;
+- Import from a valid source export without generating a deck;
+- Import-time deduplication that retains the first exact proposed entry and
+  reports later source-note duplicates;
+- Import-time disambiguation that annotates the first qualifying reading, appends
+  other qualifying readings, and pauses for unresolved interpretations;
 - Generate from a manually authored valid GCL without a source export;
 - generation of
   `n1_vocabulary_crowdanki_deck/n1_vocabulary_crowdanki_deck.json` from
@@ -180,7 +186,7 @@ A release test suite MUST include:
   name;
 - replacement of an existing Generate output with a completely new generated
   deck;
-- Update of an associated generated deck without repeating Derive;
+- Update of an associated generated deck without repeating Import;
 - expansion of a 10-note deck to the first 100 GCL entries by preserving the
   original 10 identities and adding exactly 90 notes;
 - a repeated Update request that adds no duplicate notes;
@@ -212,7 +218,7 @@ A release test suite MUST include:
 - preservation and reporting of a changed entry without an explicit regeneration
   request;
 - regeneration of that entry when explicitly requested;
-- reported removal of a note whose entry was removed from the GCL;
+- reported removal of an existing note whose entry is absent from the GCL;
 - detection of external edits to a managed generated-note field;
 - interruption safety for each operation; and
 - rejection of the template’s placeholder test note in production output.

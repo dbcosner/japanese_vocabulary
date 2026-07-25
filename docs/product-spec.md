@@ -28,9 +28,9 @@ The system MUST:
 
 The system MUST implement three independently invocable and testable operations.
 
-### 3.1 Derive
+### 3.1 Import
 
-**Derive** creates a new GCL from a previous CrowdAnki JSON export.
+**Import** creates a new GCL from a previous CrowdAnki JSON export.
 
 | Contract element | Requirement |
 | --- | --- |
@@ -39,7 +39,9 @@ The system MUST implement three independently invocable and testable operations.
 | Primary output | One valid versioned GCL |
 | Authority after success | The new GCL |
 
-Derive MUST NOT modify its source JSON.
+Import MUST deduplicate proposed GCL entries and resolve ambiguous readings and
+interpretations according to the GCL and content-generation specifications before
+publishing the GCL. Import MUST NOT modify its source JSON.
 
 ### 3.2 Generate
 
@@ -60,8 +62,9 @@ GCL lines according to `generation-control-file-spec.md`.
 
 ### 3.3 Update
 
-**Update** revises an existing generated CrowdAnki JSON file to reflect changes in
-its associated GCL.
+**Update** synchronizes an existing generated CrowdAnki JSON file with its
+associated GCL. It adds new entries, removes notes whose entries are absent, and
+MAY regenerate selected existing entries when explicitly requested.
 
 | Contract element | Requirement |
 | --- | --- |
@@ -80,18 +83,18 @@ Update MUST:
 - match proposed entries against existing generated-note identities before
   generating content and MUST NOT create a second note for an entry that has
   already been generated;
-- remove generated notes whose entries were removed from the GCL;
+- remove generated notes whose entries are absent from the GCL;
 - require an explicit regeneration request before rewriting a previously generated
   entry whose reading, annotations, or other editorial metadata changed; and
 - fail if it detects external changes to managed note fields or identities.
 
 ### 3.4 Separation of operations
 
-- Derive MUST be usable without generating a deck.
-- Generate MUST be usable with a valid manually created GCL; Derive in the same
+- Import MUST be usable without generating a deck.
+- Generate MUST be usable with a valid manually created GCL; Import in the same
   run MUST NOT be required.
-- Update MUST be usable without repeating Derive.
-- The source deck accepted by Derive and the generated deck accepted by Update
+- Update MUST be usable without repeating Import.
+- The source deck accepted by Import and the generated deck accepted by Update
   have different roles and MAY use different note models.
 - A failure MUST be reported as belonging to the operation in which it occurred.
 
@@ -121,9 +124,15 @@ For a source deck that conforms to the initial-import contract:
   information.
 - The source deck is authoritative only while constructing the initial GCL.
 
-If multiple source notes yield the same exact annotated GCL entry, Derive MUST
+If multiple source notes yield the same exact annotated GCL entry, Import MUST
 retain the first occurrence and report later occurrences as duplicates rather
 than write repeated GCL lines.
+
+Import MUST apply the reading-resolution and disambiguation rules in
+`content-generation-spec.md`. It MUST annotate resolved readings, append
+additional qualifying readings in the established order, and omit archaic,
+uncommon, or unnatural alternatives under that policy. It MUST stop for editorial
+clarification when the policy does not permit a reliable decision.
 
 The generator MUST NOT assume that the initial-import field layout is also the
 layout of the generated-deck template.
@@ -145,19 +154,21 @@ How generation state is represented remains an open question.
 
 ## 6. Workflows
 
-### 6.1 Initial derivation and generation
+### 6.1 Initial import and generation
 
 The system MUST support this conceptual workflow:
 
 1. Read an original CrowdAnki export.
-2. Create a valid GCL containing the imported vocabulary.
+2. Create a proposed GCL containing the imported vocabulary.
 3. Surface ambiguous or malformed imports for editorial resolution.
-4. Conclude Derive with a valid GCL and report.
-5. In a separate Generate operation, generate content for every resolved entry.
-6. Validate the content and output deck.
-7. Emit the complete generated CrowdAnki deck.
+4. Deduplicate the proposed GCL and resolve or report ambiguous readings and
+   interpretations.
+5. Conclude Import with a valid GCL and report.
+6. In a separate Generate operation, generate content for every resolved entry.
+7. Validate the content and output deck.
+8. Emit the complete generated CrowdAnki deck.
 
-Completing Derive MUST NOT implicitly authorize Generate unless the invocation
+Completing Import MUST NOT implicitly authorize Generate unless the invocation
 explicitly requests both operations.
 
 ### 6.2 Incremental maintenance
@@ -168,15 +179,18 @@ The system MUST support this conceptual workflow:
 2. Purge exact duplicate GCL entries while retaining separately annotated
    readings.
 3. Read and verify the associated generated CrowdAnki JSON.
-4. Classify new, unchanged, changed, removed, and explicitly regenerated entries.
+4. Classify new, unchanged, changed, absent-from-GCL, and explicitly regenerated
+   entries.
 5. Confirm that entries classified as existing will not be emitted as duplicate
    notes.
 6. Generate and validate content only where required by the update policy.
 7. Preserve previously generated cards byte-for-byte at the field-content level
    unless explicit regeneration was requested.
-8. Report notes that will be removed because their GCL entries were removed.
-9. Remove those notes from the proposed output.
-10. Emit a valid updated deck and an Update report.
+8. Report and remove existing notes whose identities are absent from the GCL.
+9. Append new note objects to the proposed deck's `notes` array.
+10. Validate and atomically replace the complete JSON file; Update MUST NOT append
+    raw text to a JSON file.
+11. Emit a valid updated deck and an Update report.
 
 Reordering a GCL entry MUST NOT by itself cause content regeneration. The exact
 identity and explicit-regeneration mechanisms are unresolved.
@@ -230,6 +244,6 @@ be surfaced for clarification.
 - **Recoverability**: no operation MUST overwrite the sole copy of an input or a
   last known-good output without a recoverable replacement strategy.
 - **Scalability**: processing time SHOULD grow approximately linearly with note
-  and entry count for routine Derive, Generate, and Update work.
+  and entry count for routine Import, Generate, and Update work.
 - **Extensibility**: the note model SHOULD permit future pronunciation and usage
   features without changing the meaning of existing fields.

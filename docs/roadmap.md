@@ -8,24 +8,24 @@ after it is specified in the normative documents.
 - Resolve the remaining GCL syntax questions, especially comments, normalization,
   and ASCII `~`.
 - Select a stable entry identity and CrowdAnki GUID strategy.
-- Define state storage, removal behavior, explicit regeneration, and atomic
-  output.
+- Define state storage, explicit-regeneration controls, and atomic output.
 - Define example-field HTML and error scope.
 
 ## Phase 2: Core generation
 
-- Implement Derive for large source CrowdAnki exports.
+- Implement Import for large source CrowdAnki exports, including deduplication
+  and disambiguation.
 - Parse and validate GCL version 1.
-- Implement Generate independently of Derive.
+- Implement Generate independently of Import.
 - Resolve readings and generate advanced Japanese content.
 - Build notes from the current four-field template.
 - Validate target concealment and CrowdAnki structure.
 
 ## Phase 3: Safe maintenance
 
-- Implement Update independently of Derive.
+- Implement Update independently of Import.
 - Verify GCL-to-generated-deck association.
-- Detect new, unchanged, changed, and removed entries.
+- Detect new, unchanged, changed, and absent-from-GCL entries.
 - Detect external drift in managed generated content.
 - Preserve unchanged fields and identities.
 - Support deliberate per-entry and full regeneration.
