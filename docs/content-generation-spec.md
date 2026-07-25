@@ -26,6 +26,19 @@ Every valid GCL entry supplies `[reading]`:
 If the supplied reading is incompatible with the expression or still permits
 materially different interpretations, processing requires clarification.
 
+Before returning a card, the generator MUST perform a reading-specific sense
+check. It MUST verify that the definition and every example use the expression
+with the supplied reading, not merely a different sense associated with the same
+written form. In particular, a homograph's familiar sense MUST NOT be used when
+it belongs to another reading (for example, `柄[え]` means a handle, whereas the
+pattern sense is read `がら`).
+
+The generation response MUST echo the complete canonical GCL entry exactly in
+both its request-entry and resolved-entry fields. This comparison includes the
+full `[reading]`, affix placeholder, and terminal `(な)` marker. A generator MUST
+copy these values from structured request data and MUST NOT reconstruct,
+normalize, or omit annotations in free-form output.
+
 ### 2.2 Import-time reading resolution
 
 Import MUST determine the reading of each proposed expression before publishing
@@ -108,6 +121,18 @@ The definition MUST:
 If a target occurrence would otherwise appear in the definition, its written form
 MUST be replaced with the appropriate hiragana reading in bold. The original
 written target form MUST never be revealed on the front.
+
+Concealment applies when the annotation-free written target occurs anywhere
+inside a larger written word or compound, not only when it is a token by itself.
+For example, a definition for `器` MUST avoid `容器`, one for `志` MUST avoid
+`意志`, and one for `影` MUST avoid `影響`. Rewording the surrounding phrase is
+preferred when inserting a bold hiragana replacement would be awkward or
+misleading.
+
+Before returning a card, the generator MUST scan the complete rendered-front
+source (`Reading`, `Definition`, and `Examples`) for the annotation-free written
+target and any predictable inflected written target. Any occurrence MUST be
+removed or concealed and the scan repeated.
 
 ## 4. Example sentences
 

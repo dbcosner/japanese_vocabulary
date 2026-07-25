@@ -131,6 +131,12 @@ was already represented by a redundant generated note, Update MUST remove that
 redundant note while preserving the note associated with the retained first
 occurrence.
 
+The same rule applies when an editorial correction causes an entry to become an
+exact duplicate of an earlier entry. The correction workflow MUST rerun
+deduplication before requesting generation, retain the earlier entry and its
+existing note identity, remove the corrected later line, and report that the
+review item was resolved by deduplication rather than by generating another card.
+
 Import MUST run this deduplication process on its proposed GCL before publication.
 Generate and Update MUST run it as a mandatory GCL preflight step before parsing
 entries for generation, matching identities, or classifying changes. The cleaned
@@ -148,6 +154,10 @@ Rules:
 
 - `<reading>` MUST be non-empty.
 - Every entry MUST supply a reading, and it MUST be treated as authoritative.
+- Editors and automated correction workflows MUST verify that the written
+  expression and supplied reading form an established pairing. If a mismatch is
+  actually a spelling error, they MUST correct the expression and then rerun
+  exact deduplication before content generation.
 - The reading annotation MUST occur after the expression and before `(な)`, when
   both are present.
 - At most one reading annotation is permitted per entry.

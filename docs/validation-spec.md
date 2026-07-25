@@ -61,7 +61,12 @@ that existing entries were not reordered.
 For each note, validation MUST verify:
 
 - `Reading`, `Definition`, `Examples`, and `Vocabulary` are present and non-empty;
-- the resolved reading agrees with a supplied authoritative reading;
+- the response's request-entry and resolved-entry values each equal the complete
+  canonical GCL entry exactly, including `[reading]`, `～`, and `(な)`;
+- the displayed reading, after HTML removal, equals the authoritative reading
+  and does not omit or add okurigana or a na-adjective reading suffix;
+- the definition and every example use the sense belonging to the authoritative
+  reading rather than a homographic sense belonging to another reading;
 - every Import-resolved alternate reading supports at least one natural,
   non-contrived contemporary example and normally supports three;
 - no automatically included reading is merely archaic, obsolete, markedly
@@ -96,6 +101,8 @@ Validation MUST confirm that:
 - the `Vocabulary` field is not referenced by the front template;
 - no original target occurrence appears visibly in `Reading`, `Definition`, or
   `Examples`;
+- no original target occurrence appears as a substring of a larger word or
+  compound in those fields;
 - inflected target occurrences are concealed;
 - affix occurrences inside words are concealed;
 - replacement forms are hiragana and bold; and
@@ -104,6 +111,11 @@ Validation MUST confirm that:
 Substring scanning MAY support this validation but MUST account for contextual
 false positives and false negatives. It MUST NOT replace linguistic review where
 the target’s inflected boundary is ambiguous.
+
+The exact annotation-free target scan is mandatory even for a one-character
+target. A match inside a compound is an error, not a contextual false positive,
+because it still exposes the answer. Error reports SHOULD name the field and
+matching containing text so a retry can rephrase it directly.
 
 ## 5. Deck validation
 
@@ -131,6 +143,7 @@ environment before a new template version is accepted.
 An incremental run MUST compare its proposed output with prior generated content.
 It MUST verify that:
 
+- stable generated-note identity is used before learner-facing field matching;
 - unchanged entries retain the same GUID;
 - unchanged entries retain identical four-field content;
 - an already generated entry is represented by exactly one note after Update;
@@ -221,6 +234,18 @@ A release test suite MUST include:
 - ASCII `~` in place of `～`;
 - ambiguous reading escalation;
 - target concealment in an inflected example;
+- target concealment inside compounds, including `器` in `容器`, `志` in `意志`,
+  and `影` in `影響`;
+- exact resolved-entry preservation for na-adjectives, including the terminal
+  `(な)` marker;
+- rejection of a card whose definition uses a homographic sense from a different
+  reading, such as treating `柄[え]` as the pattern sense `がら`;
+- rejection of a displayed reading that does not equal the authoritative reading
+  after HTML removal;
+- correction of an entry that becomes an exact duplicate of an earlier entry,
+  with one retained GCL entry and no duplicate generated note;
+- repeated Update matching by stable GUID when two entries have the same
+  annotation-free vocabulary and displayed reading;
 - preservation after inserting and reordering GCL entries; and
 - preservation and reporting of a changed entry without an explicit regeneration
   request;

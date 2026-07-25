@@ -1,15 +1,15 @@
 {
   "operation": "update",
-  "manifest_path": "C:\\Users\\Drew\\Development\\japanese_vocabulary\\.batch\\manifest_000101_000200.json",
-  "output_path": "C:\\Users\\Drew\\Development\\japanese_vocabulary\\.batch\\output_merged_000101_000200.jsonl",
+  "manifest_path": "C:\\Users\\Drew\\Development\\japanese_vocabulary\\.batch\\editorial-resolution\\manifest_editorial.json",
+  "output_path": "C:\\Users\\Drew\\Development\\japanese_vocabulary\\.batch\\editorial-resolution\\output_editorial.jsonl",
   "deck_path": "C:\\Users\\Drew\\Development\\japanese_vocabulary\\n1_vocabulary_crowdanki_deck\\n1_vocabulary_crowdanki_deck.json",
-  "through": 200,
-  "preserved": 100,
-  "added": 100,
+  "through": 1716,
+  "preserved": 1709,
+  "added": 7,
   "removed": 0,
   "scheduled_removals": [],
   "duplicate_notes_removed": [],
   "findings": [],
   "published": true,
-  "final_notes": 200
+  "final_notes": 1716
 }

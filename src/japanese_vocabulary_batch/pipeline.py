@@ -1209,6 +1209,7 @@ def apply_update(
         )
     desired = entries[:through]
     desired_by_id = {entry.identity: entry for entry in desired}
+    all_by_guid = {deterministic_guid(entry.text): entry for entry in entries}
     all_by_key: dict[tuple[str, str], list[GclEntry]] = {}
     for entry in entries:
         key = (
@@ -1232,19 +1233,21 @@ def apply_update(
                 {"note_position": position, "reason": "expected four fields"}
             )
             continue
-        key = (fields[3], strip_tags(fields[0]))
-        candidates = all_by_key.get(key, [])
-        if len(candidates) != 1:
-            unmatchable.append(
-                {
-                    "note_position": position,
-                    "vocabulary": fields[3],
-                    "reading": strip_tags(fields[0]),
-                    "reason": f"matched {len(candidates)} GCL entries",
-                }
-            )
-            continue
-        entry = candidates[0]
+        entry = all_by_guid.get(note.get("guid"))
+        if entry is None:
+            key = (fields[3], strip_tags(fields[0]))
+            candidates = all_by_key.get(key, [])
+            if len(candidates) != 1:
+                unmatchable.append(
+                    {
+                        "note_position": position,
+                        "vocabulary": fields[3],
+                        "reading": strip_tags(fields[0]),
+                        "reason": f"matched {len(candidates)} GCL entries",
+                    }
+                )
+                continue
+            entry = candidates[0]
         if entry.identity not in desired_by_id:
             scheduled_removals.append(
                 {

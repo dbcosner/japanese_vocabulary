@@ -219,6 +219,14 @@ existing generated-note identity MUST NOT also be classified as new. Matching by
 written vocabulary alone is insufficient because separately annotated readings
 of the same written expression are distinct entries.
 
+Update MUST first match a generated note by the stable identity established by
+Generate. Learner-facing `Vocabulary` and `Reading` fields MAY be used only as a
+legacy fallback when stable identity is absent. A fallback match MUST be unique;
+zero or multiple candidates are unmatchable and MUST stop publication. This
+ordering is required because affix entries can share visible fields with
+standalone entries and legacy field content can contain an earlier generation
+error.
+
 ### 4.3 Application
 
 Update MUST generate content only for new or explicitly regenerated entries.
@@ -283,8 +291,11 @@ field.
 
 Generate MUST establish the identity information required by later Update.
 Physical line number MUST NOT participate in stable identity. The canonical
-complete annotated GCL entry is the identity key. The GUID algorithm and state
-store remain open questions.
+complete annotated GCL entry is the identity key. Generate MUST derive the note
+GUID deterministically from that key under one fixed, versioned namespace so
+Update can recover identity without relying on mutable learner-facing fields.
+Changing this namespace or derivation is a migration that MUST be versioned and
+must preserve an explicit mapping from old identities.
 
 ## 6. Large-file requirements
 
