@@ -8,16 +8,15 @@ import tempfile
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 
 ENDPOINT = "/v1/responses"
 SCHEMA_NAME = "japanese_vocabulary_card"
 TERMINAL_STATUSES = {"completed", "failed", "expired", "cancelled"}
 HIRAGANA_RE = re.compile(r"^[\u3040-\u309fー]+$")
-KANJI_RE = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff々]")
 TAG_RE = re.compile(r"<[^>]+>")
-READING_ANNOTATION_RE = re.compile(r"\[([^\[\]]+)\]$")
+READING_ANNOTATION_RE = re.compile(r"\[([^\[\]]+)\](?=\(な\)$|$)")
 
 
 class PipelineError(RuntimeError):
@@ -93,50 +92,77 @@ def clean_and_read_gcl(path: Path) -> tuple[list[GclEntry], list[dict[str, Any]]
 
 
 def card_schema() -> dict[str, Any]:
+    common_properties = {
+        "status": {"type": "string"},
+        "issue": {"type": "string"},
+        "gcl_entry": {"type": "string"},
+        "resolved_gcl_entry": {"type": "string"},
+        "additional_gcl_entries": {
+            "type": "array",
+            "items": {"type": "string"},
+        },
+        "reading": {"type": "string"},
+        "definition": {"type": "string"},
+        "examples": {
+            "type": "array",
+            "items": {"type": "string"},
+        },
+        "example_count_rationale": {"type": "string"},
+        "vocabulary": {"type": "string"},
+    }
+    required = list(common_properties)
+    card_properties = dict(common_properties)
+    card_properties["status"] = {"type": "string", "enum": ["card"]}
+    card_properties["examples"] = {
+        "type": "array",
+        "items": {"type": "string"},
+        "minItems": 1,
+        "maxItems": 5,
+    }
+    review_properties = dict(common_properties)
+    review_properties["status"] = {"type": "string", "enum": ["needs_review"]}
+    review_properties["examples"] = {
+        "type": "array",
+        "items": {"type": "string"},
+        "maxItems": 0,
+    }
     return {
         "type": "object",
         "properties": {
-            "status": {"type": "string", "enum": ["card", "needs_review"]},
-            "issue": {"type": "string"},
-            "gcl_entry": {"type": "string"},
-            "resolved_gcl_entry": {"type": "string"},
-            "additional_gcl_entries": {
-                "type": "array",
-                "items": {"type": "string"},
-            },
-            "reading": {"type": "string"},
-            "definition": {"type": "string"},
-            "examples": {
-                "type": "array",
-                "items": {"type": "string"},
-                "minItems": 0,
-                "maxItems": 5,
-            },
-            "example_count_rationale": {"type": "string"},
-            "vocabulary": {"type": "string"},
+            "result": {
+                "anyOf": [
+                    {
+                        "type": "object",
+                        "properties": card_properties,
+                        "required": required,
+                        "additionalProperties": False,
+                    },
+                    {
+                        "type": "object",
+                        "properties": review_properties,
+                        "required": required,
+                        "additionalProperties": False,
+                    },
+                ]
+            }
         },
-        "required": [
-            "status",
-            "issue",
-            "gcl_entry",
-            "resolved_gcl_entry",
-            "additional_gcl_entries",
-            "reading",
-            "definition",
-            "examples",
-            "example_count_rationale",
-            "vocabulary",
-        ],
+        "required": ["result"],
         "additionalProperties": False,
     }
 
 
 def generation_instructions() -> str:
     return """You generate one Japanese vocabulary card for an advanced learner.
-Return only the required JSON object.
+Return only the required JSON object, with all response fields inside result.
 
 Apply these rules:
 - Honor an authoritative [reading]. Remove all GCL annotations from vocabulary.
+- Copy gcl_entry byte-for-byte from the request. In resolved_gcl_entry, a reading
+  annotation always follows the complete written expression. Include the complete
+  reading, including okurigana: 添う[そう], 嘆く[なげく], 赴く[おもむく],
+  継ぐ[つぐ], 侵す[おかす], and 浸す[ひたす]. Never put brackets inside a
+  word (添[そう]う or 継[つ]ぐ) and never use parentheses for a reading
+  (嘆(なげ)く).
 - If an unannotated expression has several useful contemporary readings, use the
   most common one and list the remaining qualifying annotated entries in
   additional_gcl_entries. Exclude archaic, uncommon, compound-only, or unnatural
@@ -236,6 +262,131 @@ def prepare_batch(
     }
     atomic_write_json(manifest_path, manifest)
     return {"manifest_path": str(manifest_path), **manifest}
+
+
+def prepare_retry(
+    *,
+    manifest_path: Path,
+    report_path: Path,
+    work_dir: Path,
+) -> dict[str, Any]:
+    original = load_manifest(manifest_path)
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    failed_ids = {
+        finding.get("custom_id") for finding in report.get("findings", [])
+    }
+    failed_ids.discard(None)
+    if not failed_ids:
+        raise PipelineError("Generation report contains no failed cards to retry")
+    request_by_id = {
+        request["custom_id"]: request for request in original["requests"]
+    }
+    unknown = failed_ids - request_by_id.keys()
+    if unknown:
+        raise PipelineError(
+            f"Generation report contains {len(unknown)} unknown custom_id value(s)"
+        )
+    selected = [
+        request for request in original["requests"]
+        if request["custom_id"] in failed_ids
+    ]
+    start = original["range"]["start"]
+    end = original["range"]["end"]
+    work_dir.mkdir(parents=True, exist_ok=True)
+    input_path = work_dir / f"input_retry_{start:06d}_{end:06d}.jsonl"
+    retry_manifest_path = work_dir / f"manifest_retry_{start:06d}_{end:06d}.json"
+    entries = [
+        GclEntry(request["source_index"], request["gcl_entry"])
+        for request in selected
+    ]
+    jsonl = "\n".join(
+        json.dumps(
+            make_request(
+                entry, original["model"], original["reasoning_effort"]
+            ),
+            ensure_ascii=False,
+        )
+        for entry in entries
+    ) + "\n"
+    atomic_write_text(input_path, jsonl)
+    retry_manifest = {
+        "version": 1,
+        "operation": "generate-retry",
+        "base_manifest_path": str(manifest_path.resolve()),
+        "generation_report_path": str(report_path.resolve()),
+        "gcl_path": original["gcl_path"],
+        "gcl_sha256": original["gcl_sha256"],
+        "input_path": str(input_path.resolve()),
+        "input_sha256": sha256_file(input_path),
+        "model": original["model"],
+        "reasoning_effort": original["reasoning_effort"],
+        "range": original["range"],
+        "total_gcl_entries": original["total_gcl_entries"],
+        "duplicate_entries_removed": [],
+        "requests": selected,
+    }
+    atomic_write_json(retry_manifest_path, retry_manifest)
+    return {"manifest_path": str(retry_manifest_path), **retry_manifest}
+
+
+def _read_output_records(path: Path) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for line_number, line in enumerate(
+        path.read_text(encoding="utf-8").splitlines(), start=1
+    ):
+        if not line.strip():
+            continue
+        record = json.loads(line)
+        custom_id = record.get("custom_id")
+        if not custom_id or custom_id in seen:
+            raise PipelineError(
+                f"Missing or duplicate custom_id in output line {line_number}"
+            )
+        seen.add(custom_id)
+        records.append(record)
+    return records
+
+
+def merge_retry_output(
+    *,
+    base_output_path: Path,
+    retry_manifest_path: Path,
+    retry_output_path: Path,
+    merged_output_path: Path,
+) -> dict[str, Any]:
+    retry_manifest = load_manifest(retry_manifest_path)
+    retry_ids = {
+        request["custom_id"] for request in retry_manifest["requests"]
+    }
+    base_records = _read_output_records(base_output_path)
+    retry_records = _read_output_records(retry_output_path)
+    retry_by_id = {record["custom_id"]: record for record in retry_records}
+    missing = retry_ids - retry_by_id.keys()
+    unexpected = retry_by_id.keys() - retry_ids
+    base_ids = {record["custom_id"] for record in base_records}
+    absent_from_base = retry_ids - base_ids
+    if missing or unexpected or absent_from_base:
+        raise PipelineError(
+            "Retry reconciliation failed: "
+            f"{len(missing)} missing retry result(s), "
+            f"{len(unexpected)} unexpected retry result(s), "
+            f"{len(absent_from_base)} absent from base output"
+        )
+    merged = [
+        retry_by_id.get(record["custom_id"], record) for record in base_records
+    ]
+    atomic_write_text(
+        merged_output_path,
+        "\n".join(
+            json.dumps(record, ensure_ascii=False) for record in merged
+        ) + "\n",
+    )
+    return {
+        "merged_output_path": str(merged_output_path.resolve()),
+        "base_records": len(base_records),
+        "replaced_records": len(retry_ids),
+    }
 
 
 def load_manifest(path: Path) -> dict[str, Any]:
@@ -403,7 +554,10 @@ def parse_output(path: Path) -> dict[str, dict[str, Any]]:
                 f"{response.get('status_code')}"
             )
         body = response.get("body") or {}
-        results[custom_id] = json.loads(extract_response_text(body))
+        parsed = json.loads(extract_response_text(body))
+        # Outputs prepared before schema version 2 were flat. Accept them so a
+        # rejected-only retry can be merged with an already-paid successful run.
+        results[custom_id] = parsed.get("result", parsed)
     return results
 
 
@@ -421,6 +575,56 @@ def vocabulary_from_gcl(entry: str) -> str:
     return value
 
 
+def validate_resolved_gcl(expected_gcl: str, resolved_gcl: str) -> list[str]:
+    if not resolved_gcl:
+        return ["resolved_gcl_entry is empty"]
+    errors: list[str] = []
+    expected_vocabulary = vocabulary_from_gcl(expected_gcl)
+    if vocabulary_from_gcl(resolved_gcl) != expected_vocabulary:
+        errors.append("resolved_gcl_entry changes the written expression")
+    bracket_count = resolved_gcl.count("[")
+    if bracket_count != resolved_gcl.count("]") or bracket_count > 1:
+        errors.append("resolved_gcl_entry has invalid reading brackets")
+    annotation = READING_ANNOTATION_RE.search(resolved_gcl)
+    if bracket_count and not annotation:
+        errors.append(
+            "resolved_gcl_entry reading must be a complete trailing annotation"
+        )
+    if annotation and not HIRAGANA_RE.fullmatch(annotation.group(1)):
+        errors.append("resolved_gcl_entry reading annotation must be hiragana")
+    if "(" in resolved_gcl or ")" in resolved_gcl:
+        allowed = resolved_gcl.endswith("(な)") or re.search(
+            r"\[[^\[\]]+\]\(な\)$", resolved_gcl
+        )
+        if not allowed:
+            errors.append("resolved_gcl_entry uses parentheses outside the (な) marker")
+    return errors
+
+
+CONJUGATION_INITIALS = {
+    "う": "わいうえおっ",
+    "く": "かきくけこい",
+    "ぐ": "がぎぐげごい",
+    "す": "さしすせそ",
+    "つ": "たちつてとっ",
+    "ぬ": "なにぬねのん",
+    "ぶ": "ばびぶべぼん",
+    "む": "まみむめもん",
+    "る": "らりるれろったてな",
+}
+
+
+def concealed_target_pattern(vocabulary: str) -> re.Pattern[str] | None:
+    if vocabulary.endswith("する") and len(vocabulary) > 2:
+        return re.compile(re.escape(vocabulary[:-2]) + r"[しすせさ]")
+    ending = vocabulary[-1:] if vocabulary else ""
+    initials = CONJUGATION_INITIALS.get(ending)
+    stem = vocabulary[:-1]
+    if initials and stem and re.search(r"[\u3400-\u4dbf\u4e00-\u9fff々]", stem):
+        return re.compile(re.escape(stem) + f"[{initials}]")
+    return None
+
+
 def validate_card(card: dict[str, Any], expected_gcl: str) -> list[str]:
     errors: list[str] = []
     if card.get("status") != "card":
@@ -428,6 +632,11 @@ def validate_card(card: dict[str, Any], expected_gcl: str) -> list[str]:
         return errors
     if card.get("gcl_entry") != expected_gcl:
         errors.append("response gcl_entry does not match request")
+    errors.extend(
+        validate_resolved_gcl(
+            expected_gcl, card.get("resolved_gcl_entry", "")
+        )
+    )
     reading = card.get("reading", "")
     plain_reading = strip_tags(reading)
     if not plain_reading or not HIRAGANA_RE.fullmatch(plain_reading):
@@ -469,11 +678,12 @@ def validate_card(card: dict[str, Any], expected_gcl: str) -> list[str]:
         for field_name, value in front_values.items():
             if vocabulary in value:
                 errors.append(f"{field_name} reveals the written vocabulary")
-        for target_kanji in set(KANJI_RE.findall(vocabulary)):
+        inflected_pattern = concealed_target_pattern(vocabulary)
+        if inflected_pattern:
             for field_name, value in front_values.items():
-                if target_kanji in value:
+                if inflected_pattern.search(value):
                     errors.append(
-                        f"{field_name} contains target kanji {target_kanji}"
+                        f"{field_name} reveals an inflected written target"
                     )
     return errors
 

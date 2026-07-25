@@ -1,0 +1,496 @@
+{
+  "__type__": "Deck",
+  "children": [],
+  "crowdanki_uuid": "21dfd126-8775-11f1-95cc-e86538524e44",
+  "deck_config_uuid": "21dfd63c-8775-11f1-b1fd-e86538524e44",
+  "deck_configurations": [
+    {
+      "__type__": "DeckConfig",
+      "answerAction": 0,
+      "autoplay": true,
+      "buryInterdayLearning": false,
+      "crowdanki_uuid": "21dfd63c-8775-11f1-b1fd-e86538524e44",
+      "desiredRetention": 0.9,
+      "dyn": false,
+      "easyDaysPercentages": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "fsrsParams5": [],
+      "fsrsParams6": [],
+      "fsrsWeights": [],
+      "ignoreRevlogsBeforeDate": "",
+      "interdayLearningMix": 0,
+      "lapse": {
+        "delays": [
+          10.0
+        ],
+        "leechAction": 1,
+        "leechFails": 8,
+        "minInt": 1,
+        "mult": 0.0
+      },
+      "maxTaken": 60,
+      "name": "Default",
+      "new": {
+        "bury": false,
+        "delays": [
+          1.0,
+          10.0
+        ],
+        "initialFactor": 2500,
+        "ints": [
+          1,
+          4,
+          0
+        ],
+        "order": 1,
+        "perDay": 5,
+        "separate": true
+      },
+      "newGatherPriority": 4,
+      "newMix": 0,
+      "newPerDayMinimum": 0,
+      "newSortOrder": 0,
+      "questionAction": 0,
+      "replayq": true,
+      "rev": {
+        "bury": false,
+        "ease4": 1.3,
+        "fuzz": 0.05,
+        "hardFactor": 1.2,
+        "ivlFct": 1.0,
+        "maxIvl": 36500,
+        "minSpace": 1,
+        "perDay": 200
+      },
+      "reviewOrder": 0,
+      "secondsToShowAnswer": 0.0,
+      "secondsToShowQuestion": 0.0,
+      "sm2Retention": 0.9,
+      "stopTimerOnAnswer": false,
+      "timer": 0,
+      "waitForAudio": false,
+      "weightSearch": ""
+    }
+  ],
+  "desc": "",
+  "desiredRetention": null,
+  "dyn": 0,
+  "extendNew": 0,
+  "extendRev": 0,
+  "media_files": [],
+  "name": "N1 vocabulary - CrowdAnki",
+  "newLimit": null,
+  "newLimitToday": null,
+  "note_models": [
+    {
+      "__type__": "NoteModel",
+      "crowdanki_uuid": "21dff8c5-8775-11f1-bfd7-e86538524e44",
+      "css": ".card {\n  font-family: \"Noto Sans JP\", sans-serif;\n  font-size: 24px;\n  line-height: 1.6;\n  text-align: left;\n  padding: 20px;\n}\n\n.reading {\n  font-size: 1.5em;\n  margin-bottom: 0.75em;\n}\n\n.definition {\n  margin-bottom: 1em;\n}\n\n.examples {\n  font-size: 0.95em;\n}\n\n.vocabulary {\n  text-align: center;\n  font-size: 2em;\n  font-weight: bold;\n}",
+      "flds": [
+        {
+          "collapsed": false,
+          "description": "Hiragana reading with kanji portions in bold.",
+          "excludeFromSearch": false,
+          "font": "Arial",
+          "id": -4397371654829878026,
+          "name": "Reading",
+          "ord": 0,
+          "plainText": false,
+          "preventDeletion": false,
+          "rtl": false,
+          "size": 20,
+          "sticky": false,
+          "tag": null
+        },
+        {
+          "collapsed": false,
+          "description": "Concise Japanese definition.",
+          "excludeFromSearch": false,
+          "font": "Arial",
+          "id": -6342329306014285613,
+          "name": "Definition",
+          "ord": 1,
+          "plainText": false,
+          "preventDeletion": false,
+          "rtl": false,
+          "size": 20,
+          "sticky": false,
+          "tag": null
+        },
+        {
+          "collapsed": false,
+          "description": "Three to five natural Japanese example sentences.",
+          "excludeFromSearch": false,
+          "font": "Arial",
+          "id": 398900363108548560,
+          "name": "Examples",
+          "ord": 2,
+          "plainText": false,
+          "preventDeletion": false,
+          "rtl": false,
+          "size": 20,
+          "sticky": false,
+          "tag": null
+        },
+        {
+          "collapsed": false,
+          "description": "Original vocabulary term (displayed only on the back).",
+          "excludeFromSearch": false,
+          "font": "Arial",
+          "id": 7400811796498785658,
+          "name": "Vocabulary",
+          "ord": 3,
+          "plainText": false,
+          "preventDeletion": false,
+          "rtl": false,
+          "size": 20,
+          "sticky": false,
+          "tag": null
+        }
+      ],
+      "latexPost": "\\end{document}",
+      "latexPre": "\\documentclass[12pt]{article}\n\\special{papersize=3in,5in}\n\\usepackage[utf8]{inputenc}\n\\usepackage{amssymb,amsmath}\n\\pagestyle{empty}\n\\setlength{\\parindent}{0in}\n\\begin{document}\n",
+      "latexsvg": false,
+      "name": "Japanese vocabulary with CrowdAnki - Note",
+      "originalStockKind": 1,
+      "req": [
+        [
+          0,
+          "any",
+          [
+            0,
+            1,
+            2
+          ]
+        ]
+      ],
+      "sortf": 0,
+      "tmpls": [
+        {
+          "afmt": "{{FrontSide}}\n\n<hr id=\"answer\">\n\n<section class=\"vocabulary\">\n{{Vocabulary}}\n</section>",
+          "bafmt": "",
+          "bfont": "",
+          "bqfmt": "{{Reading}}",
+          "bsize": 0,
+          "did": null,
+          "id": 4105900049365813736,
+          "name": "Japanese vocabulary with CrowdAnki - Default template",
+          "ord": 0,
+          "qfmt": "<section class=\"reading\">\n{{Reading}}\n</section>\n\n<section class=\"definition\">\n{{Definition}}\n</section>\n\n<section class=\"examples\">\n{{Examples}}\n</section>"
+        }
+      ],
+      "type": 0
+    }
+  ],
+  "notes": [
+    {
+      "__type__": "Note",
+      "fields": [
+        "<b>おとず</b>れる",
+        "人・季節・機会などが、ある場所や時に来る。",
+        "<div>ようやくこの町にも春が<b>おとずれ</b>た。</div>\n<div>研究者が資料を求めて、その村を<b>おとずれ</b>た。</div>\n<div>長い沈黙のあと、彼らに和解の機会が<b>おとずれ</b>た。</div>",
+        "訪れる"
+      ],
+      "guid": "c0ff2f2f9b145907",
+      "note_model_uuid": "21dff8c5-8775-11f1-bfd7-e86538524e44",
+      "tags": []
+    },
+    {
+      "__type__": "Note",
+      "fields": [
+        "<b>あたい</b>する",
+        "〜するだけの価値がある。十分に評価・注目などを受けるべきである。",
+        "<div>この提案は、慎重に検討するに<b>あたいする</b>。</div>\n<div>彼の長年の功績は、高く評価されるに<b>あたいする</b>。</div>\n<div>この映画は、わざわざ劇場で見るに<b>あたいする</b>。</div>",
+        "値する"
+      ],
+      "guid": "38a7224840685dc9",
+      "note_model_uuid": "21dff8c5-8775-11f1-bfd7-e86538524e44",
+      "tags": []
+    },
+    {
+      "__type__": "Note",
+      "fields": [
+        "<b>おそ</b>う",
+        "不意に人や場所に攻撃・災害などを加える。また、悪い感情や状態が急に起こる。",
+        "<div>強盗が帰宅途中の男性を<b>おそった</b>。</div>\n<div>急な腹痛が旅行者を<b>おそい</b>、予定を変更した。</div>\n<div>台風が沿岸部を<b>おそい</b>、各地で被害が出た。</div>",
+        "襲う"
+      ],
+      "guid": "282319e0cceb5916",
+      "note_model_uuid": "21dff8c5-8775-11f1-bfd7-e86538524e44",
+      "tags": []
+    },
+    {
+      "__type__": "Note",
+      "fields": [
+        "<b>そ</b>う",
+        "そばに寄り、離れずにいる。また、相手の希望や条件に合う。",
+        "<div>母は病院で、病気の子どもに<b>そ</b>っていた。</div>\n<div>新郎新婦は、生涯を共に<b>そ</b>うことを誓った。</div>\n<div>利用者の要望に<b>そ</b>った制度へ改善する必要がある。</div>",
+        "添う"
+      ],
+      "guid": "c0bd42158b4357a7",
+      "note_model_uuid": "21dff8c5-8775-11f1-bfd7-e86538524e44",
+      "tags": []
+    },
+    {
+      "__type__": "Note",
+      "fields": [
+        "<b>つ</b>き<b>そ</b>う",
+        "人に同行し、世話をしたり見守ったりする。",
+        "<div>入院中の母に<b>つきそって</b>、医師の説明を聞いた。</div>\n<div>手術当日は、家族一人が患者に<b>つきそう</b>ことができる。</div>\n<div>子どもが不安がらないよう、担任が遠足に<b>つきそった</b>。</div>",
+        "付き添う"
+      ],
+      "guid": "3643e0668459543a",
+      "note_model_uuid": "21dff8c5-8775-11f1-bfd7-e86538524e44",
+      "tags": []
+    },
+    {
+      "__type__": "Note",
+      "fields": [
+        "<b>した</b>う",
+        "心から恋しく思ったり、強くあこがれたりする。",
+        "<div>彼は亡き師を<b>した</b>って、毎年墓前を訪れる。</div>\n<div>自由な生き方に<b>した</b>う若者も少なくない。</div>\n<div>故郷を<b>した</b>う気持ちが、異国で暮らすほど強くなった。</div>",
+        "慕う"
+      ],
+      "guid": "c0d11bfa6f16564a",
+      "note_model_uuid": "21dff8c5-8775-11f1-bfd7-e86538524e44",
+      "tags": []
+    },
+    {
+      "__type__": "Note",
+      "fields": [
+        "<b>うるお</b>う",
+        "水分や資金などが十分にあって、豊かになる。",
+        "<div>雨が続き、畑が<b>うるおった</b>。</div>\n<div>保湿を続けたら、肌が<b>うるおって</b>きた。</div>\n<div>観光客の増加で、地元の商店街も<b>うるおった</b>。</div>",
+        "潤う"
+      ],
+      "guid": "d57bae6f55965c34",
+      "note_model_uuid": "21dff8c5-8775-11f1-bfd7-e86538524e44",
+      "tags": []
+    },
+    {
+      "__type__": "Note",
+      "fields": [
+        "<b>ただよ</b>う",
+        "空気中や水面などをゆっくり不規則に動く。また、香り・雰囲気・気配などが感じられる。",
+        "<div>窓から入った風に乗って、花の香りが<b>ただよって</b>いた。</div>\n<div>湖の上に薄い霧が<b>ただよって</b>いる。</div>\n<div>会議室には、発言しにくい緊張感が<b>ただよって</b>いた。</div>",
+        "漂う"
+      ],
+      "guid": "09f3c9f0e2ca5b5e",
+      "note_model_uuid": "21dff8c5-8775-11f1-bfd7-e86538524e44",
+      "tags": []
+    },
+    {
+      "__type__": "Note",
+      "fields": [
+        "<b>つくろ</b>う",
+        "破れたり傷んだりした衣服などを直す。また、欠点を隠して見た目を整える。",
+        "<div>祖母は破れた靴下を<b>つくろって</b>くれた。</div>\n<div>職人に古い着物を<b>つくろって</b>もらった。</div>\n<div>彼は失言で生じた対立を<b>つくろおう</b>とした。</div>",
+        "繕う"
+      ],
+      "guid": "edd52351ad8d5c25",
+      "note_model_uuid": "21dff8c5-8775-11f1-bfd7-e86538524e44",
+      "tags": []
+    },
+    {
+      "__type__": "Note",
+      "fields": [
+        "<b>しゅうぜん</b>",
+        "建物や設備などの壊れた部分を直すこと。",
+        "<div>老朽化した校舎の<b>しゅうぜん</b>に、多額の費用がかかる。</div>\n<div>管理会社は、共用部分を定期的に<b>しゅうぜん</b>している。</div>\n<div>雨漏りがひどいため、屋根を早急に<b>しゅうぜん</b>する必要がある。</div>",
+        "修繕"
+      ],
+      "guid": "0bf7c594756b5398",
+      "note_model_uuid": "21dff8c5-8775-11f1-bfd7-e86538524e44",
+      "tags": []
+    },
+    {
+      "__type__": "Note",
+      "fields": [
+        "<b>まかな</b>う",
+        "費用や食事などを用意して、必要を満たす。",
+        "<div>会社が社員の昼食を<b>まかなって</b>いる。</div>\n<div>奨学金で学費の一部を<b>まかなう</b>。</div>\n<div>小さな収入だけで家族を<b>まかなう</b>のは難しい。</div>",
+        "賄う"
+      ],
+      "guid": "554ed96df5b85f78",
+      "note_model_uuid": "21dff8c5-8775-11f1-bfd7-e86538524e44",
+      "tags": []
+    },
+    {
+      "__type__": "Note",
+      "fields": [
+        "<b>さば</b>く",
+        "罪や争いの是非を判断して処分を決める。また、仕事や問題を手際よく処理する。",
+        "<div>証拠に基づいて被告を<b>さばく</b>。</div>\n<div>感情ではなく法に従って<b>さばく</b>べきだ。</div>\n<div>大量の注文を手際よく<b>さばく</b>。</div>",
+        "裁く"
+      ],
+      "guid": "7baf876455125b06",
+      "note_model_uuid": "21dff8c5-8775-11f1-bfd7-e86538524e44",
+      "tags": []
+    },
+    {
+      "__type__": "Note",
+      "fields": [
+        "<b>つらぬ</b>く",
+        "物を一方から他方へ通す。また、考えや態度を最後まで変えずに守る。",
+        "<div>弾丸が壁を<b>つらぬ</b>いた。</div>\n<div>彼は困難な状況でも、自分の信念を<b>つらぬ</b>いた。</div>\n<div>作品全体に作者の問題意識が<b>つらぬ</b>かれている。</div>",
+        "貫く"
+      ],
+      "guid": "8a07a6c66380501d",
+      "note_model_uuid": "21dff8c5-8775-11f1-bfd7-e86538524e44",
+      "tags": []
+    },
+    {
+      "__type__": "Note",
+      "fields": [
+        "<b>なげ</b>く",
+        "悲しみや苦しみを感じて、声や言葉に出す。",
+        "<div>戦争で失われた命を<b>なげく</b>人は多い。</div>\n<div>彼は時代の変化を<b>なげいて</b>いた。</div>\n<div>失敗を<b>なげく</b>より、次の手を考えよう。</div>",
+        "嘆く"
+      ],
+      "guid": "07f939b9632457da",
+      "note_model_uuid": "21dff8c5-8775-11f1-bfd7-e86538524e44",
+      "tags": []
+    },
+    {
+      "__type__": "Note",
+      "fields": [
+        "<b>あざむ</b>く",
+        "相手に事実と異なることを信じさせる。また、見かけによって本質を誤認させる。",
+        "<div>その業者は、巧みな説明で客を<b>あざむいて</b>いた。</div>\n<div>見た目の数字だけでは、実際の成果を<b>あざむく</b>ことがある。</div>\n<div>華やかな広告に<b>あざむかれ</b>ず、契約内容をよく確認した。</div>",
+        "欺く"
+      ],
+      "guid": "1ec58acb96f250c8",
+      "note_model_uuid": "21dff8c5-8775-11f1-bfd7-e86538524e44",
+      "tags": []
+    },
+    {
+      "__type__": "Note",
+      "fields": [
+        "<b>なつ</b>く",
+        "人や動物が、特定の人や場所などに親しみを感じて近づくようになる。",
+        "<div>子どもが新しい先生にすぐ<b>なついた</b>。</div>\n<div>この猫は人に<b>なつきにくい</b>。</div>\n<div>彼は誰にでもすぐ<b>なつく</b>タイプだ。</div>",
+        "懐く"
+      ],
+      "guid": "c98f83cdf768530a",
+      "note_model_uuid": "21dff8c5-8775-11f1-bfd7-e86538524e44",
+      "tags": []
+    },
+    {
+      "__type__": "Note",
+      "fields": [
+        "<b>おもむ</b>く",
+        "ある目的をもって、ある場所へ行く。",
+        "<div>命を受けて、被災地へ<b>おもむいた</b>。</div>\n<div>来週、担当者が現地に<b>おもむいて</b>説明する予定だ。</div>\n<div>問題の解決に向けて、関係者のもとへ<b>おもむく</b>必要がある。</div>",
+        "赴く"
+      ],
+      "guid": "b3f6cd9c8b4b5f96",
+      "note_model_uuid": "21dff8c5-8775-11f1-bfd7-e86538524e44",
+      "tags": []
+    },
+    {
+      "__type__": "Note",
+      "fields": [
+        "<b>つ</b>ぐ",
+        "先人や前任者の地位・仕事・考えなどを受け取り、そのあとを引き受ける。",
+        "<div>父の後を<b>つ</b>いで、家業を守っている。</div>\n<div>創業者の理念を<b>つ</b>ぎながら、新しい事業にも挑戦した。</div>\n<div>王位を<b>つ</b>ぐ資格をめぐって議論が続いている。</div>",
+        "継ぐ"
+      ],
+      "guid": "75ee6437150f5265",
+      "note_model_uuid": "21dff8c5-8775-11f1-bfd7-e86538524e44",
+      "tags": []
+    },
+    {
+      "__type__": "Note",
+      "fields": [
+        "<b>あお</b>ぐ",
+        "上を向いて見る。人の助け・意見などを求める。扇などで風を送る。",
+        "<div>彼は窓から夜空を<b>あおい</b>で、しばらく黙っていた。</div>\n<div>新制度の導入にあたり、専門家の意見を<b>あおい</b>だ。</div>\n<div>暑さをしのぐため、うちわで顔を<b>あおい</b>だ。</div>",
+        "仰ぐ"
+      ],
+      "guid": "a7e507fe8d675370",
+      "note_model_uuid": "21dff8c5-8775-11f1-bfd7-e86538524e44",
+      "tags": []
+    },
+    {
+      "__type__": "Note",
+      "fields": [
+        "<b>くつがえ</b>す",
+        "それまでの決定・評価・状況などを根本から変える。",
+        "<div>新たな証拠が、有罪判決を<b>くつがえした</b>。</div>\n<div>その発見は、従来の定説を<b>くつがえす</b>可能性がある。</div>\n<div>市場環境の急変で、当初の予測は<b>くつがえされた</b>。</div>",
+        "覆す"
+      ],
+      "guid": "adf20ff5c27f5827",
+      "note_model_uuid": "21dff8c5-8775-11f1-bfd7-e86538524e44",
+      "tags": []
+    },
+    {
+      "__type__": "Note",
+      "fields": [
+        "<b>ゆ</b>らぐ",
+        "安定していた状態・気持ち・考えなどが、不安定になる。",
+        "<div>長年信じてきた価値観が<b>ゆらいで</b>いる。</div>\n<div>地震で足元が<b>ゆらぐ</b>感じがした。</div>\n<div>政権の基盤が<b>ゆらいだ</b>。</div>",
+        "揺らぐ"
+      ],
+      "guid": "27584480786f5f9a",
+      "note_model_uuid": "21dff8c5-8775-11f1-bfd7-e86538524e44",
+      "tags": []
+    },
+    {
+      "__type__": "Note",
+      "fields": [
+        "<b>おか</b>す",
+        "他人の領域・権利・規則などに不当に入り込んだり、傷つけたりする。",
+        "<div>他国の領土を<b>おかして</b>はならない。</div>\n<div>その規制は表現の自由を<b>おかす</b>おそれがある。</div>\n<div>長年の過労が彼の健康を<b>おかんで</b>いる。</div>",
+        "侵す"
+      ],
+      "guid": "9c70e36e206351c0",
+      "note_model_uuid": "21dff8c5-8775-11f1-bfd7-e86538524e44",
+      "tags": []
+    },
+    {
+      "__type__": "Note",
+      "fields": [
+        "<b>おど</b>す",
+        "害を加えるなどと言って、相手を怖がらせ、従わせようとする。",
+        "<div>彼は秘密をばらすと<b>おどして</b>、金を要求した。</div>\n<div>部下を<b>おどす</b>ような言い方では、信頼は得られない。</div>\n<div>相手を<b>おどかす</b>つもりはなかったが、言葉がきつすぎた。</div>",
+        "脅す"
+      ],
+      "guid": "13a96ee678895e0f",
+      "note_model_uuid": "21dff8c5-8775-11f1-bfd7-e86538524e44",
+      "tags": []
+    },
+    {
+      "__type__": "Note",
+      "fields": [
+        "<b>ひた</b>す",
+        "液体の中に入れて、全体を十分にぬらす。また、感情や雰囲気の中に深く入り込ませる。",
+        "<div>布を水に<b>ひたして</b>から、軽く絞る。</div>\n<div>パンを卵液に<b>ひたす</b>と、しっとりした食感になる。</div>\n<div>彼は昔の記憶に<b>ひたり</b>、しばらく黙っていた。</div>",
+        "浸す"
+      ],
+      "guid": "171448295dac56ba",
+      "note_model_uuid": "21dff8c5-8775-11f1-bfd7-e86538524e44",
+      "tags": []
+    },
+    {
+      "__type__": "Note",
+      "fields": [
+        "<b>うなが</b>す",
+        "ある行動をするように働きかける。",
+        "<div>司会者は参加者に質問を<b>うながした</b>。</div>\n<div>政府は企業に省エネ対策を<b>うながしている</b>。</div>\n<div>医師は患者に早期の受診を<b>うながした</b>。</div>",
+        "促す"
+      ],
+      "guid": "4b18262a6bfb5a80",
+      "note_model_uuid": "21dff8c5-8775-11f1-bfd7-e86538524e44",
+      "tags": []
+    }
+  ],
+  "reviewLimit": null,
+  "reviewLimitToday": null
+}

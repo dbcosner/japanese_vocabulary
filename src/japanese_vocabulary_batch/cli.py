@@ -10,7 +10,9 @@ from .pipeline import (
     apply_results,
     collect_batch,
     make_openai_client,
+    merge_retry_output,
     prepare_batch,
+    prepare_retry,
     refresh_status,
     submit_batch,
 )
@@ -35,6 +37,13 @@ def build_parser() -> argparse.ArgumentParser:
         default="medium",
     )
 
+    retry = commands.add_parser(
+        "prepare-retry", help="Prepare requests only for rejected cards"
+    )
+    retry.add_argument("--manifest", type=Path, required=True)
+    retry.add_argument("--report", type=Path, required=True)
+    retry.add_argument("--work-dir", type=Path, default=Path(".batch"))
+
     submit = commands.add_parser("submit", help="Upload and start a paid batch")
     submit.add_argument("--manifest", type=Path, required=True)
     submit.add_argument(
@@ -49,6 +58,14 @@ def build_parser() -> argparse.ArgumentParser:
     collect = commands.add_parser("collect", help="Download completed results")
     collect.add_argument("--state", type=Path, required=True)
 
+    merge = commands.add_parser(
+        "merge-retry", help="Replace rejected base results with retry results"
+    )
+    merge.add_argument("--base-output", type=Path, required=True)
+    merge.add_argument("--retry-manifest", type=Path, required=True)
+    merge.add_argument("--retry-output", type=Path, required=True)
+    merge.add_argument("--merged-output", type=Path, required=True)
+
     apply = commands.add_parser("apply", help="Validate and build CrowdAnki JSON")
     apply.add_argument("--manifest", type=Path, required=True)
     apply.add_argument("--output", type=Path, required=True)
@@ -59,6 +76,10 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8")
     args = build_parser().parse_args(argv)
     try:
         if args.command == "prepare":
@@ -69,6 +90,12 @@ def main(argv: list[str] | None = None) -> int:
                 end=args.end,
                 model=args.model,
                 reasoning_effort=args.reasoning_effort,
+            )
+        elif args.command == "prepare-retry":
+            result = prepare_retry(
+                manifest_path=args.manifest,
+                report_path=args.report,
+                work_dir=args.work_dir,
             )
         elif args.command == "submit":
             if not args.confirm_cost:
@@ -84,6 +111,13 @@ def main(argv: list[str] | None = None) -> int:
             result = refresh_status(args.state, client=make_openai_client())
         elif args.command == "collect":
             result = collect_batch(args.state, client=make_openai_client())
+        elif args.command == "merge-retry":
+            result = merge_retry_output(
+                base_output_path=args.base_output,
+                retry_manifest_path=args.retry_manifest,
+                retry_output_path=args.retry_output,
+                merged_output_path=args.merged_output,
+            )
         else:
             result = apply_results(
                 manifest_path=args.manifest,

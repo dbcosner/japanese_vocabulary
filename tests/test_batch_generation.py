@@ -12,8 +12,11 @@ from japanese_vocabulary_batch.cli import main
 from japanese_vocabulary_batch.pipeline import (
     PipelineError,
     apply_results,
+    card_schema,
     collect_batch,
+    merge_retry_output,
     prepare_batch,
+    prepare_retry,
     refresh_status,
     read_dotenv_api_key,
     submit_batch,
@@ -157,6 +160,14 @@ class BatchGenerationTests(unittest.TestCase):
         self.assertTrue(
             requests[0]["body"]["text"]["format"]["strict"]
         )
+
+    def test_schema_requires_examples_only_for_cards(self):
+        alternatives = card_schema()["properties"]["result"]["anyOf"]
+        card_examples = alternatives[0]["properties"]["examples"]
+        review_examples = alternatives[1]["properties"]["examples"]
+        self.assertEqual(card_examples["minItems"], 1)
+        self.assertEqual(card_examples["maxItems"], 5)
+        self.assertEqual(review_examples["maxItems"], 0)
 
     def test_submit_requires_explicit_cost_confirmation(self):
         prepared = self.prepare()
@@ -366,6 +377,119 @@ class BatchGenerationTests(unittest.TestCase):
             validate_card(card, "内閣[ないかく]"),
         )
 
+    def test_resolved_gcl_requires_complete_trailing_reading(self):
+        card = {
+            "status": "card",
+            "issue": "",
+            "gcl_entry": "添う",
+            "resolved_gcl_entry": "添[そう]う",
+            "additional_gcl_entries": [],
+            "reading": "<b>そ</b>う",
+            "definition": "目的などに合う。",
+            "examples": [
+                "方針に<b>そう</b>。",
+                "希望に<b>そった</b>案だ。",
+                "期待に<b>そえる</b>よう努める。",
+            ],
+            "example_count_rationale": "",
+            "vocabulary": "添う",
+        }
+        errors = validate_card(card, "添う")
+        self.assertIn(
+            "resolved_gcl_entry reading must be a complete trailing annotation",
+            errors,
+        )
+        card["resolved_gcl_entry"] = "添う[そう]"
+        self.assertNotIn(
+            "resolved_gcl_entry reading must be a complete trailing annotation",
+            validate_card(card, "添う"),
+        )
+
+    def test_concealment_is_contextual_for_inflected_targets(self):
+        card = {
+            "status": "card",
+            "issue": "",
+            "gcl_entry": "値する",
+            "resolved_gcl_entry": "値する[あたいする]",
+            "additional_gcl_entries": [],
+            "reading": "<b>あたい</b>する",
+            "definition": "それだけの価値や意義がある。",
+            "examples": [
+                "検討に<b>あたいする</b>案だ。",
+                "称賛に<b>あたいする</b>行為だ。",
+                "記憶に<b>あたいする</b>出来事だ。",
+            ],
+            "example_count_rationale": "",
+            "vocabulary": "値する",
+        }
+        self.assertEqual(validate_card(card, "値する"), [])
+        card["definition"] = "十分に値する内容だ。"
+        self.assertIn(
+            "definition reveals the written vocabulary",
+            validate_card(card, "値する"),
+        )
+        card["definition"] = "検討に値している。"
+        self.assertIn(
+            "definition reveals an inflected written target",
+            validate_card(card, "値する"),
+        )
+
+    def test_prepare_retry_and_merge_replace_only_findings(self):
+        prepared = self.prepare()
+        failed_id = prepared["requests"][1]["custom_id"]
+        report_path = self.root / "generation-report.json"
+        report_path.write_text(
+            json.dumps(
+                {
+                    "findings": [
+                        {
+                            "custom_id": failed_id,
+                            "source_index": 2,
+                            "gcl_entry": prepared["requests"][1]["gcl_entry"],
+                            "errors": ["examples must contain one to five items"],
+                        }
+                    ]
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+        retry = prepare_retry(
+            manifest_path=Path(prepared["manifest_path"]),
+            report_path=report_path,
+            work_dir=self.root / "work",
+        )
+        self.assertEqual(
+            [item["custom_id"] for item in retry["requests"]], [failed_id]
+        )
+        base_output = self.root / "base.jsonl"
+        base_records = [
+            {"custom_id": item["custom_id"], "value": "base"}
+            for item in prepared["requests"]
+        ]
+        base_output.write_text(
+            "\n".join(json.dumps(item) for item in base_records) + "\n",
+            encoding="utf-8",
+        )
+        retry_output = self.root / "retry.jsonl"
+        retry_output.write_text(
+            json.dumps({"custom_id": failed_id, "value": "retry"}) + "\n",
+            encoding="utf-8",
+        )
+        merged_output = self.root / "merged.jsonl"
+        result = merge_retry_output(
+            base_output_path=base_output,
+            retry_manifest_path=Path(retry["manifest_path"]),
+            retry_output_path=retry_output,
+            merged_output_path=merged_output,
+        )
+        merged = [
+            json.loads(line)
+            for line in merged_output.read_text(encoding="utf-8").splitlines()
+        ]
+        self.assertEqual(result["replaced_records"], 1)
+        self.assertEqual(merged[0]["value"], "base")
+        self.assertEqual(merged[1]["value"], "retry")
 
 if __name__ == "__main__":
     unittest.main()

@@ -12,6 +12,8 @@ respect to model generation:
 - `prepare` modifies only local files and may remove exact duplicate GCL entries;
 - `status` retrieves batch metadata;
 - `collect` downloads already generated output; and
+- `prepare-retry` and `merge-retry` locally prepare and reconcile rejected-only
+  retries; and
 - `apply` validates downloaded output and constructs the local CrowdAnki JSON.
 
 The automated tests use fake clients and temporary files. They never instantiate
@@ -152,3 +154,55 @@ Findings are written beside the requested deck as
 `<deck>.generation-report.json`. Correct the GCL or generation input, prepare a
 new batch for the affected entries, and do not treat a partial artifact as the
 final deck.
+
+## 7. Retry only rejected cards
+
+Do not repay for cards that already passed local validation. Prepare a retry from
+the original manifest and its generation report:
+
+```bash
+batch-generate prepare-retry \
+  --manifest .batch/manifest_000176_000200.json \
+  --report pilot_crowdanki_deck/pilot_crowdanki_deck.generation-report.json \
+  --work-dir .batch
+```
+
+Inspect `.batch/input_retry_000176_000200.jsonl`. It contains only findings from
+the report. Submit, check, and collect this smaller batch:
+
+```bash
+batch-generate submit \
+  --manifest .batch/manifest_retry_000176_000200.json \
+  --confirm-cost
+
+batch-generate status \
+  --state .batch/state_retry_000176_000200.json
+
+batch-generate collect \
+  --state .batch/state_retry_000176_000200.json
+```
+
+Merge the new records over their rejected counterparts while retaining every
+previously accepted record:
+
+```bash
+batch-generate merge-retry \
+  --base-output .batch/output_000176_000200.jsonl \
+  --retry-manifest .batch/manifest_retry_000176_000200.json \
+  --retry-output .batch/output_retry_000176_000200.jsonl \
+  --merged-output .batch/output_merged_000176_000200.jsonl
+```
+
+Then apply the merged output with the original manifest:
+
+```bash
+batch-generate apply \
+  --manifest .batch/manifest_000176_000200.json \
+  --output .batch/output_merged_000176_000200.jsonl \
+  --template templates/N1_vocabulary_-_CrowdAnki/deck.json \
+  --deck-output pilot_crowdanki_deck/pilot_crowdanki_deck.json \
+  --allow-partial
+```
+
+Retry preparation is local and free. Only its `submit --confirm-cost` step starts
+new paid model work.
