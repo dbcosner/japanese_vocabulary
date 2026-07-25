@@ -579,10 +579,28 @@ class BatchGenerationTests(unittest.TestCase):
     def test_prepare_retry_and_merge_replace_only_findings(self):
         prepared = self.prepare()
         failed_id = prepared["requests"][1]["custom_id"]
+        base_output = self.root / "base.jsonl"
+        base_records = []
+        for item in prepared["requests"]:
+            card = {
+                "status": "card",
+                "issue": "",
+                "gcl_entry": item["gcl_entry"],
+                "resolved_gcl_entry": item["gcl_entry"],
+                "additional_gcl_entries": [],
+                "reading": "<b>あ</b>う",
+                "definition": "original definition",
+                "examples": ["original example"],
+                "example_count_rationale": "",
+                "vocabulary": "original vocabulary",
+            }
+            base_records.append(response_line(item["custom_id"], card))
+        base_output.write_text("\n".join(base_records) + "\n", encoding="utf-8")
         report_path = self.root / "generation-report.json"
         report_path.write_text(
             json.dumps(
                 {
+                    "output_path": str(base_output),
                     "findings": [
                         {
                             "custom_id": failed_id,
@@ -604,13 +622,24 @@ class BatchGenerationTests(unittest.TestCase):
         self.assertEqual(
             [item["custom_id"] for item in retry["requests"]], [failed_id]
         )
-        base_output = self.root / "base.jsonl"
-        base_records = [
+        retry_input = json.loads(
+            Path(retry["input_path"]).read_text(encoding="utf-8").splitlines()[0]
+        )
+        repair_prompt = retry_input["body"]["input"][1]["content"]
+        self.assertIn("rejected_card", repair_prompt)
+        self.assertIn("examples must contain one to five items", repair_prompt)
+        self.assertIn(
+            "examples must contain one to five items",
+            retry["requests"][0]["validation_errors"],
+        )
+
+        merge_base_output = self.root / "merge-base.jsonl"
+        merge_base_records = [
             {"custom_id": item["custom_id"], "value": "base"}
             for item in prepared["requests"]
         ]
-        base_output.write_text(
-            "\n".join(json.dumps(item) for item in base_records) + "\n",
+        merge_base_output.write_text(
+            "\n".join(json.dumps(item) for item in merge_base_records) + "\n",
             encoding="utf-8",
         )
         retry_output = self.root / "retry.jsonl"
@@ -620,7 +649,7 @@ class BatchGenerationTests(unittest.TestCase):
         )
         merged_output = self.root / "merged.jsonl"
         result = merge_retry_output(
-            base_output_path=base_output,
+            base_output_path=merge_base_output,
             retry_manifest_path=Path(retry["manifest_path"]),
             retry_output_path=retry_output,
             merged_output_path=merged_output,

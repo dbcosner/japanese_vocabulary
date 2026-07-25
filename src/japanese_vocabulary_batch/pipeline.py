@@ -276,6 +276,29 @@ def make_request(entry: GclEntry, model: str, reasoning_effort: str) -> dict[str
     }
 
 
+def make_repair_request(
+    entry: GclEntry,
+    model: str,
+    reasoning_effort: str,
+    original_card: dict[str, Any],
+    validation_errors: list[str],
+) -> dict[str, Any]:
+    request = make_request(entry, model, reasoning_effort)
+    repair_context = {
+        "gcl_entry": entry.text,
+        "rejected_card": original_card,
+        "validation_errors": validation_errors,
+    }
+    request["body"]["input"][1]["content"] = (
+        "Repair the rejected card below. Return a complete replacement card. "
+        "Preserve fields that already comply, but correct every listed validation "
+        "error. Do not repeat a rejected value merely because it appeared in the "
+        "original card.\n\n"
+        + json.dumps(repair_context, ensure_ascii=False, indent=2)
+    )
+    return request
+
+
 def make_reading_request(
     entry: GclEntry, model: str, reasoning_effort: str
 ) -> dict[str, Any]:
@@ -591,9 +614,18 @@ def prepare_retry(
 ) -> dict[str, Any]:
     original = load_manifest(manifest_path)
     report = json.loads(report_path.read_text(encoding="utf-8"))
-    failed_ids = {
-        finding.get("custom_id") for finding in report.get("findings", [])
-    }
+    errors_by_id: dict[str, list[str]] = {}
+    for finding in report.get("findings", []):
+        custom_id = finding.get("custom_id")
+        if not custom_id:
+            continue
+        errors = errors_by_id.setdefault(custom_id, [])
+        for error in finding.get("errors", []):
+            if error.startswith("no existing or generated card"):
+                continue
+            if error not in errors:
+                errors.append(error)
+    failed_ids = set(errors_by_id)
     failed_ids.discard(None)
     if not failed_ids:
         raise PipelineError("Generation report contains no failed cards to retry")
@@ -618,19 +650,38 @@ def prepare_retry(
         GclEntry(request["source_index"], request["gcl_entry"])
         for request in selected
     ]
-    request_factory = (
-        make_reading_request
-        if original.get("operation") == "normalize-readings"
-        else make_request
-    )
-    jsonl = "\n".join(
-        json.dumps(
-            request_factory(
+    if original.get("operation") == "normalize-readings":
+        requests = [
+            make_reading_request(
                 entry, original["model"], original["reasoning_effort"]
-            ),
-            ensure_ascii=False,
-        )
-        for entry in entries
+            )
+            for entry in entries
+        ]
+    else:
+        base_output_value = report.get("output_path")
+        if not base_output_value:
+            raise PipelineError(
+                "Generation report has no output_path; cannot construct an "
+                "error-aware retry"
+            )
+        original_cards = parse_output(Path(base_output_value))
+        missing_cards = failed_ids - original_cards.keys()
+        if missing_cards:
+            raise PipelineError(
+                f"Base output is missing {len(missing_cards)} rejected card(s)"
+            )
+        requests = [
+            make_repair_request(
+                entry,
+                original["model"],
+                original["reasoning_effort"],
+                original_cards[entry.identity],
+                errors_by_id[entry.identity],
+            )
+            for entry in entries
+        ]
+    jsonl = "\n".join(
+        json.dumps(request, ensure_ascii=False) for request in requests
     ) + "\n"
     atomic_write_text(input_path, jsonl)
     retry_manifest = {
@@ -647,7 +698,13 @@ def prepare_retry(
         "range": original["range"],
         "total_gcl_entries": original["total_gcl_entries"],
         "duplicate_entries_removed": [],
-        "requests": selected,
+        "requests": [
+            {
+                **request,
+                "validation_errors": errors_by_id[request["custom_id"]],
+            }
+            for request in selected
+        ],
     }
     atomic_write_json(retry_manifest_path, retry_manifest)
     return {"manifest_path": str(retry_manifest_path), **retry_manifest}

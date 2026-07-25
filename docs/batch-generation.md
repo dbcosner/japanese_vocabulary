@@ -246,7 +246,13 @@ batch-generate prepare-retry \
 ```
 
 Inspect `.batch/input_retry_000176_000200.jsonl`. It contains only findings from
-the report. Submit, check, and collect this smaller batch:
+the report. Each request includes the rejected card and its exact local
+validation errors, and asks the model to preserve compliant fields while
+repairing every rejection. `prepare-retry` refuses to create a generation retry
+when the report does not identify the original output file, because repeating
+the original prompt without repair context would be a blind retry.
+
+Submit, check, and collect this smaller batch:
 
 ```bash
 batch-generate submit \
