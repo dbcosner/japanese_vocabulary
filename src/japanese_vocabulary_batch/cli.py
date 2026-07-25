@@ -12,6 +12,7 @@ from .pipeline import (
     apply_update,
     collect_batch,
     generate_from_workspace,
+    import_apkg,
     make_openai_client,
     merge_retry_output,
     prepare_batch,
@@ -32,6 +33,17 @@ def build_parser() -> argparse.ArgumentParser:
         description="Prepare and manage OpenAI Batch API vocabulary generation.",
     )
     commands = parser.add_subparsers(dest="command", required=True)
+
+    import_command = commands.add_parser(
+        "import-apkg", help="Create a named GCL from an Anki .apkg package"
+    )
+    import_command.add_argument("--apkg", type=Path, required=True)
+    import_command.add_argument(
+        "--name",
+        required=True,
+        help="Deck name, or a full *_generation_control_file.txt filename",
+    )
+    import_command.add_argument("--output-dir", type=Path, default=Path("gcl"))
 
     populate = commands.add_parser(
         "populate",
@@ -180,7 +192,13 @@ def main(argv: list[str] | None = None) -> int:
         sys.stderr.reconfigure(encoding="utf-8")
     args = build_parser().parse_args(argv)
     try:
-        if args.command == "populate":
+        if args.command == "import-apkg":
+            result = import_apkg(
+                apkg_path=args.apkg,
+                gcl_name=args.name,
+                output_dir=args.output_dir,
+            )
+        elif args.command == "populate":
             result = prepare_population(
                 gcl_path=args.gcl,
                 deck_path=args.deck,

@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import hashlib
+import html
 import json
 import os
 import re
+import sqlite3
 import tempfile
 import time
 import uuid
+import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -36,6 +39,140 @@ class GclEntry:
     def identity(self) -> str:
         digest = hashlib.sha256(self.text.encode("utf-8")).hexdigest()[:20]
         return f"gcl-{digest}"
+
+
+GCL_FILENAME_SUFFIX = "_generation_control_file.txt"
+FIELD_SEPARATOR = "\x1f"
+
+
+def _plain_anki_field(value: str) -> str:
+    value = re.sub(r"\[sound:[^\]]+\]", "", value, flags=re.IGNORECASE)
+    value = re.sub(r"<br\s*/?>", "\n", value, flags=re.IGNORECASE)
+    value = TAG_RE.sub("", value)
+    return html.unescape(value).strip()
+
+
+def _gcl_output_path(name: str, output_dir: Path) -> Path:
+    if not name or Path(name).name != name:
+        raise PipelineError("GCL name must be a filename or portable deck name")
+    filename = name if name.endswith(GCL_FILENAME_SUFFIX) else (
+        f"{name}{GCL_FILENAME_SUFFIX}"
+    )
+    deck_name = filename[: -len(GCL_FILENAME_SUFFIX)]
+    if not deck_name:
+        raise PipelineError("GCL name must not be empty")
+    return output_dir / filename
+
+
+def import_apkg(apkg_path: Path, gcl_name: str, output_dir: Path = Path("gcl")) -> dict[str, Any]:
+    """Create a resolved version-1 GCL from the notes in an Anki package."""
+    if apkg_path.suffix.lower() != ".apkg":
+        raise PipelineError(f"Import source must be an .apkg file: {apkg_path}")
+    if not apkg_path.is_file():
+        raise PipelineError(f"APKG file not found: {apkg_path}")
+
+    output_path = _gcl_output_path(gcl_name, output_dir)
+    if output_path.exists():
+        raise PipelineError(f"Refusing to overwrite existing GCL: {output_path}")
+
+    try:
+        with zipfile.ZipFile(apkg_path) as package:
+            collection_name = next(
+                (
+                    name
+                    for name in ("collection.anki21", "collection.anki2")
+                    if name in package.namelist()
+                ),
+                None,
+            )
+            if collection_name is None:
+                raise PipelineError("APKG does not contain an Anki collection database")
+            collection_bytes = package.read(collection_name)
+    except (OSError, zipfile.BadZipFile, KeyError) as error:
+        raise PipelineError(f"Could not read APKG: {error}") from error
+
+    fd, database_name = tempfile.mkstemp(suffix=".anki2")
+    os.close(fd)
+    database_path = Path(database_name)
+    try:
+        database_path.write_bytes(collection_bytes)
+        connection = sqlite3.connect(database_path)
+        try:
+            model_json = connection.execute("SELECT models FROM col").fetchone()
+            if not model_json:
+                raise PipelineError("Anki collection has no note models")
+            models = json.loads(model_json[0])
+            notes = connection.execute(
+                "SELECT id, mid, flds FROM notes ORDER BY id"
+            ).fetchall()
+        finally:
+            connection.close()
+    except (sqlite3.Error, json.JSONDecodeError, OSError) as error:
+        raise PipelineError(f"Could not read Anki collection database: {error}") from error
+    finally:
+        database_path.unlink(missing_ok=True)
+
+    field_aliases = {
+        "vocabulary": ("vocabulary", "expression", "word", "term", "front"),
+        "reading": ("reading", "kana", "pronunciation"),
+    }
+    model_fields: dict[int, tuple[int, int]] = {}
+    for model_id, model in models.items():
+        names = [
+            str(field.get("name", "")).strip().casefold()
+            for field in model.get("flds", [])
+        ]
+        vocabulary_index = next(
+            (names.index(alias) for alias in field_aliases["vocabulary"] if alias in names),
+            0,
+        )
+        reading_index = next(
+            (names.index(alias) for alias in field_aliases["reading"] if alias in names),
+            1 if len(names) > 1 else -1,
+        )
+        model_fields[int(model_id)] = (vocabulary_index, reading_index)
+
+    entries: list[str] = []
+    duplicates: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for note_position, (note_id, model_id, encoded_fields) in enumerate(notes, start=1):
+        fields = encoded_fields.split(FIELD_SEPARATOR)
+        indices = model_fields.get(model_id)
+        if indices is None:
+            raise PipelineError(f"Note {note_id} references unknown model {model_id}")
+        vocabulary_index, reading_index = indices
+        if vocabulary_index >= len(fields) or reading_index < 0 or reading_index >= len(fields):
+            raise PipelineError(f"Note {note_id} does not contain vocabulary and reading fields")
+        vocabulary = _plain_anki_field(fields[vocabulary_index])
+        reading = re.sub(r"\s+", "", _plain_anki_field(fields[reading_index]))
+        if not vocabulary or "\n" in vocabulary:
+            raise PipelineError(f"Note {note_id} has an empty or multiline vocabulary field")
+        if not HIRAGANA_RE.fullmatch(reading):
+            raise PipelineError(
+                f"Note {note_id} has no complete hiragana reading: {reading!r}"
+            )
+        entry = f"{vocabulary}[{reading}]"
+        if entry in seen:
+            duplicates.append(
+                {"note_position": note_position, "note_id": note_id, "entry": entry}
+            )
+            continue
+        seen.add(entry)
+        entries.append(entry)
+
+    if not entries:
+        raise PipelineError("APKG contains no importable vocabulary notes")
+    atomic_write_text(
+        output_path,
+        "# GCL Version: 1\n\n" + "\n".join(entries) + "\n",
+    )
+    return {
+        "source": str(apkg_path.resolve()),
+        "gcl_path": str(output_path.resolve()),
+        "source_notes": len(notes),
+        "entries": len(entries),
+        "duplicates_removed": duplicates,
+    }
 
 
 def atomic_write_text(path: Path, text: str) -> None:

@@ -21,6 +21,7 @@ from japanese_vocabulary_batch.pipeline import (
     collect_batch,
     generate_from_workspace,
     generate_crowdanki,
+    import_apkg,
     merge_retry_output,
     prepare_batch,
     prepare_population,
@@ -153,6 +154,84 @@ class BatchGenerationTests(unittest.TestCase):
                 ensure_ascii=False,
             ),
             encoding="utf-8",
+        )
+
+    def test_import_apkg_creates_named_deduplicated_gcl(self):
+        database = self.root / "collection.anki2"
+        connection = sqlite3.connect(database)
+        connection.execute("CREATE TABLE col (models TEXT NOT NULL)")
+        connection.execute(
+            "CREATE TABLE notes (id INTEGER, mid INTEGER, flds TEXT NOT NULL)"
+        )
+        model = {
+            "42": {
+                "flds": [
+                    {"name": "Reading"},
+                    {"name": "Definition"},
+                    {"name": "Vocabulary"},
+                ]
+            }
+        }
+        connection.execute("INSERT INTO col VALUES (?)", (json.dumps(model),))
+        separator = "\x1f"
+        connection.executemany(
+            "INSERT INTO notes VALUES (?, ?, ?)",
+            [
+                (1, 42, separator.join(["<b>あ</b>う", "definition", "遭う"])),
+                (2, 42, separator.join(["ないかく", "definition", "内閣"])),
+                (3, 42, separator.join(["<b>あ</b>う", "duplicate", "遭う"])),
+            ],
+        )
+        connection.commit()
+        connection.close()
+        package = self.root / "source.apkg"
+        with zipfile.ZipFile(package, "w") as archive:
+            archive.write(database, "collection.anki2")
+
+        result = import_apkg(package, "study_deck", self.root / "gcl")
+
+        output = self.root / "gcl" / "study_deck_generation_control_file.txt"
+        self.assertEqual(
+            output.read_text(encoding="utf-8"),
+            "# GCL Version: 1\n\n遭う[あう]\n内閣[ないかく]\n",
+        )
+        self.assertEqual(result["source_notes"], 3)
+        self.assertEqual(result["entries"], 2)
+        self.assertEqual(len(result["duplicates_removed"]), 1)
+
+    def test_import_apkg_cli_uses_requested_full_gcl_name(self):
+        database = self.root / "collection.anki2"
+        connection = sqlite3.connect(database)
+        connection.execute("CREATE TABLE col (models TEXT NOT NULL)")
+        connection.execute(
+            "CREATE TABLE notes (id INTEGER, mid INTEGER, flds TEXT NOT NULL)"
+        )
+        connection.execute(
+            "INSERT INTO col VALUES (?)",
+            (json.dumps({"1": {"flds": [{"name": "Expression"}, {"name": "Reading"}]}}),),
+        )
+        connection.execute("INSERT INTO notes VALUES (1, 1, ?)", ("語彙\x1fごい",))
+        connection.commit()
+        connection.close()
+        package = self.root / "source.apkg"
+        with zipfile.ZipFile(package, "w") as archive:
+            archive.write(database, "collection.anki2")
+
+        exit_code = main(
+            [
+                "import-apkg",
+                "--apkg",
+                str(package),
+                "--name",
+                "custom_generation_control_file.txt",
+                "--output-dir",
+                str(self.root / "output"),
+            ]
+        )
+
+        self.assertEqual(exit_code, 0)
+        self.assertTrue(
+            (self.root / "output" / "custom_generation_control_file.txt").is_file()
         )
 
     def tearDown(self):

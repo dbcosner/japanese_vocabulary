@@ -23,6 +23,21 @@ The primary workflow has three phases:
 2. **Populate** creates and reuses validated card data for the GCL.
 3. **Generate** reconciles the current GCL into a final deck.
 
+Import a native Anki package and choose the GCL's deck name:
+
+```bash
+batch-generate import-apkg \
+  --apkg path/to/source.apkg \
+  --name my_vocabulary
+```
+
+This writes `gcl/my_vocabulary_generation_control_file.txt`. `--name` may also
+be the complete GCL filename, and `--output-dir` can select another directory.
+Import uses named vocabulary and reading fields where available (with the
+documented first/second-field fallback), removes HTML presentation markup,
+requires a complete hiragana reading, preserves note order, and reports exact
+duplicates.
+
 Create and Update are not separate phases. Generate creates a missing deck or
 updates an associated existing deck to the complete desired GCL state. Existing
 notes are preserved, new notes are added, duplicates are removed, and notes
