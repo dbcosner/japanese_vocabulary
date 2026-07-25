@@ -61,7 +61,12 @@ Generate accepts:
 
 - one complete populated workspace;
 - one APKG-neutral card template; and
-- one `.apkg` output path.
+- one `.apkg` output path;
+- optionally, an explicit Anki deck name.
+
+The template MUST NOT determine the deck name. Generate uses the explicit
+override when supplied; otherwise it derives a display name from the logical deck
+key established by Populate.
 
 Generate validates the project hash, cache identity set, and every cached card
 before writing. It MUST refuse incomplete, stale, or invalid workspaces, create

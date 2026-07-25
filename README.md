@@ -71,13 +71,15 @@ unchanged entries are reused after reordering or regeneration.
 ```bash
 batch-generate generate \
   --workspace .batch/n1_vocabulary \
-  --template templates/n1_vocabulary_deck_template.json \
+  --template templates/japanese_vocabulary_deck_template.json \
   --output n1_vocabulary.apkg
 ```
 
 Generate is local. It refuses incomplete or stale workspaces and atomically
 replaces the requested APKG. Stable project, model, deck, and note identifiers
-allow repeated Anki imports to update the same logical deck.
+allow repeated Anki imports to update the same logical deck. The Anki deck name
+defaults to the logical output name (`n2_vocabulary.apkg` becomes
+`N2 Vocabulary`) and may be overridden with `--deck-name`.
 
 ## GCL syntax
 

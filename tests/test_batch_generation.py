@@ -536,10 +536,13 @@ class BatchGenerationTests(unittest.TestCase):
             workspace_path=workspace,
             output_path=deck_path,
             template_path=self.template,
+            deck_name="N2 Vocabulary",
         )
         self.assertEqual(first["deck_id"], second["deck_id"])
         self.assertEqual(first["model_id"], second["model_id"])
         self.assertEqual(first["notes"], 2)
+        self.assertEqual(first["deck_name"], "Published")
+        self.assertEqual(second["deck_name"], "N2 Vocabulary")
         with zipfile.ZipFile(deck_path) as package:
             self.assertIn("collection.anki2", package.namelist())
             database_path = self.root / "collection.anki2"

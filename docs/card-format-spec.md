@@ -2,7 +2,8 @@
 
 ## 1. Note model
 
-The current deck template defines one note model with four fields in this order:
+The reusable deck template contains presentation and note-model data, but no
+deck name. It defines one note model with four fields in this order:
 
 | Ordinal | Field | Purpose |
 | ---: | --- | --- |

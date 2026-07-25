@@ -80,6 +80,10 @@ def build_parser() -> argparse.ArgumentParser:
     generate.add_argument("--workspace", type=Path, required=True)
     generate.add_argument("--output", type=Path, required=True)
     generate.add_argument("--template", type=Path, required=True)
+    generate.add_argument(
+        "--deck-name",
+        help="Anki deck name; defaults to the logical deck name from Populate",
+    )
 
     prepare = commands.add_parser("prepare", help="Create offline JSONL requests")
     prepare.add_argument("--gcl", type=Path, required=True)
@@ -184,6 +188,7 @@ def main(argv: list[str] | None = None) -> int:
                 workspace_path=args.workspace,
                 output_path=args.output,
                 template_path=args.template,
+                deck_name=args.deck_name,
             )
         elif args.command == "prepare":
             result = prepare_batch(

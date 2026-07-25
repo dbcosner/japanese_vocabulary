@@ -83,9 +83,13 @@ with a population workspace. The normal end-to-end workflow should use
 ```bash
 batch-generate generate \
   --workspace .batch/n1_vocabulary \
-  --template templates/n1_vocabulary_deck_template.json \
+  --template templates/japanese_vocabulary_deck_template.json \
   --output n1_vocabulary.apkg
 ```
+
+The template is reusable across proficiency levels and does not contain a deck
+name. Generate derives the default Anki deck name from the logical deck key
+established by `populate`; pass `--deck-name "Custom Name"` to override it.
 
 Generation is local and atomically overwrites the requested APKG. It fails if the
 GCL changed after population, the accepted cache is incomplete, a card is

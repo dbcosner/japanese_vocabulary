@@ -1516,6 +1516,7 @@ def _generate_apkg(
     cards: dict[str, dict[str, Any]],
     template_path: Path,
     output_path: Path,
+    deck_name: str | None = None,
 ) -> dict[str, Any]:
     try:
         import genanki
@@ -1525,13 +1526,17 @@ def _generate_apkg(
             "environment from pyproject.toml"
         ) from error
 
-    template, source_model = _template_parts(template_path)
+    _, source_model = _template_parts(template_path)
     project_id = project["project_id"]
     deck_id = _stable_anki_id(project_id, "deck")
     model_id = _stable_anki_id(project_id, "model")
-    deck_name = project.get("deck_name") or template.get("name", "")
+    deck_name = (
+        deck_name
+        or project.get("deck_name")
+        or project["deck_key"].replace("_", " ").strip().title()
+    ).strip()
     if not deck_name:
-        deck_name = project["deck_key"].replace("_", " ").strip().title()
+        raise PipelineError("Deck name must not be empty")
     model = genanki.Model(
         model_id,
         source_model.get("name", "Japanese Vocabulary Note"),
@@ -1613,6 +1618,7 @@ def generate_from_workspace(
     workspace_path: Path,
     output_path: Path,
     template_path: Path,
+    deck_name: str | None = None,
 ) -> dict[str, Any]:
     """Generate a final APKG using only one populated deck workspace."""
     if output_path.suffix.lower() != ".apkg":
@@ -1632,6 +1638,7 @@ def generate_from_workspace(
         cards=cards,
         template_path=template_path,
         output_path=output_path,
+        deck_name=deck_name,
     )
     project["outputs"] = {"apkg": str(output_path.resolve())}
     atomic_write_json(workspace_path / "project.json", project)
