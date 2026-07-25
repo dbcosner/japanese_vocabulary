@@ -695,6 +695,50 @@ class BatchGenerationTests(unittest.TestCase):
         deck = json.loads(deck_output.read_text(encoding="utf-8"))
         self.assertEqual(len(deck["notes"]), 2)
         self.assertNotEqual(deck["notes"][0]["guid"], "placeholder")
+
+    def test_apply_preserves_matching_template_note_identity(self):
+        prepared = self.prepare()
+        template = json.loads(self.template.read_text(encoding="utf-8"))
+        template["notes"] = [
+            {
+                "__type__": "Note",
+                "fields": ["<b>あ</b>う", "old", "old", "遭う"],
+                "guid": "legacy-guid",
+                "note_model_uuid": "model-test",
+                "tags": ["legacy-tag"],
+            }
+        ]
+        self.template.write_text(
+            json.dumps(template, ensure_ascii=False), encoding="utf-8"
+        )
+        output = self.root / "identity-output.jsonl"
+        output.write_text(
+            "\n".join(
+                response_line(
+                    request["custom_id"],
+                    self.card(
+                        request["gcl_entry"],
+                        "あう" if request["gcl_entry"].startswith("遭う") else "ないかく",
+                        "遭う" if request["gcl_entry"].startswith("遭う") else "内閣",
+                    ),
+                )
+                for request in prepared["requests"]
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        deck_dir = self.root / "identity_deck"
+        deck_dir.mkdir()
+        deck_path = deck_dir / "identity_deck.json"
+        apply_results(
+            manifest_path=Path(prepared["manifest_path"]),
+            output_path=output,
+            template_path=self.template,
+            deck_output_path=deck_path,
+        )
+        deck = json.loads(deck_path.read_text(encoding="utf-8"))
+        self.assertEqual(deck["notes"][0]["guid"], "legacy-guid")
+        self.assertEqual(deck["notes"][0]["tags"], ["legacy-tag"])
         self.assertEqual(deck["notes"][0]["note_model_uuid"], "model-test")
         self.assertEqual(deck["notes"][1]["fields"][3], "内閣")
         self.assertIn("<div>", deck["notes"][0]["fields"][2])

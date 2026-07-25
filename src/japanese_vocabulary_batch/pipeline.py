@@ -1950,11 +1950,22 @@ def apply_results(
     if not note_models or not note_models[0].get("crowdanki_uuid"):
         raise PipelineError("Template does not contain a usable note model")
     note_model_uuid = note_models[0]["crowdanki_uuid"]
+    template_notes_by_key: dict[tuple[str, str], list[dict[str, Any]]] = {}
+    for note in deck.get("notes") or []:
+        fields = note.get("fields") if isinstance(note, dict) else None
+        if isinstance(fields, list) and len(fields) == 4:
+            template_notes_by_key.setdefault(
+                (fields[3], strip_tags(fields[0])), []
+            ).append(note)
     deck["notes"] = []
     for request, card in cards:
         examples_html = "\n".join(
             f"<div>{example}</div>" for example in card["examples"]
         )
+        template_matches = template_notes_by_key.get(
+            (card["vocabulary"], strip_tags(card["reading"])), []
+        )
+        preserved = template_matches[0] if len(template_matches) == 1 else None
         deck["notes"].append(
             {
                 "__type__": "Note",
@@ -1964,11 +1975,15 @@ def apply_results(
                     examples_html,
                     card["vocabulary"],
                 ],
-                "guid": deterministic_guid(
-                    card.get("resolved_gcl_entry") or request["gcl_entry"]
+                "guid": (
+                    preserved["guid"]
+                    if preserved and preserved.get("guid")
+                    else deterministic_guid(
+                        card.get("resolved_gcl_entry") or request["gcl_entry"]
+                    )
                 ),
                 "note_model_uuid": note_model_uuid,
-                "tags": [],
+                "tags": list(preserved.get("tags") or []) if preserved else [],
             }
         )
     atomic_write_json(deck_output_path, deck)
