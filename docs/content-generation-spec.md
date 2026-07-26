@@ -39,11 +39,12 @@ full `[reading]` and affix placeholder. A generator MUST copy these values from
 structured request data and MUST NOT reconstruct,
 normalize, or omit annotations in free-form output.
 
-### 2.2 Import-time reading resolution
+### 2.2 Reading resolution for manual GCL additions
 
-The reading-resolution stage MUST determine the reading of each unresolved
-proposed expression before Populate or Generate. Card generation MUST NOT perform
-this inference.
+APKG Import emits only complete term-and-reading entries. If a bare expression is
+introduced later through manual GCL editing, the reading-resolution stage MUST
+determine its reading before Populate or Generate. Card generation MUST NOT
+perform this inference.
 
 If multiple readings are established in contemporary Japanese, the generator MUST
 create a separate entry and card for each reading that:

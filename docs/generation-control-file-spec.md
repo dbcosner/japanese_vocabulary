@@ -62,9 +62,10 @@ Examples:
 
 Square brackets and unsupported parentheses cannot occur in an expression.
 
-An unresolved proposed GCL may temporarily contain a bare expression.
-`prepare-readings` accepts this state. `populate`, `prepare`, and `generate`
-require every entry to match the complete annotated grammar.
+An APKG import MUST contain only complete annotated entries. A manually authored
+GCL may temporarily contain a bare expression; `prepare-readings` accepts this
+state. `populate`, `prepare`, and `generate` require every entry to match the
+complete annotated grammar.
 
 ## 5. Canonical syntax cleanup
 
@@ -106,8 +107,9 @@ complete annotated entry.
 Part of speech is not encoded in the GCL. Content generation infers common
 grammatical behavior, including adjectival-noun usage, from the expression.
 During APKG import, a source trailing literal `な`, `(な)`, or `（な）` is
-removed. Other parenthetical source text is reviewable unless an explicit
-decisions file authorizes its removal.
+removed. Other parenthetical and editorial source text is also removed when it
+can be separated mechanically from the term. If removing it does not leave one
+valid term with a usable reading, the source note is excluded for review.
 
 ## 8. Affix placeholder
 

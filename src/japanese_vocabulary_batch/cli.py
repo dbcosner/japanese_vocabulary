@@ -92,7 +92,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     prepare_readings = commands.add_parser(
         "prepare-readings",
-        help="Prepare Import-stage resolution for every unresolved GCL entry",
+        help="Prepare reading resolution for manually added bare GCL entries",
     )
     prepare_readings.add_argument("--gcl", type=Path, required=True)
     prepare_readings.add_argument("--work-dir", type=Path, default=Path(".batch"))

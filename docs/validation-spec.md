@@ -8,13 +8,16 @@ Import MUST validate:
 - note-model field mappings;
 - source note iteration and field extraction;
 - canonicalization of imported GCL entries;
+- exclusion of any result that is not a complete term plus hiragana reading;
 - exact duplicate handling;
-- recognized decisions-file rules and note overrides; and
+- complete decisions-file note overrides; and
 - separate atomic publication of the proposed GCL and review JSON.
 
-Every successfully inspected note that is skipped, deduplicated, unresolved, or
-handled by an explicit override MUST appear in the review report. Fatal archive,
-database, model, or required-field errors stop Import instead.
+Every successfully inspected note that cannot be reduced deterministically to a
+complete term and reading, and is not handled by an explicit override, MUST
+appear in the review report. Routine removal of non-term metadata, clear
+splitting, and duplicate reporting do not constitute review findings. Fatal
+archive, database, model, or required-field errors stop Import instead.
 
 ## 2. GCL validation
 

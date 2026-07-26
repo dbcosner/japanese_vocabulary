@@ -96,8 +96,17 @@ def import_apkg(
     decisions: dict[str, Any] = {}
     if decisions_path is not None:
         decisions = json.loads(decisions_path.read_text(encoding="utf-8"))
-    rules = decisions.get("rules", {})
+        if not isinstance(decisions, dict):
+            raise PipelineError("Import decisions must be a JSON object")
+        unsupported_keys = sorted(set(decisions) - {"note_overrides"})
+        if unsupported_keys:
+            raise PipelineError(
+                "Unsupported import decisions key(s): "
+                + ", ".join(unsupported_keys)
+            )
     overrides = decisions.get("note_overrides", {})
+    if not isinstance(overrides, dict):
+        raise PipelineError("note_overrides must be a JSON object")
 
     try:
         with zipfile.ZipFile(apkg_path) as package:
@@ -208,6 +217,7 @@ def import_apkg(
         vocabulary = vocabulary.replace("～", "~").replace("〜", "~")
         reading = re.sub(r"\s+", "", reading)
         reading = reading.replace("～", "~").replace("〜", "~").strip("~")
+        had_na_marker = vocabulary.endswith(("（な）", "(な)"))
         if vocabulary.endswith(("（な）", "(な)")):
             vocabulary = vocabulary[:-3]
         elif vocabulary.endswith("な"):
@@ -216,11 +226,15 @@ def import_apkg(
                 reading = reading[:-1]
         if reading.endswith(("（な）", "(な)")):
             reading = reading[:-3]
+        elif had_na_marker and reading.endswith("な"):
+            reading = reading[:-1]
         if not vocabulary:
             return None
         if HIRAGANA_RE.fullmatch(reading):
-            return f"{vocabulary}[{reading}]"
-        return vocabulary
+            candidate = f"{vocabulary}[{reading}]"
+            if ANNOTATED_GCL_RE.fullmatch(candidate):
+                return candidate
+        return None
 
     for note_position, (note_id, model_id, encoded_fields) in enumerate(notes, start=1):
         fields = encoded_fields.split(FIELD_SEPARATOR)
@@ -244,6 +258,17 @@ def import_apkg(
                 raw_reading,
             )
             if override is not None:
+                if not isinstance(override, list) or not all(
+                    isinstance(entry, str) for entry in override
+                ):
+                    review(
+                        note_position,
+                        note_id,
+                        "explicit decision must be null or a list of complete entries",
+                        vocabulary,
+                        raw_reading,
+                    )
+                    continue
                 for entry in override:
                     canonical_override = (
                         entry.replace("～", "~")
@@ -251,9 +276,18 @@ def import_apkg(
                         .replace("（な）", "")
                         .replace("(な)", "")
                     )
-                    proposed_primary.append(
-                        (note_position, note_id, canonical_override)
-                    )
+                    if ANNOTATED_GCL_RE.fullmatch(canonical_override):
+                        proposed_primary.append(
+                            (note_position, note_id, canonical_override)
+                        )
+                    else:
+                        review(
+                            note_position,
+                            note_id,
+                            "explicit decision is not a complete term and reading",
+                            vocabulary,
+                            raw_reading,
+                        )
             continue
 
         possible_swapped_reading = re.sub(
@@ -281,15 +315,12 @@ def import_apkg(
             or re.search(r"（(?!な）)[^）]*）|\((?!な\))[^)]*\)", raw_reading)
         )
         if has_unsupported_parenthetical:
-            if rules.get("strip_parentheticals_except_na"):
-                vocabulary = re.sub(r"（(?!な）)[^）]*）|\((?!な\))[^)]*\)", "", vocabulary)
-                raw_reading = re.sub(r"（(?!な）)[^）]*）|\((?!な\))[^)]*\)", "", raw_reading)
-            else:
-                review(
-                    note_position, note_id, "unsupported parenthetical text",
-                    vocabulary, raw_reading
-                )
-                continue
+            vocabulary = re.sub(
+                r"（(?!な）)[^）]*）|\((?!な\))[^)]*\)", "", vocabulary
+            )
+            raw_reading = re.sub(
+                r"（(?!な）)[^）]*）|\((?!な\))[^)]*\)", "", raw_reading
+            )
 
         editorial_pattern = re.compile(
             r"\s*(?:\((?:onyomi|kunyomi|irregular reading)\)|"
@@ -301,94 +332,74 @@ def import_apkg(
             re.search(r"-?\s*2 versions", vocabulary, re.IGNORECASE)
         )
         if had_editorial_label:
-            if rules.get("strip_editorial_labels"):
-                vocabulary = editorial_pattern.sub("", vocabulary).strip()
-            else:
-                review(
-                    note_position, note_id, "editorial label in expression",
-                    vocabulary, raw_reading
-                )
-                continue
+            vocabulary = editorial_pattern.sub("", vocabulary).strip()
 
         vocabulary = vocabulary.replace("～", "~").replace("〜", "~")
         raw_reading = raw_reading.replace("～", "~").replace("〜", "~")
 
         if "⇔" in vocabulary:
-            if not rules.get("split_comparisons"):
-                review(
-                    note_position, note_id, "multiple contrasted expressions",
-                    vocabulary, raw_reading
-                )
-                continue
             expressions = [value.strip() for value in vocabulary.split("⇔")]
             readings = [value.strip() for value in raw_reading.split("⇔")]
-            if not raw_reading:
-                readings = [""] * len(expressions)
-            if len(expressions) != len(readings):
+            if (
+                len(expressions) != len(readings)
+                or any(not expression for expression in expressions)
+            ):
                 review(
                     note_position, note_id, "comparison sides do not align",
                     vocabulary, raw_reading
                 )
                 continue
-            for expression, reading in zip(expressions, readings, strict=True):
-                entry = make_entry(expression, reading)
-                if entry:
-                    proposed_primary.append((note_position, note_id, entry))
-            if not raw_reading:
+            split_entries = [
+                make_entry(expression, reading)
+                for expression, reading in zip(expressions, readings, strict=True)
+            ]
+            if any(entry is None for entry in split_entries):
                 review(
-                    note_position, note_id, "split comparison has no readings",
-                    vocabulary, raw_reading
-                )
-            continue
-
-        if re.search(r"\s[/／]\s", vocabulary):
-            if not rules.get("split_equivalent_spellings"):
-                review(
-                    note_position, note_id, "multiple written forms",
+                    note_position, note_id, "comparison has an unusable reading",
                     vocabulary, raw_reading
                 )
                 continue
-            for expression in re.split(r"\s+[/／]\s+", vocabulary):
-                entry = make_entry(expression, raw_reading)
-                if entry:
-                    proposed_primary.append((note_position, note_id, entry))
-            continue
-
-        reading_parts = re.split(r"[;；・]", raw_reading)
-        slash_parts = re.split(r"[／/]", raw_reading)
-        has_multiple_readings = len(reading_parts) > 1 or len(slash_parts) > 1
-        is_affix = vocabulary.startswith("~") or vocabulary.endswith("~")
-        if has_multiple_readings and not (is_affix and len(slash_parts) > 1):
-            entry = make_entry(vocabulary, "")
-            if entry:
+            for entry in split_entries:
                 proposed_primary.append((note_position, note_id, entry))
-            review(
-                note_position, note_id, "multiple proposed readings",
-                vocabulary, raw_reading
-            )
             continue
 
-        if is_affix and len(slash_parts) > 1:
-            for index, reading in enumerate(slash_parts):
-                entry = make_entry(vocabulary, reading)
-                if entry:
-                    target = proposed_primary if index == 0 else proposed_additional
-                    target.append((note_position, note_id, entry))
+        if re.search(r"\s[/／]\s", vocabulary):
+            expressions = re.split(r"\s+[/／]\s+", vocabulary)
+            split_entries = [
+                make_entry(expression, raw_reading) for expression in expressions
+            ]
+            if any(entry is None for entry in split_entries):
+                review(
+                    note_position, note_id, "written forms have an unusable reading",
+                    vocabulary, raw_reading
+                )
+                continue
+            for entry in split_entries:
+                proposed_primary.append((note_position, note_id, entry))
+            continue
+
+        readings = [value.strip() for value in re.split(r"[;；・／/]", raw_reading)]
+        if len(readings) > 1:
+            split_entries = [make_entry(vocabulary, reading) for reading in readings]
+            if any(entry is None for entry in split_entries):
+                review(
+                    note_position, note_id, "multiple readings cannot be reduced",
+                    vocabulary, raw_reading
+                )
+                continue
+            for index, entry in enumerate(split_entries):
+                target = proposed_primary if index == 0 else proposed_additional
+                target.append((note_position, note_id, entry))
             continue
 
         entry = make_entry(vocabulary, "" if had_version_instruction else raw_reading)
         if entry is None:
             review(
-                note_position, note_id, "empty expression after normalization",
+                note_position, note_id, "missing or unusable term or reading",
                 vocabulary, raw_reading
             )
             continue
         proposed_primary.append((note_position, note_id, entry))
-        if "[" not in entry:
-            review(
-                note_position, note_id, "missing or unusable reading",
-                vocabulary, raw_reading
-            )
 
     entries: list[str] = []
     seen: set[str] = set()
@@ -398,7 +409,6 @@ def import_apkg(
                 "note_position": note_position, "note_id": note_id, "entry": entry
             }
             duplicates.append(duplicate)
-            review_items.append({**duplicate, "reason": "exact duplicate"})
             continue
         seen.add(entry)
         entries.append(entry)
@@ -1124,7 +1134,7 @@ def prepare_population(
             if custom_id:
                 accepted_records[custom_id] = record
 
-    findings: list[dict[str, Any]] = []
+    findings_by_id: dict[str, dict[str, Any]] = {}
     # Import valid completed outputs into the reusable cache. Retry outputs are
     # considered after base outputs so a repaired response replaces its predecessor.
     manifest_paths = sorted(batches_dir.glob("**/manifest_*.json"))
@@ -1149,11 +1159,15 @@ def prepare_population(
                 else validate_card(card, request["gcl_entry"])
             )
             if errors:
-                findings.append({**request, "errors": errors})
+                findings_by_id[request["custom_id"]] = {
+                    **request,
+                    "errors": errors,
+                }
             elif request["custom_id"] in raw_by_id:
                 accepted_records[request["custom_id"]] = raw_by_id[
                     request["custom_id"]
                 ]
+                findings_by_id.pop(request["custom_id"], None)
 
     current_by_id = {entry.identity: entry for entry in entries}
     accepted_records = {
@@ -1167,14 +1181,12 @@ def prepare_population(
         errors = validate_card(card, current_by_id[custom_id].text)
         if errors:
             invalid_cached.append(custom_id)
-            findings.append(
-                {
-                    "custom_id": custom_id,
-                    "source_index": current_by_id[custom_id].source_index,
-                    "gcl_entry": current_by_id[custom_id].text,
-                    "errors": errors,
-                }
-            )
+            findings_by_id[custom_id] = {
+                "custom_id": custom_id,
+                "source_index": current_by_id[custom_id].source_index,
+                "gcl_entry": current_by_id[custom_id].text,
+                "errors": errors,
+            }
     for custom_id in invalid_cached:
         accepted_records.pop(custom_id, None)
 
@@ -1253,7 +1265,7 @@ def prepare_population(
         "pending_cards": len(pending_ids),
         "new_cards_prepared": len(missing),
         "jobs": jobs,
-        "findings": findings,
+        "findings": list(findings_by_id.values()),
         "duplicate_entries_removed": duplicates,
         "complete": len(accepted_records) == len(entries),
     }

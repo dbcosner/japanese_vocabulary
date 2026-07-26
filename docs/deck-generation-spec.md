@@ -21,23 +21,32 @@ Import MUST:
 
 - leave the source package unchanged;
 - preserve source note order where practical;
-- remove presentation HTML and ignore non-GCL metadata;
+- reduce every successfully imported source note to only a written term and its
+  complete hiragana reading;
+- remove presentation HTML, parenthetical and editorial annotations, and other
+  non-term metadata that can be discarded deterministically;
 - normalize GCL syntax, including U+007E `~`, and remove legacy na-adjective
   markers;
+- split multiple expressions or readings into separate entries when the source
+  provides a clear, mechanically aligned mapping;
+- emit only complete `<term>[<reading>]` entries and never a bare expression;
 - retain the first exact duplicate and report later occurrences;
 - write a proposed UTF-8 GCL atomically; and
 - write a structured import-review report for every successfully inspected note
   that required review, was deduplicated, or used an explicit decision.
 
-Ambiguous structures MUST be flagged rather than guessed. These include multiple
-expressions, unsupported parentheticals, editorial instructions, corrupt fields,
-and unusable or multiple offered readings outside established affix logic.
-A separate decisions file MAY authorize source-specific deterministic cleanup.
+Only notes that cannot be reduced confidently to a term and reading are excluded
+and flagged for review. These include missing or unusable readings, corrupt
+fields, and multiple expressions whose readings cannot be aligned. Routine
+presentation text, parentheticals, editorial labels, tilde variants, and legacy
+part-of-speech markers are cleanup inputs, not review conditions. A separate
+decisions file MAY resolve genuine source-specific outliers.
 Unreadable archives, databases, models, or required fields abort Import before
 proposal publication.
 
-An unresolved proposed GCL is not authoritative until reading resolution succeeds
-and the completed file passes GCL validation.
+An imported proposed GCL contains no unresolved entries and becomes authoritative
+after editorial adoption and GCL validation. Reading resolution remains available
+for bare expressions introduced through manual GCL authoring.
 
 ## 3. Populate
 

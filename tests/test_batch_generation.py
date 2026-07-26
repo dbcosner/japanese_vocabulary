@@ -193,7 +193,7 @@ class BatchGenerationTests(unittest.TestCase):
         self.assertEqual(result["entries"], 2)
         self.assertEqual(len(result["duplicates_removed"]), 1)
         self.assertTrue(Path(result["review_path"]).is_file())
-        self.assertEqual(result["review_items"][0]["reason"], "exact duplicate")
+        self.assertEqual(result["review_items"], [])
 
     def test_import_apkg_flags_ambiguous_structure_and_applies_decisions(self):
         database = self.root / "collection.anki2"
@@ -223,18 +223,16 @@ class BatchGenerationTests(unittest.TestCase):
         canonical = import_apkg(package, "canonical", self.root / "canonical")
         canonical_text = Path(canonical["gcl_path"]).read_text(encoding="utf-8")
         self.assertIn("~化[か]", canonical_text)
-        self.assertNotIn("片道", canonical_text)
+        self.assertIn("片道[かたみち]", canonical_text)
+        self.assertIn("往復[おうふく]", canonical_text)
         self.assertIn("無作法[ぶさほう]", canonical_text)
-        self.assertEqual(len(canonical["review_items"]), 1)
+        self.assertEqual(canonical["review_items"], [])
 
         decisions = self.root / "decisions.json"
         decisions.write_text(
             json.dumps(
                 {
-                    "rules": {
-                        "split_comparisons": True,
-                        "strip_parentheticals_except_na": True,
-                    }
+                    "note_overrides": {}
                 }
             ),
             encoding="utf-8",
@@ -249,6 +247,52 @@ class BatchGenerationTests(unittest.TestCase):
         self.assertIn("片道[かたみち]", decided_text)
         self.assertIn("往復[おうふく]", decided_text)
         self.assertIn("無作法[ぶさほう]", decided_text)
+
+    def test_import_apkg_emits_only_reduced_terms_with_readings(self):
+        database = self.root / "collection.anki2"
+        connection = sqlite3.connect(database)
+        connection.execute("CREATE TABLE col (models TEXT NOT NULL)")
+        connection.execute(
+            "CREATE TABLE notes (id INTEGER, mid INTEGER, flds TEXT NOT NULL)"
+        )
+        connection.execute(
+            "INSERT INTO col VALUES (?)",
+            (json.dumps({"1": {"flds": [{"name": "Expression"}, {"name": "Reading"}]}}),),
+        )
+        connection.executemany(
+            "INSERT INTO notes VALUES (?, 1, ?)",
+            [
+                (1, "静か（な）\x1fしずかな"),
+                (2, "案（音読み）\x1fあん"),
+                (3, "抱く\x1fだく／いだく"),
+                (4, "読めない項目\x1f"),
+                (5, "片道⇔往復\x1fかたみち"),
+            ],
+        )
+        connection.commit()
+        connection.close()
+        package = self.root / "source.apkg"
+        with zipfile.ZipFile(package, "w") as archive:
+            archive.write(database, "collection.anki2")
+
+        result = import_apkg(package, "reduced", self.root / "gcl")
+        output = Path(result["gcl_path"]).read_text(encoding="utf-8")
+
+        self.assertEqual(
+            output,
+            "# GCL Version: 1\n\n"
+            "静か[しずか]\n"
+            "案[あん]\n"
+            "抱く[だく]\n"
+            "抱く[いだく]\n",
+        )
+        self.assertEqual(
+            [item["reason"] for item in result["review_items"]],
+            [
+                "missing or unusable term or reading",
+                "comparison sides do not align",
+            ],
+        )
 
     def test_import_apkg_cli_uses_requested_full_gcl_name(self):
         database = self.root / "collection.anki2"

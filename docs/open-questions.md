@@ -27,9 +27,12 @@ obsolete, markedly uncommon, compound-only, and contrived readings are excluded.
 ### D5: Import ambiguity is reviewed, not guessed
 
 Unsafe APKG notes are recorded in a structured review file. Canonical import does
-not silently split contrasted terms, equivalent spellings, unsupported
-parentheticals, editorial labels, or uncertain multiple readings. Explicit
-source-specific decisions may authorize deterministic cleanup.
+first strip presentation content, parentheticals, editorial labels, and other
+material that is mechanically separable from the term and reading. Clearly
+aligned forms and readings are split into complete entries. It does not guess
+when no usable reading remains or when multiple expressions and readings cannot
+be aligned. Explicit source-note decisions can resolve those outliers
+reproducibly.
 
 ### D6: Canonical syntax
 

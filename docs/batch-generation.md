@@ -15,17 +15,18 @@ submission is needed.
 
 ```bash
 batch-generate import-apkg \
-  --apkg apkg_exports/source.apkg \
+  --apkg path/to/source.apkg \
   --name source_vocabulary
 ```
 
 Review the generated `*.import-review.json`. If a source package needs explicit
-cleanup, record it in a decisions JSON file and rerun with `--decisions` and
-`--replace`.
+resolution for a genuine outlier, record a complete term-and-reading override in
+a decisions JSON file and rerun with `--decisions` and `--replace`. Routine
+presentation text and annotations are stripped automatically.
 
 ## Reading resolution
 
-Prepare unresolved GCL entries locally:
+Prepare bare entries introduced through manual GCL editing locally:
 
 ```bash
 batch-generate prepare-readings \
@@ -97,16 +98,10 @@ invalid, or the output is not `.apkg`.
 
 ## Decisions-file format
 
-The optional decisions JSON currently recognizes:
+The optional decisions JSON recognizes per-note overrides:
 
 ```json
 {
-  "rules": {
-    "split_comparisons": true,
-    "strip_parentheticals_except_na": true,
-    "strip_editorial_labels": true,
-    "split_equivalent_spellings": true
-  },
   "note_overrides": {
     "1234567890": ["語彙[ごい]"],
     "1234567891": null
@@ -114,8 +109,10 @@ The optional decisions JSON currently recognizes:
 }
 ```
 
-Override keys are source Anki note IDs as strings. An array supplies exact GCL
-entries; `null` drops that source note. Unknown rule keys are currently ignored.
+Override keys are source Anki note IDs as strings. An array supplies exact,
+complete GCL entries; `null` drops that source note. An incomplete or malformed
+override is excluded and reported for review. Unsupported top-level decisions
+keys are rejected.
 
 ## CLI command summary
 

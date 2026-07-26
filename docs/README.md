@@ -31,7 +31,9 @@ This directory defines an APKG-only Japanese vocabulary generation system.
 ```text
 Source APKG ── Import ──▶ Proposed GCL + review
                               │
-                        Reading resolution
+                    Optional manual additions
+                              │
+                    Optional reading resolution
                               │
                               ▼
                      Authoritative GCL

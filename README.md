@@ -27,10 +27,13 @@ gcl/my_vocabulary_generation_control_file.txt
 gcl/my_vocabulary_generation_control_file.import-review.json
 ```
 
-Import preserves clean embedded readings, normalizes GCL syntax, removes
-presentation markup, deduplicates exact entries, and keeps unresolved expressions
-for reading resolution. Ambiguous structures are excluded and recorded in the
-review file rather than guessed.
+Import reduces each source note to only a term and its reading. It removes
+presentation content, parenthetical and editorial annotations, legacy
+na-adjective markers, and other non-term material; normalizes GCL syntax; and
+splits multiple forms or readings when their correspondence is mechanically
+clear. Every emitted line is a complete `term[reading]` entry. Notes that cannot
+be reduced confidently to that form are excluded and recorded in the review
+file.
 
 Explicit source-specific decisions can be applied reproducibly:
 
@@ -42,7 +45,7 @@ batch-generate import-apkg \
   --replace
 ```
 
-### Resolve missing readings
+### Resolve manually added readings
 
 ```bash
 batch-generate prepare-readings \
@@ -50,7 +53,9 @@ batch-generate prepare-readings \
 ```
 
 Submit and collect the prepared manifest with the normal `submit`, `status`, and
-`collect` commands. Publication uses `apply-readings`.
+`collect` commands. Publication uses `apply-readings`. This stage is for bare
+terms introduced through manual editing; APKG Import excludes source notes with
+missing readings instead of placing them in the GCL.
 
 ### Populate the cache
 
@@ -100,8 +105,9 @@ Version 1 GCLs are UTF-8 text:
 Part-of-speech behavior, including adjectival-noun usage, is inferred during
 content generation rather than encoded in the GCL.
 
-New bare expressions may be appended temporarily, but a GCL is not ready for
-population or generation until every entry has been resolved.
+Manually authored bare expressions may be appended temporarily for reading
+resolution, but APKG Import never emits them. A GCL is not ready for population
+or generation until every entry has been resolved.
 
 ## Card format
 
@@ -127,14 +133,14 @@ expression. Definitions and examples are generated in Japanese.
 
 ```text
 .
-├── apkg_exports/       Source APKGs and import review artifacts
 ├── docs/               Specifications and workflow documentation
 ├── gcl/                Generation Control Files
 ├── src/                Python package
 ├── templates/          APKG-neutral card templates
 ├── tests/              Regression tests
 ├── .batch/             Local population caches and Batch state
-└── n1_vocabulary.apkg  Generated native Anki deck
+├── n1_vocabulary.apkg  Generated N1 Anki deck
+└── n2_vocabulary.apkg  Generated N2 Anki deck
 ```
 
 See [docs/README.md](docs/README.md) for the complete documentation index.
