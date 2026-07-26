@@ -56,7 +56,7 @@ deck-specific workspace under `.batch/<deck-name>/`.
 The workspace MUST record:
 
 - the absolute GCL and APKG output paths;
-- a stable project ID used for Anki deck and model identifiers;
+- a stable project ID used for Anki deck and note identifiers;
 - the current GCL hash;
 - accepted card records keyed by stable GCL identity; and
 - any pending and completed Batch job artifacts that currently exist.
@@ -74,14 +74,16 @@ Generate accepts:
 - one `.apkg` output path;
 - optionally, an explicit Anki deck name.
 
-The template MUST NOT determine the deck name. Generate uses the explicit
-override when supplied; otherwise it derives a display name from the logical deck
-key established by Populate.
+The template MUST NOT determine the deck name. It MUST define the stable note
+model ID shared by decks that use that template. Generate uses the explicit deck
+name override when supplied; otherwise it derives a display name from the logical
+deck key established by Populate.
 
-Generate validates the project hash, cache identity set, and every cached card
-before writing. It MUST refuse incomplete, stale, or invalid workspaces, create
-one note for each current GCL entry, use stable deck/model/note identifiers, and
-atomically replace the requested APKG.
+Generate validates the project hash, cache identity set, template model ID, and
+every cached card before writing. It MUST refuse incomplete, stale, or invalid
+workspaces, create one note for each current GCL entry, use a shared stable model
+ID plus deck-scoped stable deck/note identifiers, and atomically replace the
+requested APKG.
 
 The generated package MUST:
 

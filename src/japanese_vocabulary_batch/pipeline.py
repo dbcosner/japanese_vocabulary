@@ -1415,7 +1415,16 @@ def _generate_apkg(
     _, source_model = _template_parts(template_path)
     project_id = project["project_id"]
     deck_id = _stable_anki_id(project_id, "deck")
-    model_id = _stable_anki_id(project_id, "model")
+    try:
+        model_id = int(source_model["id"])
+    except (KeyError, TypeError, ValueError) as error:
+        raise PipelineError(
+            "Deck template note model must define a positive integer id"
+        ) from error
+    if model_id <= 0:
+        raise PipelineError(
+            "Deck template note model must define a positive integer id"
+        )
     deck_name = (
         deck_name
         or project.get("deck_name")
@@ -1466,7 +1475,7 @@ def _generate_apkg(
         )
         deck.add_note(
             StableNote(
-                stable_guid=deterministic_guid(entry.text),
+                stable_guid=deterministic_guid(project_id, entry.text),
                 model=model,
                 fields=[
                     card["reading"],
@@ -2016,10 +2025,10 @@ def validate_card(card: dict[str, Any], expected_gcl: str) -> list[str]:
     return errors
 
 
-def deterministic_guid(gcl_entry: str) -> str:
+def deterministic_guid(project_id: str, gcl_entry: str) -> str:
     return uuid.uuid5(
         uuid.UUID("867c9bb2-b47e-5c77-b80c-bf10b8b65c52"),
-        gcl_entry,
+        f"{project_id}:{gcl_entry}",
     ).hex[:16]
 
 

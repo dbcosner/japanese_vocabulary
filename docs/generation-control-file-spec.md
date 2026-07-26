@@ -127,13 +127,16 @@ words. A placeholder in the reading is removed during APKG import.
 ## 9. Identity
 
 Entry identity is the SHA-256-derived key of the complete canonical annotated
-entry. It does not include line number. Deterministic Anki note GUIDs use the
-same canonical entry.
+entry. It does not include line number. Anki note GUIDs combine the stable
+population-project ID with the canonical entry, so the same term can exist
+independently in more than one logical deck.
 
 Consequently:
 
 - reordering does not change identity;
-- changing an expression, reading, or affix marker changes identity.
+- changing an expression, reading, or affix marker changes identity;
+- regenerating the same logical deck preserves note GUIDs; and
+- identical entries in different logical decks have different note GUIDs.
 
 ## 10. Current parser errors
 

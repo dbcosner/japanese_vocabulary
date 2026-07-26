@@ -57,8 +57,8 @@ accepted card and no findings.
 Generate MUST verify before publication:
 
 - a complete and current population workspace;
-- a template containing exactly one nonempty note model and at least one card
-  template;
+- a template containing exactly one nonempty note model with a positive stable
+  ID and at least one card template;
 - derivable stable deck and model identifiers;
 - one valid cached card per GCL entry; and
 - an `.apkg` output extension.
@@ -67,7 +67,9 @@ Regression tests open generated collection databases and confirm:
 
 - note count equals GCL entry count;
 - card count equals expected template output;
-- the GUID set equals deterministic GCL identities;
+- the GUID set equals deterministic project-scoped GCL identities;
+- identical entries in different projects receive different GUIDs;
+- decks using the same template receive the same note-model ID;
 - repeated generation retains stable identifiers.
 
 ## 5. Required regression coverage

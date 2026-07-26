@@ -1,6 +1,7 @@
 {
     "note_models":  [
                         {
+                            "id":  1743699863,
                             "name":  "Japanese Vocabulary Note",
                             "css":  ".card {\n  font-family: \"Noto Sans JP\", sans-serif;\n  font-size: 24px;\n  line-height: 1.6;\n  text-align: left;\n  padding: 20px;\n}\n\n.reading {\n  font-size: 1.5em;\n  margin-bottom: 0.75em;\n}\n\n.definition {\n  margin-bottom: 1em;\n}\n\n.examples {\n  font-size: 0.95em;\n}\n\n.vocabulary {\n  text-align: center;\n  font-size: 2em;\n  font-weight: bold;\n}",
                             "flds":  [

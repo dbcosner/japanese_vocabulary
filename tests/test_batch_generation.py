@@ -117,6 +117,7 @@ class BatchGenerationTests(unittest.TestCase):
                     "note_models": [
                         {
                             "__type__": "NoteModel",
+                            "id": 1234567890,
                             "name": "Vocabulary",
                             "css": ".card { font-family: sans-serif; }",
                             "flds": [
@@ -534,6 +535,7 @@ class BatchGenerationTests(unittest.TestCase):
         )
         self.assertEqual(first["deck_id"], second["deck_id"])
         self.assertEqual(first["model_id"], second["model_id"])
+        self.assertEqual(first["model_id"], 1234567890)
         self.assertEqual(first["notes"], 2)
         self.assertEqual(first["deck_name"], "Published")
         self.assertEqual(second["deck_name"], "N2 Vocabulary")
@@ -564,6 +566,17 @@ class BatchGenerationTests(unittest.TestCase):
         self.assertEqual(
             GclEntry(1, "遭う[あう]").identity,
             GclEntry(999, "遭う[あう]").identity,
+        )
+
+    def test_anki_note_guid_is_stable_but_deck_scoped(self):
+        entry = "遭う[あう]"
+        self.assertEqual(
+            deterministic_guid("project-a", entry),
+            deterministic_guid("project-a", entry),
+        )
+        self.assertNotEqual(
+            deterministic_guid("project-a", entry),
+            deterministic_guid("project-b", entry),
         )
 
     def test_reading_normalization_annotates_expands_and_deduplicates(self):

@@ -2,8 +2,10 @@
 
 ## 1. Note model
 
-The reusable deck template contains presentation and note-model data, but no
-deck name. It defines one note model with four fields in this order:
+The reusable deck template contains presentation data and one stable note-model
+ID, but no deck name. Decks generated from the same template therefore use one
+Anki note type instead of creating same-named `++` variants. It defines four
+fields in this order:
 
 | Ordinal | Field | Purpose |
 | ---: | --- | --- |
