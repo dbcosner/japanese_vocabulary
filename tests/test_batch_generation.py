@@ -534,6 +534,8 @@ class BatchGenerationTests(unittest.TestCase):
             deck_name="N2 Vocabulary",
         )
         self.assertEqual(first["deck_id"], second["deck_id"])
+        self.assertEqual(first["deck_options_id"], second["deck_options_id"])
+        self.assertNotEqual(first["deck_options_id"], 1)
         self.assertEqual(first["model_id"], second["model_id"])
         self.assertEqual(first["model_id"], 1234567890)
         self.assertEqual(first["notes"], 2)
@@ -550,6 +552,31 @@ class BatchGenerationTests(unittest.TestCase):
             )
             self.assertEqual(
                 connection.execute("select count(*) from cards").fetchone()[0], 2
+            )
+            decks, deck_options = connection.execute(
+                "select decks, dconf from col"
+            ).fetchone()
+            generated_deck = json.loads(decks)[str(second["deck_id"])]
+            options_by_id = json.loads(deck_options)
+            generated_options = options_by_id[str(second["deck_options_id"])]
+            default_options = options_by_id["1"]
+            self.assertEqual(
+                generated_deck["conf"],
+                second["deck_options_id"],
+            )
+            self.assertEqual(generated_options["name"], "N2 Vocabulary")
+            self.assertEqual(generated_options["id"], second["deck_options_id"])
+            self.assertEqual(
+                {
+                    key: value
+                    for key, value in generated_options.items()
+                    if key not in {"id", "name", "mod", "usn"}
+                },
+                {
+                    key: value
+                    for key, value in default_options.items()
+                    if key not in {"id", "name", "mod", "usn"}
+                },
             )
         finally:
             connection.close()

@@ -1297,6 +1297,49 @@ def _stable_anki_id(project_id: str, kind: str) -> int:
     return (1 << 30) + (int.from_bytes(digest[:8], "big") % (1 << 30))
 
 
+def _write_apkg_with_deck_options(
+    *,
+    genanki: Any,
+    deck: Any,
+    output_path: Path,
+    options_id: int,
+    options_name: str,
+) -> None:
+    """Write an APKG whose deck owns a clone of Anki's default options."""
+
+    class DeckWithOptions(type(deck)):
+        def to_json(self) -> dict[str, Any]:
+            data = super().to_json()
+            data["conf"] = options_id
+            return data
+
+    deck.__class__ = DeckWithOptions
+
+    class PackageWithOptions(genanki.Package):
+        def write_to_db(self, cursor: Any, timestamp: float, id_gen: Any) -> None:
+            super().write_to_db(cursor, timestamp, id_gen)
+            (deck_options_json,) = cursor.execute(
+                "SELECT dconf FROM col"
+            ).fetchone()
+            deck_options = json.loads(deck_options_json)
+            default_options = dict(deck_options["1"])
+            default_options.update(
+                {
+                    "id": options_id,
+                    "name": options_name,
+                    "mod": int(timestamp),
+                    "usn": -1,
+                }
+            )
+            deck_options[str(options_id)] = default_options
+            cursor.execute(
+                "UPDATE col SET dconf = ?",
+                (json.dumps(deck_options),),
+            )
+
+    PackageWithOptions(deck).write_to_file(str(output_path))
+
+
 def _load_complete_workspace(
     workspace_path: Path,
 ) -> tuple[dict[str, Any], list[GclEntry], Path, dict[str, dict[str, Any]]]:
@@ -1415,6 +1458,7 @@ def _generate_apkg(
     _, source_model = _template_parts(template_path)
     project_id = project["project_id"]
     deck_id = _stable_anki_id(project_id, "deck")
+    deck_options_id = _stable_anki_id(project_id, "deck-options")
     try:
         model_id = int(source_model["id"])
     except (KeyError, TypeError, ValueError) as error:
@@ -1491,7 +1535,13 @@ def _generate_apkg(
     )
     temporary_path = temporary_dir / output_path.name
     try:
-        genanki.Package(deck).write_to_file(str(temporary_path))
+        _write_apkg_with_deck_options(
+            genanki=genanki,
+            deck=deck,
+            output_path=temporary_path,
+            options_id=deck_options_id,
+            options_name=deck_name,
+        )
         os.replace(temporary_path, output_path)
     finally:
         if temporary_path.exists():
@@ -1502,6 +1552,8 @@ def _generate_apkg(
         "output_path": str(output_path.resolve()),
         "deck_name": deck_name,
         "deck_id": deck_id,
+        "deck_options_id": deck_options_id,
+        "deck_options_name": deck_name,
         "model_id": model_id,
         "notes": len(entries),
         "published": True,

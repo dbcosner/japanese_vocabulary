@@ -86,7 +86,10 @@ allow repeated Anki imports to update the same logical deck. Note GUIDs are
 deck-scoped so the same term can exist independently in N1 and N2, while the
 template supplies one shared note-type ID for both decks. The Anki deck name
 defaults to the logical output name (`n2_vocabulary.apkg` becomes
-`N2 Vocabulary`) and may be overridden with `--deck-name`.
+`N2 Vocabulary`) and may be overridden with `--deck-name`. Each generated deck
+also receives a stable, deck-specific options preset containing Anki's default
+settings, so its scheduling options can be changed after import without affecting
+other decks.
 
 ## GCL syntax
 

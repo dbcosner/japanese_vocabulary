@@ -82,12 +82,15 @@ deck key established by Populate.
 Generate validates the project hash, cache identity set, template model ID, and
 every cached card before writing. It MUST refuse incomplete, stale, or invalid
 workspaces, create one note for each current GCL entry, use a shared stable model
-ID plus deck-scoped stable deck/note identifiers, and atomically replace the
-requested APKG.
+ID plus deck-scoped stable deck/note identifiers, assign a stable deck-specific
+options preset initialized from Anki's default options, and atomically replace
+the requested APKG.
 
 The generated package MUST:
 
 - contain the expected note and card counts;
+- contain a deck-specific default-valued options preset whose ID remains stable
+  across regeneration;
 - use the fields and templates defined by `card-format-spec.md`;
 - contain no GCL annotations in learner-facing fields; and
 - remain reproducible from the GCL, accepted cache, template, and project ID.
