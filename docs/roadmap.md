@@ -8,7 +8,6 @@
 - Reading normalization through Batch
 - Durable population workspaces and accepted-card caches
 - Native APKG generation with deterministic identifiers
-- Syntax migration with identity/GUID preservation
 - Offline validation and retry preparation
 
 ## Next

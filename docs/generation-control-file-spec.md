@@ -43,37 +43,35 @@ A complete entry is:
 
 ```text
 <expression>[<reading>]
-<expression>[<reading>](な)
 ```
 
 It contains:
 
 - a nonempty written expression;
-- exactly one complete hiragana reading in square brackets;
-- optionally the terminal ASCII marker `(な)`; and
+- exactly one complete hiragana reading in square brackets; and
 - optionally one ASCII U+007E `~` at the beginning or end.
 
 Examples:
 
 ```text
 遭う[あう]
-静か[しずか](な)
+静か[しずか]
 ~化[か]
 無~[む]
 ```
 
 Square brackets and unsupported parentheses cannot occur in an expression.
 
-An unresolved proposed GCL may temporarily contain a bare expression, optionally
-ending in `(な)`. `prepare-readings` accepts this state. `populate`, `prepare`,
-and `generate` require every entry to match the complete annotated grammar.
+An unresolved proposed GCL may temporarily contain a bare expression.
+`prepare-readings` accepts this state. `populate`, `prepare`, and `generate`
+require every entry to match the complete annotated grammar.
 
 ## 5. Canonical syntax cleanup
 
 Before reading entries, the parser:
 
 - normalizes U+FF5E `～` and U+301C `〜` to ASCII U+007E `~`;
-- normalizes full-width `（な）` to `(な)`; and
+- removes legacy terminal `(な)` and `（な）` markers; and
 - removes later exact duplicate entry lines.
 
 If either normalization or deduplication occurs, the cleaned GCL is atomically
@@ -103,18 +101,13 @@ the command writes its report and leaves the GCL unchanged. An explicit
 `--correction SOURCE=ANNOTATED_ENTRY` may replace one unresolved source with a
 complete annotated entry.
 
-## 7. Na-adjective marker
+## 7. Part of speech
 
-`(な)` is generation metadata:
-
-- it occurs only at the end;
-- it is not part of the reading or displayed vocabulary; and
-- it causes content generation to cover natural adjectival-noun usage.
-
+Part of speech is not encoded in the GCL. Content generation infers common
+grammatical behavior, including adjectival-noun usage, from the expression.
 During APKG import, a source trailing literal `な`, `(な)`, or `（な）` is
-normalized to the canonical marker when the importer identifies that form.
-Other parenthetical source text is reviewable unless an explicit decisions file
-authorizes its removal.
+removed. Other parenthetical source text is reviewable unless an explicit
+decisions file authorizes its removal.
 
 ## 8. Affix placeholder
 
@@ -129,21 +122,16 @@ The placeholder is removed from the `Vocabulary` field. Generated definitions
 describe the affix function, and examples embed the affix in complete natural
 words. A placeholder in the reading is removed during APKG import.
 
-Identity compatibility internally maps canonical `~` back to the former U+FF5E
-representation before hashing. This preserves existing cache identities and Anki
-GUIDs across the completed syntax migration.
-
 ## 9. Identity
 
 Entry identity is the SHA-256-derived key of the complete canonical annotated
-entry after the compatibility transform. It does not include line number.
-Deterministic Anki note GUIDs use the same compatibility transform.
+entry. It does not include line number. Deterministic Anki note GUIDs use the
+same canonical entry.
 
 Consequently:
 
 - reordering does not change identity;
-- changing an expression, reading, or marker changes identity; and
-- U+FF5E-to-U+007E placeholder migration does not change identity.
+- changing an expression, reading, or affix marker changes identity.
 
 ## 10. Current parser errors
 

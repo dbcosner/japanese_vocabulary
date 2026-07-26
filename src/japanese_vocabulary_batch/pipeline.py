@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import hashlib
 import html
@@ -6,7 +6,6 @@ import io
 import json
 import os
 import re
-import shutil
 import sqlite3
 import tempfile
 import time
@@ -22,9 +21,9 @@ SCHEMA_NAME = "japanese_vocabulary_card"
 TERMINAL_STATUSES = {"completed", "failed", "expired", "cancelled"}
 HIRAGANA_RE = re.compile(r"^[\u3040-\u309fー]+$")
 TAG_RE = re.compile(r"<[^>]+>")
-READING_ANNOTATION_RE = re.compile(r"\[([^\[\]]+)\](?=\(な\)$|$)")
+READING_ANNOTATION_RE = re.compile(r"\[([^\[\]]+)\]$")
 ANNOTATED_GCL_RE = re.compile(
-    r"^(?P<expression>[^\[\]\(\)]+)\[(?P<reading>[ぁ-ゖー]+)\](?P<na>\(な\))?$"
+    r"^(?P<expression>[^\[\]\(\)]+)\[(?P<reading>[ぁ-ゖー]+)\]$"
 )
 
 
@@ -39,19 +38,12 @@ class GclEntry:
 
     @property
     def identity(self) -> str:
-        digest = hashlib.sha256(
-            identity_compatibility_text(self.text).encode("utf-8")
-        ).hexdigest()[:20]
+        digest = hashlib.sha256(self.text.encode("utf-8")).hexdigest()[:20]
         return f"gcl-{digest}"
 
 
 GCL_FILENAME_SUFFIX = "_generation_control_file.txt"
 FIELD_SEPARATOR = "\x1f"
-
-
-def identity_compatibility_text(gcl_entry: str) -> str:
-    """Keep identifiers stable across the U+FF5E to U+007E syntax migration."""
-    return gcl_entry.replace("~", "～")
 
 
 def _plain_anki_field(value: str) -> str:
@@ -216,23 +208,19 @@ def import_apkg(
         vocabulary = vocabulary.replace("～", "~").replace("〜", "~")
         reading = re.sub(r"\s+", "", reading)
         reading = reading.replace("～", "~").replace("〜", "~").strip("~")
-        na_marker = ""
         if vocabulary.endswith(("（な）", "(な)")):
             vocabulary = vocabulary[:-3]
-            na_marker = "(な)"
         elif vocabulary.endswith("な"):
             vocabulary = vocabulary[:-1]
             if reading.endswith("な"):
                 reading = reading[:-1]
-            na_marker = "(な)"
         if reading.endswith(("（な）", "(な)")):
             reading = reading[:-3]
-            na_marker = "(な)"
         if not vocabulary:
             return None
         if HIRAGANA_RE.fullmatch(reading):
-            return f"{vocabulary}[{reading}]{na_marker}"
-        return f"{vocabulary}{na_marker}"
+            return f"{vocabulary}[{reading}]"
+        return vocabulary
 
     for note_position, (note_id, model_id, encoded_fields) in enumerate(notes, start=1):
         fields = encoded_fields.split(FIELD_SEPARATOR)
@@ -257,7 +245,15 @@ def import_apkg(
             )
             if override is not None:
                 for entry in override:
-                    proposed_primary.append((note_position, note_id, entry))
+                    canonical_override = (
+                        entry.replace("～", "~")
+                        .replace("〜", "~")
+                        .replace("（な）", "")
+                        .replace("(な)", "")
+                    )
+                    proposed_primary.append(
+                        (note_position, note_id, canonical_override)
+                    )
             continue
 
         possible_swapped_reading = re.sub(
@@ -452,138 +448,6 @@ def atomic_write_json(path: Path, value: Any) -> None:
     )
 
 
-def migrate_gcl_syntax(gcl_path: Path, workspace_path: Path) -> dict[str, Any]:
-    """Migrate canonical GCL syntax without changing cache identities or GUIDs."""
-    project_path = workspace_path / "project.json"
-    manifest_path = workspace_path / "generate-manifest.json"
-    accepted_path = workspace_path / "cards" / "accepted.jsonl"
-    required = (gcl_path, project_path, manifest_path, accepted_path)
-    missing = [str(path) for path in required if not path.is_file()]
-    if missing:
-        raise PipelineError(f"Migration input is missing: {', '.join(missing)}")
-
-    original_gcl = gcl_path.read_text(encoding="utf-8-sig")
-    old_gcl_sha = hashlib.sha256(gcl_path.read_bytes()).hexdigest()
-    project = json.loads(project_path.read_text(encoding="utf-8"))
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    if Path(project["gcl_path"]).resolve() != gcl_path.resolve():
-        raise PipelineError("Workspace belongs to another GCL")
-    if project.get("gcl_sha256") != old_gcl_sha:
-        raise PipelineError("Project GCL hash does not match the migration input")
-    if manifest.get("gcl_sha256") != old_gcl_sha:
-        raise PipelineError("Generate manifest GCL hash does not match the migration input")
-
-    old_to_new: dict[str, str] = {}
-    new_lines: list[str] = []
-    for raw_line in original_gcl.splitlines():
-        line = raw_line
-        if line.strip() and not line.strip().startswith("#"):
-            line = (
-                line.replace("～", "~")
-                .replace("〜", "~")
-                .replace("（な）", "(な)")
-            )
-            if line != raw_line:
-                old_to_new[raw_line.strip()] = line.strip()
-        new_lines.append(line)
-    if not old_to_new:
-        raise PipelineError("GCL has no legacy syntax to migrate")
-    new_gcl_text = "\n".join(new_lines).rstrip() + "\n"
-
-    for old_entry, new_entry in old_to_new.items():
-        if GclEntry(0, old_entry).identity != GclEntry(0, new_entry).identity:
-            raise PipelineError(f"Migration would change cache identity: {old_entry}")
-        if deterministic_guid(old_entry) != deterministic_guid(new_entry):
-            raise PipelineError(f"Migration would change generated GUID: {old_entry}")
-
-    records = list(_read_output_records(accepted_path))
-    for record in records:
-        try:
-            output_text = record["response"]["body"]["output"][0]["content"][0]["text"]
-            payload = json.loads(output_text)
-            card = payload.get("result", payload)
-        except (KeyError, IndexError, TypeError, json.JSONDecodeError) as error:
-            raise PipelineError(
-                f"Could not migrate cached record {record.get('custom_id')}"
-            ) from error
-        old_entry = card.get("gcl_entry")
-        if old_entry in old_to_new:
-            new_entry = old_to_new[old_entry]
-            card["gcl_entry"] = new_entry
-            if card.get("resolved_gcl_entry") == old_entry:
-                card["resolved_gcl_entry"] = new_entry
-            record["response"]["body"]["output"][0]["content"][0]["text"] = (
-                json.dumps(payload, ensure_ascii=False)
-            )
-
-    accepted_text = (
-        "\n".join(json.dumps(record, ensure_ascii=False) for record in records) + "\n"
-    )
-    new_gcl_sha = hashlib.sha256(new_gcl_text.encode("utf-8")).hexdigest()
-    accepted_sha = hashlib.sha256(accepted_text.encode("utf-8")).hexdigest()
-    project["gcl_sha256"] = new_gcl_sha
-    manifest["gcl_sha256"] = new_gcl_sha
-    manifest["input_sha256"] = accepted_sha
-    for request in manifest.get("requests", []):
-        request["gcl_entry"] = old_to_new.get(
-            request.get("gcl_entry"), request.get("gcl_entry")
-        )
-
-    entry_lines = [
-        line.strip()
-        for line in new_gcl_text.splitlines()
-        if line.strip() and not line.strip().startswith("#")
-    ]
-    entries = [GclEntry(index, line) for index, line in enumerate(entry_lines, 1)]
-    if len(entries) != len(records):
-        raise PipelineError(
-            f"Migration count mismatch: {len(entries)} entries, {len(records)} records"
-        )
-    current_by_id = {entry.identity: entry for entry in entries}
-    cards = parse_output_records(records)
-    findings: list[dict[str, Any]] = []
-    for custom_id, entry in current_by_id.items():
-        card = cards.get(custom_id)
-        errors = (
-            ["cached card is missing"]
-            if card is None
-            else validate_card(card, entry.text)
-        )
-        if errors:
-            findings.append(
-                {"custom_id": custom_id, "gcl_entry": entry.text, "errors": errors}
-            )
-    if findings:
-        raise PipelineError(
-            f"Migration validation failed for {len(findings)} cached record(s)"
-        )
-
-    backup_dir = workspace_path / "migration-backups" / old_gcl_sha[:12]
-    if backup_dir.exists():
-        raise PipelineError(f"Migration backup already exists: {backup_dir}")
-    backup_dir.mkdir(parents=True)
-    for source in required:
-        shutil.copy2(source, backup_dir / source.name)
-
-    atomic_write_text(gcl_path, new_gcl_text)
-    atomic_write_text(accepted_path, accepted_text)
-    atomic_write_json(project_path, project)
-    atomic_write_json(manifest_path, manifest)
-    return {
-        "gcl_path": str(gcl_path.resolve()),
-        "workspace": str(workspace_path.resolve()),
-        "entries": len(entries),
-        "cache_records": len(records),
-        "syntax_entries_migrated": len(old_to_new),
-        "identities_preserved": len(old_to_new),
-        "generated_guids_preserved": len(old_to_new),
-        "old_gcl_sha256": old_gcl_sha,
-        "new_gcl_sha256": new_gcl_sha,
-        "accepted_sha256": accepted_sha,
-        "backup_dir": str(backup_dir.resolve()),
-    }
-
-
 def sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -608,7 +472,10 @@ def clean_and_read_gcl(
             cleaned_lines.append(raw_line)
             continue
         canonical_line = (
-            line.replace("～", "~").replace("〜", "~").replace("（な）", "(な)")
+            line.replace("～", "~")
+            .replace("〜", "~")
+            .replace("（な）", "")
+            .replace("(な)", "")
         )
         if canonical_line != line:
             normalized = True
@@ -773,6 +640,13 @@ Apply these rules:
   portion with bold hiragana.
 - For nouns, naturally demonstrate Nの or Nする when those constructions are
   common. Demonstrate both when both are genuinely useful; invent neither.
+- Infer common grammatical behavior from the expression itself. For adjectival
+  nouns, demonstrate natural な, だ, or で usage where useful, but do not append
+  な to vocabulary, reading, gcl_entry, or resolved_gcl_entry.
+- A leading ~ marks a suffix and a trailing ~ marks a prefix. Keep ~ only in
+  gcl_entry and resolved_gcl_entry. Omit it from vocabulary and reading. Define
+  the affix function, embed it in natural complete words in examples, and conceal
+  only the target affix occurrence within each word.
 - Do not reveal the written target in reading, definition, or examples.
 - Do not include <div> around examples; the local assembler adds it.
 - When status is needs_review, explain the problem in issue and use empty strings
@@ -1027,8 +901,8 @@ def apply_reading_normalization(
                 }
             )
             continue
-        expression = entry.text[:-3] if entry.text.endswith("(な)") else entry.text
-        suffix = "(な)" if entry.text.endswith("(な)") else ""
+        expression = entry.text
+        suffix = ""
         resolved_entries = [
             f"{expression}[{reading}]{suffix}" for reading in valid_readings
         ]
@@ -1988,7 +1862,6 @@ def strip_tags(value: str) -> str:
 
 def vocabulary_from_gcl(entry: str) -> str:
     value = READING_ANNOTATION_RE.sub("", entry)
-    value = value.replace("(な)", "")
     if value.startswith("~"):
         value = value[1:]
     if value.endswith("~"):
@@ -2021,11 +1894,7 @@ def validate_resolved_gcl(expected_gcl: str, resolved_gcl: str) -> list[str]:
     if annotation and not HIRAGANA_RE.fullmatch(annotation.group(1)):
         errors.append("resolved_gcl_entry reading annotation must be hiragana")
     if "(" in resolved_gcl or ")" in resolved_gcl:
-        allowed = resolved_gcl.endswith("(な)") or re.search(
-            r"\[[^\[\]]+\]\(な\)$", resolved_gcl
-        )
-        if not allowed:
-            errors.append("resolved_gcl_entry uses parentheses outside the (な) marker")
+        errors.append("resolved_gcl_entry uses unsupported parentheses")
     return errors
 
 
@@ -2138,7 +2007,7 @@ def validate_card(card: dict[str, Any], expected_gcl: str) -> list[str]:
 def deterministic_guid(gcl_entry: str) -> str:
     return uuid.uuid5(
         uuid.UUID("867c9bb2-b47e-5c77-b80c-bf10b8b65c52"),
-        identity_compatibility_text(gcl_entry),
+        gcl_entry,
     ).hex[:16]
 
 

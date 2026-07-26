@@ -59,7 +59,7 @@ only the `Vocabulary` field as new answer content:
 `Vocabulary` MUST equal the original GCL expression after removal of:
 
 - `[reading]`;
-- `(な)`; and
+- legacy `(な)` metadata; and
 - a leading or trailing affix placeholder.
 
 It MUST otherwise preserve the intended written expression.

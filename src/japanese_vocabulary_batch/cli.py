@@ -12,7 +12,6 @@ from .pipeline import (
     generate_from_workspace,
     import_apkg,
     make_openai_client,
-    migrate_gcl_syntax,
     merge_retry_output,
     prepare_batch,
     prepare_population,
@@ -40,12 +39,6 @@ def build_parser() -> argparse.ArgumentParser:
         help="Deck name, or a full *_generation_control_file.txt filename",
     )
 
-    migrate_syntax = commands.add_parser(
-        "migrate-gcl-syntax",
-        help="Migrate canonical GCL syntax while preserving workspace identities",
-    )
-    migrate_syntax.add_argument("--gcl", type=Path, required=True)
-    migrate_syntax.add_argument("--workspace", type=Path, required=True)
     import_command.add_argument("--output-dir", type=Path, default=Path("gcl"))
     import_command.add_argument(
         "--decisions",
@@ -164,9 +157,7 @@ def main(argv: list[str] | None = None) -> int:
         sys.stderr.reconfigure(encoding="utf-8")
     args = build_parser().parse_args(argv)
     try:
-        if args.command == "migrate-gcl-syntax":
-            result = migrate_gcl_syntax(args.gcl, args.workspace)
-        elif args.command == "import-apkg":
+        if args.command == "import-apkg":
             result = import_apkg(
                 apkg_path=args.apkg,
                 gcl_name=args.name,

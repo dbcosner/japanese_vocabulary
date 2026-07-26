@@ -22,7 +22,8 @@ Import MUST:
 - leave the source package unchanged;
 - preserve source note order where practical;
 - remove presentation HTML and ignore non-GCL metadata;
-- normalize GCL syntax, including U+007E `~` and `(な)`;
+- normalize GCL syntax, including U+007E `~`, and remove legacy na-adjective
+  markers;
 - retain the first exact duplicate and report later occurrences;
 - write a proposed UTF-8 GCL atomically; and
 - write a structured import-review report for every successfully inspected note
@@ -83,9 +84,7 @@ The generated package MUST:
 ## 5. Association and preservation
 
 `project.json` is the durable association between a GCL, its accepted cache, and
-its APKG output. Syntax-only migrations MAY preserve legacy identities through an
-explicit compatibility mapping. Such migrations MUST validate every cached card,
-update stored hashes, and create a recoverable backup before publication.
+its APKG output.
 
 ## 6. Atomicity
 

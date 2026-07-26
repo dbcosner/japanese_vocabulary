@@ -24,7 +24,7 @@ A complete GCL used by Populate or Generate MUST have:
 - at least one entry after blank and `#` lines are ignored;
 - one complete hiragana `[reading]` per entry;
 - canonical ASCII U+007E `~` placeholders;
-- canonical `(な)` markers;
+- no legacy `(な)` or `（な）` markers;
 - no unsupported parentheses, brackets, control characters, or exact duplicates;
   and
 - no text outside the implemented annotated-entry grammar.
@@ -33,8 +33,7 @@ The current parser does not enforce the version header or reject arbitrary
 comment lines. Project-authored files nevertheless use the exact
 `# GCL Version: 1` header.
 
-Syntax cleanup MUST preserve source order and stable entry identity where an
-approved compatibility migration applies.
+Syntax cleanup MUST preserve source order.
 
 ## 3. Population validation
 
@@ -74,7 +73,7 @@ Tests MUST cover:
 
 - legacy and modern APKG collection formats;
 - import review and decisions files;
-- tilde and na-adjective normalization;
+- tilde normalization and legacy na-adjective-marker removal;
 - exact duplicate removal;
 - missing and multiple readings;
 - reading-resolution expansion and post-resolution deduplication;
@@ -82,5 +81,4 @@ Tests MUST cover:
 - APKG generation with stable IDs;
 - target concealment and HTML validation;
 - retry preparation and merge behavior;
-- cost-confirmation guards; and
-- syntax migration with cache/GUID preservation.
+- cost-confirmation guards.

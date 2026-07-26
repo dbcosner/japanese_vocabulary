@@ -89,14 +89,16 @@ Version 1 GCLs are UTF-8 text:
 # GCL Version: 1
 
 遭う[あう]
-静か[しずか](な)
+静か[しずか]
 ~化[か]
 無~[む]
 ```
 
 - `[reading]` is the authoritative complete hiragana reading.
-- `(な)` marks a na-adjective.
 - `~` is ASCII U+007E and marks an open prefix or suffix position.
+
+Part-of-speech behavior, including adjectival-noun usage, is inferred during
+content generation rather than encoded in the GCL.
 
 New bare expressions may be appended temporarily, but a GCL is not ready for
 population or generation until every entry has been resolved.
@@ -120,8 +122,6 @@ expression. Definitions and examples are generated in Japanese.
 - Batch submission requires `--confirm-cost`.
 - Source APKGs are never modified.
 - Import ambiguity is recorded in a separate review artifact.
-- GCL and cache migrations create recovery backups and validate identity
-  preservation.
 
 ## Repository layout
 

@@ -44,7 +44,8 @@ requested.
 
 Before GCL creation, the source APKG is authoritative only for constructing the
 proposal. After editorial adoption, the GCL is authoritative for membership,
-ordering, written forms, readings, affix markers, and na-adjective markers.
+ordering, written forms, readings, and affix markers. Part-of-speech behavior is
+inferred during content generation.
 
 The accepted cache is authoritative only for generated card content associated
 with the current GCL identities. The generated APKG is never an editorial source.

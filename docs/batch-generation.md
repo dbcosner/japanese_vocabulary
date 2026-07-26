@@ -95,21 +95,6 @@ Generation is local and atomically overwrites the requested APKG. It fails if th
 GCL changed after population, the accepted cache is incomplete, a card is
 invalid, or the output is not `.apkg`.
 
-## Syntax migration
-
-An associated workspace may be migrated without changing cached identities:
-
-```bash
-batch-generate migrate-gcl-syntax \
-  --gcl gcl/n1_vocabulary_generation_control_file.txt \
-  --workspace .batch/n1_vocabulary
-```
-
-The migration validates every record, updates hashes, preserves deterministic
-GUIDs, and writes a recovery backup before publication. It requires the
-workspace's current `generate-manifest.json`; Generate recreates that manifest
-for a complete workspace.
-
 ## Decisions-file format
 
 The optional decisions JSON currently recognizes:
@@ -144,7 +129,6 @@ entries; `null` drops that source note. Unknown rule keys are currently ignored.
 | `prepare` | Local standalone range preparation |
 | `prepare-retry` | Local repair-request preparation |
 | `merge-retry` | Local JSONL merge |
-| `migrate-gcl-syntax` | Local guarded migration |
 | `submit` | Networked and potentially paid; requires `--confirm-cost` |
 | `status` | Networked status refresh |
 | `collect` | Networked result download after completion |

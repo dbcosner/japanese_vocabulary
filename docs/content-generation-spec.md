@@ -35,8 +35,8 @@ pattern sense is read `がら`).
 
 The generation response MUST echo the complete canonical GCL entry exactly in
 both its request-entry and resolved-entry fields. This comparison includes the
-full `[reading]`, affix placeholder, and terminal `(な)` marker. A generator MUST
-copy these values from structured request data and MUST NOT reconstruct,
+full `[reading]` and affix placeholder. A generator MUST copy these values from
+structured request data and MUST NOT reconstruct,
 normalize, or omit annotations in free-form output.
 
 ### 2.2 Import-time reading resolution
@@ -195,16 +195,13 @@ The target noun itself MUST remain replaced by bold hiragana in these
 constructions. Following particles, including `の`, and conjugated forms of
 `する` MUST remain visible in normal Japanese orthography.
 
-### 5.4 Na-adjectives
+### 5.4 Adjectival nouns
 
-For entries marked `(な)`:
-
-- examples SHOULD include attributive `~な` use and predicate or noun-like use
-  when both are natural for the entry;
-- the literal GCL annotation MUST NOT be copied into a field; and
-- the grammatical `な` MAY and normally will appear when required by a sentence.
-
-Natural Japanese takes precedence over satisfying both usage patterns.
+Generation MUST infer adjectival-noun behavior from the expression. Examples
+SHOULD include attributive `~な` use and predicate or noun-like use when both are
+natural. The Reading and Vocabulary fields MUST contain only the lexical form
+and MUST NOT append `な`. Grammatical `な` MAY and normally will appear when
+required by an example sentence.
 
 ### 5.5 Prefixes and suffixes
 

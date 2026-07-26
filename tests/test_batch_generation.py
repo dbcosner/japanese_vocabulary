@@ -1,6 +1,5 @@
 ﻿from __future__ import annotations
 
-import hashlib
 import json
 import os
 import sqlite3
@@ -22,7 +21,6 @@ from japanese_vocabulary_batch.pipeline import (
     generate_from_workspace,
     import_apkg,
     merge_retry_output,
-    migrate_gcl_syntax,
     prepare_batch,
     prepare_population,
     prepare_reading_normalization,
@@ -226,7 +224,7 @@ class BatchGenerationTests(unittest.TestCase):
         canonical_text = Path(canonical["gcl_path"]).read_text(encoding="utf-8")
         self.assertIn("~化[か]", canonical_text)
         self.assertNotIn("片道", canonical_text)
-        self.assertIn("無作法[ぶさほう](な)", canonical_text)
+        self.assertIn("無作法[ぶさほう]", canonical_text)
         self.assertEqual(len(canonical["review_items"]), 1)
 
         decisions = self.root / "decisions.json"
@@ -250,7 +248,7 @@ class BatchGenerationTests(unittest.TestCase):
         decided_text = Path(decided["gcl_path"]).read_text(encoding="utf-8")
         self.assertIn("片道[かたみち]", decided_text)
         self.assertIn("往復[おうふく]", decided_text)
-        self.assertIn("無作法[ぶさほう](な)", decided_text)
+        self.assertIn("無作法[ぶさほう]", decided_text)
 
     def test_import_apkg_cli_uses_requested_full_gcl_name(self):
         database = self.root / "collection.anki2"
@@ -315,54 +313,6 @@ class BatchGenerationTests(unittest.TestCase):
         ):
             with self.assertRaisesRegex(PipelineError, "checked modern"):
                 import_apkg(package, "modern", self.root / "gcl")
-
-    def test_migrate_gcl_syntax_preserves_cache_identity_and_guid(self):
-        gcl = self.root / "gcl" / "deck_generation_control_file.txt"
-        gcl.parent.mkdir()
-        old_entry = "～化[か]"
-        new_entry = "~化[か]"
-        gcl.write_text(f"# GCL Version: 1\n\n{old_entry}\n", encoding="utf-8")
-        workspace = self.root / ".batch" / "deck"
-        cards = workspace / "cards"
-        cards.mkdir(parents=True)
-        custom_id = GclEntry(1, old_entry).identity
-        accepted = cards / "accepted.jsonl"
-        accepted.write_text(
-            response_line(custom_id, self.card(old_entry, "か", "化")) + "\n",
-            encoding="utf-8",
-        )
-        old_hash = hashlib.sha256(gcl.read_bytes()).hexdigest()
-        (workspace / "project.json").write_text(
-            json.dumps(
-                {"gcl_path": str(gcl.resolve()), "gcl_sha256": old_hash}
-            ),
-            encoding="utf-8",
-        )
-        (workspace / "generate-manifest.json").write_text(
-            json.dumps(
-                {
-                    "gcl_sha256": old_hash,
-                    "input_sha256": hashlib.sha256(accepted.read_bytes()).hexdigest(),
-                    "requests": [
-                        {
-                            "custom_id": custom_id,
-                            "source_index": 1,
-                            "gcl_entry": old_entry,
-                        }
-                    ],
-                }
-            ),
-            encoding="utf-8",
-        )
-
-        old_guid = deterministic_guid(old_entry)
-        result = migrate_gcl_syntax(gcl, workspace)
-
-        self.assertIn(new_entry, gcl.read_text(encoding="utf-8"))
-        self.assertEqual(GclEntry(1, new_entry).identity, custom_id)
-        self.assertEqual(deterministic_guid(new_entry), old_guid)
-        self.assertEqual(result["cache_records"], 1)
-        self.assertTrue(Path(result["backup_dir"]).is_dir())
 
     def tearDown(self):
         self.temporary.cleanup()

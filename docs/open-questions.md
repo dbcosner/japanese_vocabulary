@@ -5,8 +5,8 @@
 ### D1: The GCL is authoritative
 
 After import and editorial adoption, vocabulary membership, ordering, spelling,
-reading, affix status, and na-adjective status belong in the GCL. Generated APKGs
-are derived artifacts.
+reading, and affix status belong in the GCL. Part-of-speech behavior is inferred
+during content generation. Generated APKGs are derived artifacts.
 
 ### D2: Stable identity uses the canonical annotated entry
 
@@ -35,8 +35,8 @@ source-specific decisions may authorize deterministic cleanup.
 
 - The affix placeholder is ASCII tilde U+007E (`~`).
 - Recognized tilde variants normalize to `~`.
-- Na-adjectives use ASCII `(な)`.
-- Full-width `（な）` and a source trailing literal `な` normalize to `(な)`.
+- Legacy `(な)`, `（な）`, and source trailing literal `な` markers are removed.
+- Adjectival-noun behavior is inferred during content generation.
 - Optional particles and editorial prose are not GCL annotations.
 
 ### D7: Native APKG is the only deck format
@@ -49,12 +49,6 @@ the durable association among the GCL, accepted cache, and APKG output.
 
 Import, preparation, validation, cache reuse, and APKG generation are local.
 Submitting a Batch job requires explicit `--confirm-cost`.
-
-### D9: Syntax migrations preserve associations
-
-A syntax-only migration must validate every cached card, preserve stable identity
-and generated GUIDs, update stored hashes, and create a recovery backup before
-publication.
 
 ## Remaining questions
 
