@@ -11,6 +11,20 @@ pip install -e .
 Copy `.env.example` to `.env` and provide an API key only when paid Batch
 submission is needed.
 
+## Output filename convention
+
+All APKGs created by Populate or Generate use lowercase ASCII snake_case
+filenames. The `.apkg` extension is lowercase as well.
+
+```text
+beyond_n1_vocabulary.apkg   valid
+Beyond N1 Vocabulary.apkg   invalid
+beyond-n1-vocabulary.apkg   invalid
+```
+
+This convention applies to filesystem names, not Anki display names. Supply a
+human-readable display name separately with `--deck-name`.
+
 ## Import
 
 ```bash
@@ -95,6 +109,33 @@ established by `populate`; pass `--deck-name "Custom Name"` to override it.
 Generation is local and atomically overwrites the requested APKG. It fails if the
 GCL changed after population, the accepted cache is incomplete, a card is
 invalid, or the output is not `.apkg`.
+
+## Completed-workspace retention
+
+A completed population workspace needs only these files for local APKG
+regeneration:
+
+```text
+.batch/<deck-name>/
+├── cards/accepted.jsonl
+├── populate-report.json
+└── project.json
+```
+
+Keep the authoritative GCL and template as well. Once `populate` reports
+`complete: true` and the generated APKG has been independently opened or
+inspected, the following are interim artifacts and may be removed:
+
+- `batches/` request manifests, inputs, job states, and downloaded outputs
+- `history/` superseded or failed attempts
+- detailed findings dumps produced during review
+- generation manifests and reports after the final APKG has been verified
+- temporary unresolved GCLs after their accepted entries have been merged
+
+Removing batch job records prevents later status polling or output
+redownloading by local job tooling, but does not affect the accepted cache or
+APKG generation. Keep them longer only when API-job provenance or debugging
+evidence is required.
 
 ## Decisions-file format
 

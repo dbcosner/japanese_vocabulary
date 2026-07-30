@@ -56,7 +56,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Prepare only missing cards in the workspace for a GCL/deck pair",
     )
     populate.add_argument("--gcl", type=Path, required=True)
-    populate.add_argument("--deck", type=Path, required=True)
+    populate.add_argument(
+        "--deck",
+        type=Path,
+        required=True,
+        help="Logical APKG output path; filename must use lowercase snake_case",
+    )
     populate.add_argument("--batch-root", type=Path, default=Path(".batch"))
     populate.add_argument("--batch-size", type=int, default=100)
     populate.add_argument("--model", default="gpt-5.6-terra")
@@ -71,7 +76,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Generate APKG from a populated deck workspace",
     )
     generate.add_argument("--workspace", type=Path, required=True)
-    generate.add_argument("--output", type=Path, required=True)
+    generate.add_argument(
+        "--output",
+        type=Path,
+        required=True,
+        help="APKG output path; filename must use lowercase snake_case",
+    )
     generate.add_argument("--template", type=Path, required=True)
     generate.add_argument(
         "--deck-name",

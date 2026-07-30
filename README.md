@@ -12,6 +12,18 @@ The workflow has three phases:
 2. **Populate** creates or reuses validated card content for every GCL entry.
 3. **Generate** builds the complete native APKG from the populated workspace.
 
+### Filename convention
+
+Published APKG filenames use lowercase ASCII snake_case:
+`beyond_n1_vocabulary.apkg`, not `Beyond N1 Vocabulary.apkg` or
+`beyond-n1-vocabulary.apkg`. Populate and Generate enforce this convention for
+their `--deck` and `--output` paths.
+
+The filesystem name is separate from the learner-facing Anki deck name. Use
+`--deck-name "Beyond N1 Vocabulary"` for a natural display name while retaining
+`--output beyond_n1_vocabulary.apkg`. Source APKGs supplied for Import are not
+renamed and are exempt from this output convention.
+
 ### Import an APKG
 
 ```bash
@@ -91,6 +103,34 @@ also receives a stable, deck-specific options preset containing Anki's default
 settings, so its scheduling options can be changed after import without affecting
 other decks.
 
+For the Takoboto-derived deck in this repository:
+
+```bash
+batch-generate generate \
+  --workspace .batch/takoboto_vocabulary \
+  --template templates/japanese_vocabulary_deck_template.json \
+  --output beyond_n1_vocabulary.apkg \
+  --deck-name "Beyond N1 Vocabulary"
+```
+
+Its authoritative inventory is
+`gcl/takoboto_generation_control_file.txt`. The completed population contains
+3,875 validated cards.
+
+### Clean up completed population jobs
+
+The reusable content cache is `.batch/<deck-name>/cards/accepted.jsonl`.
+Keep that file together with `project.json` and the final
+`populate-report.json` when you want to regenerate a deck without repeating
+paid content generation.
+
+After `populate` reports `complete: true` and the APKG has been verified, the
+workspace's `batches/`, `history/`, detailed findings, and generation receipt
+files are transient and may be removed. They contain request payloads,
+downloaded responses, superseded retries, or reproducible summaries; they are
+not required by `generate`. The entire `.batch/` tree is ignored by Git because
+it is local operational state.
+
 ## GCL syntax
 
 Version 1 GCLs are UTF-8 text:
@@ -144,6 +184,7 @@ expression. Definitions and examples are generated in Japanese.
 ├── templates/          APKG-neutral card templates
 ├── tests/              Regression tests
 ├── .batch/             Local population caches and Batch state
+├── beyond_n1_vocabulary.apkg
 ├── n1_vocabulary.apkg  Generated N1 Anki deck
 └── n2_vocabulary.apkg  Generated N2 Anki deck
 ```

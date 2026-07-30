@@ -20,10 +20,14 @@ ENDPOINT = "/v1/responses"
 SCHEMA_NAME = "japanese_vocabulary_card"
 TERMINAL_STATUSES = {"completed", "failed", "expired", "cancelled"}
 HIRAGANA_RE = re.compile(r"^[\u3040-\u309fー]+$")
+KANJI_RE = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff々]")
 TAG_RE = re.compile(r"<[^>]+>")
 READING_ANNOTATION_RE = re.compile(r"\[([^\[\]]+)\]$")
 ANNOTATED_GCL_RE = re.compile(
     r"^(?P<expression>[^\[\]\(\)]+)\[(?P<reading>[ぁ-ゖー]+)\]$"
+)
+SNAKE_CASE_FILENAME_STEM_RE = re.compile(
+    r"^[a-z0-9]+(?:_[a-z0-9]+)*$"
 )
 
 
@@ -44,6 +48,16 @@ class GclEntry:
 
 GCL_FILENAME_SUFFIX = "_generation_control_file.txt"
 FIELD_SEPARATOR = "\x1f"
+
+
+def _validate_apkg_output_path(path: Path) -> None:
+    if path.suffix != ".apkg":
+        raise PipelineError("APKG output must use the lowercase .apkg extension")
+    if not SNAKE_CASE_FILENAME_STEM_RE.fullmatch(path.stem):
+        raise PipelineError(
+            "APKG output filename must use lowercase snake_case "
+            "(for example, beyond_n1_vocabulary.apkg)"
+        )
 
 
 def _plain_anki_field(value: str) -> str:
@@ -1043,6 +1057,7 @@ def _write_population_batch(
     work_dir: Path,
     model: str,
     reasoning_effort: str,
+    repair_contexts: dict[str, tuple[dict[str, Any], list[str]]] | None = None,
 ) -> dict[str, Any]:
     start = entries[0].source_index
     end = entries[-1].source_index
@@ -1051,7 +1066,18 @@ def _write_population_batch(
     atomic_write_text(
         input_path,
         "\n".join(
-            json.dumps(make_request(entry, model, reasoning_effort), ensure_ascii=False)
+            json.dumps(
+                make_repair_request(
+                    entry,
+                    model,
+                    reasoning_effort,
+                    repair_contexts[entry.identity][0],
+                    repair_contexts[entry.identity][1],
+                )
+                if repair_contexts and entry.identity in repair_contexts
+                else make_request(entry, model, reasoning_effort),
+                ensure_ascii=False,
+            )
             for entry in entries
         )
         + "\n",
@@ -1093,8 +1119,7 @@ def prepare_population(
     """Create or refresh the durable population workspace for a GCL/deck pair."""
     if batch_size < 1:
         raise PipelineError("Batch size must be positive")
-    if deck_path.suffix.lower() != ".apkg":
-        raise PipelineError("Deck output must be an .apkg file")
+    _validate_apkg_output_path(deck_path)
     entries, duplicates = clean_and_read_gcl(gcl_path)
     workspace = _population_workspace(batch_root, deck_path)
     cards_dir = workspace / "cards"
@@ -1135,6 +1160,7 @@ def prepare_population(
                 accepted_records[custom_id] = record
 
     findings_by_id: dict[str, dict[str, Any]] = {}
+    repair_contexts: dict[str, tuple[dict[str, Any], list[str]]] = {}
     # Import valid completed outputs into the reusable cache. Retry outputs are
     # considered after base outputs so a repaired response replaces its predecessor.
     manifest_paths = sorted(batches_dir.glob("**/manifest_*.json"))
@@ -1163,11 +1189,14 @@ def prepare_population(
                     **request,
                     "errors": errors,
                 }
+                if card is not None:
+                    repair_contexts[request["custom_id"]] = (card, errors)
             elif request["custom_id"] in raw_by_id:
                 accepted_records[request["custom_id"]] = raw_by_id[
                     request["custom_id"]
                 ]
                 findings_by_id.pop(request["custom_id"], None)
+                repair_contexts.pop(request["custom_id"], None)
 
     current_by_id = {entry.identity: entry for entry in entries}
     accepted_records = {
@@ -1237,6 +1266,7 @@ def prepare_population(
             work_dir=job_dir,
             model=model,
             reasoning_effort=reasoning_effort,
+            repair_contexts=repair_contexts,
         )
         jobs.append(
             {
@@ -1265,7 +1295,11 @@ def prepare_population(
         "pending_cards": len(pending_ids),
         "new_cards_prepared": len(missing),
         "jobs": jobs,
-        "findings": list(findings_by_id.values()),
+        "findings": [
+            finding
+            for custom_id, finding in findings_by_id.items()
+            if custom_id in current_by_id and custom_id not in accepted_records
+        ],
         "duplicate_entries_removed": duplicates,
         "complete": len(accepted_records) == len(entries),
     }
@@ -1568,8 +1602,7 @@ def generate_from_workspace(
     deck_name: str | None = None,
 ) -> dict[str, Any]:
     """Generate a final APKG using only one populated deck workspace."""
-    if output_path.suffix.lower() != ".apkg":
-        raise PipelineError("APKG output must use the .apkg extension")
+    _validate_apkg_output_path(output_path)
     project, entries, accepted_path, cards = _load_complete_workspace(
         workspace_path
     )
@@ -2010,6 +2043,29 @@ def validate_bold_markup(value: str) -> bool:
     return depth == 0
 
 
+def katakana_to_hiragana(value: str) -> str:
+    return "".join(
+        chr(ord(character) - 0x60)
+        if "\u30a1" <= character <= "\u30f6"
+        else character
+        for character in value
+    )
+
+
+def normalize_concealed_readings(value: str, *, entire_value: bool = False) -> str:
+    if entire_value:
+        return katakana_to_hiragana(value)
+    return re.sub(
+        r"(?is)<b>(.*?)</b>",
+        lambda match: f"<b>{katakana_to_hiragana(match.group(1))}</b>",
+        value,
+    )
+
+
+def unconcealed_text(value: str) -> str:
+    return re.sub(r"(?is)<b>.*?</b>", "", value)
+
+
 def validate_card(card: dict[str, Any], expected_gcl: str) -> list[str]:
     errors: list[str] = []
     if card.get("status") != "card":
@@ -2024,14 +2080,28 @@ def validate_card(card: dict[str, Any], expected_gcl: str) -> list[str]:
             expected_gcl, card.get("resolved_gcl_entry", "")
         )
     )
-    reading = card.get("reading", "")
+    reading = normalize_concealed_readings(
+        card.get("reading", ""), entire_value=True
+    )
+    card["reading"] = reading
     plain_reading = strip_tags(reading)
     if not plain_reading or not HIRAGANA_RE.fullmatch(plain_reading):
         errors.append("reading must contain hiragana only after HTML removal")
-    if not validate_bold_markup(reading) or "<b>" not in reading:
+    if not validate_bold_markup(reading) or (
+        KANJI_RE.search(vocabulary_from_gcl(expected_gcl)) and "<b>" not in reading
+    ):
         errors.append("reading must contain balanced bold markup")
-    definition = card.get("definition", "")
+    definition = normalize_concealed_readings(card.get("definition", ""))
+    card["definition"] = definition
     examples = card.get("examples", [])
+    if isinstance(examples, list):
+        examples = [
+            normalize_concealed_readings(example)
+            if isinstance(example, str)
+            else example
+            for example in examples
+        ]
+        card["examples"] = examples
     vocabulary = card.get("vocabulary", "")
     expected_vocabulary = vocabulary_from_gcl(
         card.get("resolved_gcl_entry") or expected_gcl
@@ -2065,12 +2135,15 @@ def validate_card(card: dict[str, Any], expected_gcl: str) -> list[str]:
             "examples": "\n".join(examples) if isinstance(examples, list) else "",
         }
         for field_name, value in front_values.items():
-            if vocabulary in value:
+            if field_name == "reading" and not KANJI_RE.search(vocabulary):
+                continue
+            visible_value = unconcealed_text(value)
+            if vocabulary in visible_value:
                 errors.append(f"{field_name} reveals the written vocabulary")
         inflected_pattern = concealed_target_pattern(vocabulary)
         if inflected_pattern:
             for field_name, value in front_values.items():
-                if inflected_pattern.search(value):
+                if inflected_pattern.search(unconcealed_text(value)):
                     errors.append(
                         f"{field_name} reveals an inflected written target"
                     )

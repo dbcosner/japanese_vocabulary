@@ -432,6 +432,32 @@ class BatchGenerationTests(unittest.TestCase):
             Path(project["outputs"]["apkg"]), deck_path.resolve()
         )
 
+    def test_apkg_output_filenames_require_lowercase_snake_case(self):
+        invalid_names = [
+            "Beyond N1 Vocabulary.apkg",
+            "beyond-n1-vocabulary.apkg",
+            "beyond_n1_vocabulary.APKG",
+        ]
+        for invalid_name in invalid_names:
+            with self.subTest(command="populate", name=invalid_name):
+                with self.assertRaisesRegex(
+                    PipelineError, "lowercase (snake_case|\\.apkg)"
+                ):
+                    prepare_population(
+                        gcl_path=self.gcl,
+                        deck_path=self.root / invalid_name,
+                        batch_root=self.root / ".batch",
+                    )
+            with self.subTest(command="generate", name=invalid_name):
+                with self.assertRaisesRegex(
+                    PipelineError, "lowercase (snake_case|\\.apkg)"
+                ):
+                    generate_from_workspace(
+                        workspace_path=self.root / "missing",
+                        output_path=self.root / invalid_name,
+                        template_path=self.root / "missing-template.json",
+                    )
+
     def test_population_reuses_cached_cards_and_prepares_only_new_entries(self):
         self.gcl.write_text(
             "# GCL Version: 1\n\n遭う[あう]\n", encoding="utf-8"
@@ -861,6 +887,46 @@ class BatchGenerationTests(unittest.TestCase):
         card = self.card("履く[はく]", "はく", "履く")
         card["examples"][1] = "会場では室内用の上履きを<b>はいて</b>ください。"
         self.assertEqual(validate_card(card, "履く[はく]"), [])
+
+    def test_kana_only_target_does_not_require_bold_reading(self):
+        card = {
+            "status": "card",
+            "issue": "",
+            "gcl_entry": "せこい[せこい]",
+            "resolved_gcl_entry": "せこい[せこい]",
+            "additional_gcl_entries": [],
+            "reading": "せこい",
+            "definition": "細かい利益にこだわり、けちな印象を与えるさま。",
+            "examples": [
+                "そんな<b>せこい</b>手を使うな。",
+                "値引きの仕方が<b>せこい</b>と思われた。",
+                "彼の<b>せこい</b>計算には呆れた。",
+            ],
+            "example_count_rationale": "",
+            "vocabulary": "せこい",
+        }
+        self.assertEqual(validate_card(card, "せこい[せこい]"), [])
+
+    def test_concealed_katakana_is_normalized_to_hiragana(self):
+        card = {
+            "status": "card",
+            "issue": "",
+            "gcl_entry": "金メッキ[きんめっき]",
+            "resolved_gcl_entry": "金メッキ[きんめっき]",
+            "additional_gcl_entries": [],
+            "reading": "<b>きん</b>メッキ",
+            "definition": "表面に薄く<b>きんメッキ</b>を施す加工。",
+            "examples": [
+                "部品に<b>きんメッキ</b>を施した。",
+                "<b>きんメッキ</b>が剥がれてきた。",
+                "外装は<b>きんメッキ</b>で仕上げられている。",
+            ],
+            "example_count_rationale": "",
+            "vocabulary": "金メッキ",
+        }
+        self.assertEqual(validate_card(card, "金メッキ[きんめっき]"), [])
+        self.assertEqual(card["reading"], "<b>きん</b>めっき")
+        self.assertIn("<b>きんめっき</b>", card["examples"][0])
 
     def test_prepare_retry_and_merge_replace_only_findings(self):
         prepared = self.prepare()

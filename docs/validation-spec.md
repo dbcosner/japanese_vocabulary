@@ -61,7 +61,8 @@ Generate MUST verify before publication:
   ID and at least one card template;
 - derivable stable deck and model identifiers;
 - one valid cached card per GCL entry; and
-- an `.apkg` output extension.
+- a lowercase snake_case APKG output filename with the lowercase `.apkg`
+  extension.
 
 Regression tests open generated collection databases and confirm:
 

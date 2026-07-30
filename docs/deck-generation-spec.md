@@ -53,6 +53,10 @@ for bare expressions introduced through manual GCL authoring.
 Populate accepts one resolved GCL and one logical APKG output path. It creates a
 deck-specific workspace under `.batch/<deck-name>/`.
 
+The APKG output basename MUST use lowercase ASCII snake_case and the lowercase
+`.apkg` extension. This filesystem name is independent of the learner-facing
+Anki deck name.
+
 The workspace MUST record:
 
 - the absolute GCL and APKG output paths;
@@ -73,6 +77,10 @@ Generate accepts:
 - one APKG-neutral card template; and
 - one `.apkg` output path;
 - optionally, an explicit Anki deck name.
+
+The explicit output path MUST follow the same lowercase snake_case APKG filename
+convention established by Populate. Generate rejects filenames containing
+spaces, hyphens, uppercase letters, or a non-lowercase extension.
 
 The template MUST NOT determine the deck name. It MUST define the stable note
 model ID shared by decks that use that template. Generate uses the explicit deck
